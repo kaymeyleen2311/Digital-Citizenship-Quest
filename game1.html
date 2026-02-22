@@ -652,35 +652,43 @@
                 });
             }
         };
+// CUSTOM GO BACK FUNCTION FOR SINGLE PAGE APP
+       function goBack() {
+           // 1. Check if the question or winner modal is currently open
+           const questionModal = document.getElementById('questionModal');
+           const winnerModal = document.getElementById('winnerModal');
+           
+           // 2. If a modal is open, do nothing (makes the button "unclickable")
+           if (!questionModal.classList.contains('hidden') || !winnerModal.classList.contains('hidden')) {
+               return; 
+           }
 
-       // CUSTOM GO BACK FUNCTION FOR SINGLE PAGE APP
-        function goBack() {
-            AudioController.playClick();
-            const welcomeScreen = document.getElementById('welcomeScreen');
-            const setupScreen = document.getElementById('setupScreen');
-            const gameBoard = document.getElementById('gameBoard');
-            
-            if (!gameBoard.classList.contains('hidden')) {
-                // If on Game Board, go back to Setup Screen
-                gameBoard.classList.add('hidden');
-                setupScreen.classList.remove('hidden');
-                // The music will now keep playing perfectly!
-            } else if (!setupScreen.classList.contains('hidden')) {
-                // If on Setup Screen, go back to Welcome/Mechanics Screen
-                setupScreen.classList.add('hidden');
-                welcomeScreen.classList.remove('hidden');
-                // Ensure the mechanics show up instead of the loading bar
-                document.getElementById('loadingSection').classList.add('hidden');
-                document.getElementById('mechanicsSection').classList.remove('hidden');
-            } else {
-                // If already on the first screen, exit webpage
-                if(window.parent && window.parent.backToMenu) { 
-                    window.parent.backToMenu(); 
-                } else { 
-                    window.history.back(); 
-                }
-            }
-        }
+           AudioController.playClick();
+           const welcomeScreen = document.getElementById('welcomeScreen');
+           const setupScreen = document.getElementById('setupScreen');
+           const gameBoard = document.getElementById('gameBoard');
+           
+           if (!gameBoard.classList.contains('hidden')) {
+               // If on Game Board, go back to Setup Screen
+               gameBoard.classList.add('hidden');
+               setupScreen.classList.remove('hidden');
+               // The music will now keep playing perfectly!
+           } else if (!setupScreen.classList.contains('hidden')) {
+               // If on Setup Screen, go back to Welcome/Mechanics Screen
+               setupScreen.classList.add('hidden');
+               welcomeScreen.classList.remove('hidden');
+               // Ensure the mechanics show up instead of the loading bar
+               document.getElementById('loadingSection').classList.add('hidden');
+               document.getElementById('mechanicsSection').classList.remove('hidden');
+           } else {
+               // If already on the first screen, exit webpage
+               if(window.parent && window.parent.backToMenu) { 
+                   window.parent.backToMenu(); 
+               } else { 
+                   window.history.back(); 
+               }
+           }
+       }
 
         // AUTO-MUSIC TRIGGER: Plays on the first click anywhere
         document.addEventListener('click', function unlockAudio() {
