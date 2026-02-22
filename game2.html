@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Safety Quest</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --pastel-blue: #b2e2f2; --pastel-pink: #ffb7b2;
+            --pastel-green: #baffc9; --pastel-yellow: #ffffba;
+            --text: #4a4a4a;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #fdfcf0; color: var(--text);
+            margin: 0; overflow: hidden; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* --- LOADING SCREEN --- */
+        #loading-screen {
+            position: fixed; inset: 0; background: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 4000; transition: opacity 0.5s;
+        }
+        .progress-container {
+            width: 300px; height: 20px; background: #eee;
+            border-radius: 10px; overflow: hidden; margin-top: 20px;
+            border: 2px solid var(--pastel-blue);
+        }
+        #progress-bar {
+            width: 0%; height: 100%; background: var(--pastel-pink);
+            transition: width 0.1s linear;
+        }
+
+        /* --- UI CONTROLS --- */
+        .ui-btn {
+            position: fixed; top: 20px; width: 45px; height: 45px;
+            border-radius: 50%; background: white; border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;
+            z-index: 1500; font-size: 20px; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .ui-btn:hover { transform: scale(1.1); background: #fafafa; }
+        #back-btn { left: 20px; display: none; }
+        #music-btn { right: 20px; display: none; }
+
+        /* --- SCREENS --- */
+        #audio-unlocker, #lobby, #winner-screen {
+            position: fixed; inset: 0; background: var(--pastel-blue);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; text-align: center;
+        }
+        #lobby, #winner-screen { display: none; }
+        
+        .card {
+            background: white; padding: 40px; border-radius: 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 350px;
+        }
+        input { padding: 12px; border-radius: 10px; border: 2px solid var(--pastel-pink); margin: 8px; width: 80%; outline: none; }
+        
+        .btn { 
+            background: var(--pastel-pink); border: none; padding: 15px 30px; 
+            border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px;
+            box-shadow: 0 4px 0 #e07a82; transition: 0.2s; color: white;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e07a82; }
+
+        /* --- GAME AREA --- */
+        #game-info { 
+            display: none; width: 100%; padding: 15px; justify-content: space-around; 
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10;
+        }
+        #game-field { display: none; position: relative; width: 100%; flex-grow: 1; overflow: hidden; }
+
+        .balloon {
+            width: 80px; height: 110px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            cursor: pointer; position: absolute;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1);
+            animation: float 6s ease-in-out infinite alternate;
+        }
+        .balloon::after { content: ''; position: absolute; bottom: -15px; width: 1px; height: 20px; background: #999; left: 50%; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(15px, -25px) rotate(5deg); }
+            100% { transform: translate(-15px, -50px) rotate(-5deg); }
+        }
+
+        #quiz-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9);
+            z-index: 2000; justify-content: center; align-items: center;
+        }
+        .quiz-card { background: white; padding: 30px; border-radius: 30px; width: 400px; text-align: center; border: 5px solid var(--pastel-blue); }
+        .ans-btn { display: block; width: 100%; margin: 10px 0; padding: 12px; border: 2px solid var(--pastel-blue); border-radius: 12px; cursor: pointer; background: white; font-size: 16px; }
+        #timer-box { font-size: 24px; font-weight: bold; color: #ff6961; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <h2 style="color: var(--pastel-pink); margin: 0;">🎈 SAFETY QUEST</h2>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="loading-text" style="margin-top: 10px; font-size: 14px; color: #888;">Shuffling Questions...</p>
+    </div>
+
+    <button id="back-btn" class="ui-btn" onclick="goBack()">⬅️</button>
+    <button id="music-btn" class="ui-btn" onclick="toggleMusic()">🎵</button>
+
+    <div id="audio-unlocker" onclick="initLobby()">
+        <div class="card">
+            <h1 style="color: #ff9aa2;">Safety Quest</h1>
+            <p>Learn to stay safe online!</p>
+            <button class="btn">ENTER GAME</button>
+        </div>
+    </div>
+
+    <div id="lobby">
+        <div class="card">
+            <h1 style="color: #ff9aa2;">Adventurers</h1>
+            <input type="text" id="p1-name" placeholder="Player 1 Name">
+            <input type="text" id="p2-name" placeholder="Player 2 Name (Optional)">
+            <button class="btn" onclick="startGame()">Start Quest</button>
+        </div>
+    </div>
+
+    <div id="winner-screen">
+        <div class="card">
+            <h1 style="font-size: 50px;">🏆</h1>
+            <h2 id="winner-title">Winner!</h2>
+            <p id="winner-score" style="font-size: 1.2em;"></p>
+            <button class="btn" onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <div id="game-info">
+        <div id="turn-display" style="font-weight: bold;">Waiting...</div>
+        <div id="score-p1" style="color: #ff8b94;">P1: 0</div>
+        <div id="score-p2" style="color: #4facfe;"></div>
+    </div>
+
+    <div id="game-field"></div>
+
+    <div id="quiz-overlay">
+        <div class="quiz-card">
+            <div id="timer-box">Time: 15s</div>
+            <h3 id="q-text">Question</h3>
+            <div id="q-options"></div>
+            <div id="feedback"></div>
+            <button id="next-btn" class="btn" style="display:none" onclick="closeQuiz()">Continue</button>
+        </div>
+    </div>
+
+    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+    <audio id="pop-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+    <audio id="correct-sound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="fail-sound" src="https://assets.mixkit.co/active_storage/sfx/2511/2511-preview.mp3"></audio>
+
+<script>
+    // --- QUESTION BANK ---
+    const allQuestions = [
+        { q: "Is it okay to share your password with a best friend?", a: "No", c: ["Yes", "No"], r: 1 },
+        { q: "A stranger sends a link to a 'free game'. Do you click it?", a: "No, it's unsafe", c: ["Yes!", "No, it's unsafe"], r: 1 },
+        { q: "What should you do if someone is mean to you online?", a: "Tell a trusted adult", c: ["Be mean back", "Tell a trusted adult"], r: 1 },
+        { q: "Which of these is a strong password?", a: "P@ssw0rd2026!", c: ["123456", "P@ssw0rd2026!"], r: 1 },
+        { q: "Is it safe to share your home address in a game chat?", a: "Never", c: ["Only with 'friends'", "Never"], r: 1 },
+        { q: "Before downloading a new app, you should...", a: "Ask a parent", c: ["Ask a parent", "Just hit install"], r: 0 },
+        { q: "If a pop-up says 'You Won an iPhone!', it is usually...", a: "A scam/virus", c: ["Real luck", "A scam/virus"], r: 1 },
+        { q: "Can people lie about who they are on the internet?", a: "Yes, easily", c: ["No, it's illegal", "Yes, easily"], r: 1 },
+        { q: "What is cyberbullying?", a: "Using the web to be mean", c: ["Playing pro games", "Using the web to be mean"], r: 1 },
+        { q: "A game asks for your location. What do you do?", a: "Deny and ask an adult", c: ["Always say yes", "Deny and ask an adult"], r: 1 },
+        { q: "Is a photo you post online gone forever if you delete it?", a: "No, someone may have saved it", c: ["Yes, it's gone", "No, someone may have saved it"], r: 1 },
+        { q: "Should you meet an 'online friend' in person by yourself?", a: "No, never!", c: ["Yes, if they seem nice", "No, never!"], r: 1 },
+        { q: "What info is safe to share with strangers?", a: "Your favorite food", c: ["Your school name", "Your favorite food"], r: 1 },
+        { q: "If you feel uncomfortable online, you should...", a: "Leave and tell an adult", c: ["Keep playing", "Leave and tell an adult"], r: 1 },
+        { q: "Why shouldn't you use your full name as a username?", a: "To protect your identity", c: ["It's too long", "To protect your identity"], r: 1 }
+    ];
+
+    let gameQuestions = [];
+    let players = [];
+    let currentPlayer = 0;
+    let scores = [0, 0];
+    let balloonsLeft = 12;
+    let timerInterval;
+    let isMusicPlaying = true;
+
+    // --- LOADING LOGIC ---
+    window.addEventListener('load', () => {
+        let progress = 0;
+        const bar = document.getElementById('progress-bar');
+        const loadInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+                }, 500);
+            }
+            bar.style.width = progress + '%';
+        }, 120);
+    });
+
+    function initLobby() {
+        // Reset and Shuffle Questions for this session
+        gameQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+        
+        document.getElementById('audio-unlocker').style.display = 'none';
+        document.getElementById('lobby').style.display = 'flex';
+        document.getElementById('back-btn').style.display = 'flex';
+        document.getElementById('music-btn').style.display = 'flex';
+        
+        const music = document.getElementById('bg-music');
+        music.volume = 1.0;
+        music.play();
+    }
+
+    function toggleMusic() {
+        const music = document.getElementById('bg-music');
+        isMusicPlaying ? music.pause() : music.play();
+        document.getElementById('music-btn').innerText = isMusicPlaying ? "🔇" : "🎵";
+        isMusicPlaying = !isMusicPlaying;
+    }
+
+    function goBack() {
+        if (document.getElementById('game-field').style.display === 'block') {
+            if(confirm("Quit game? Progress will be lost.")) location.reload();
+        } else {
+            location.reload();
+        }
+    }
+
+    function startGame() {
+        const name1 = document.getElementById('p1-name').value;
+        const name2 = document.getElementById('p2-name').value;
+        if (!name1) { alert("Enter Player 1's name!"); return; }
+
+        players = [name1];
+        if (name2) players.push(name2);
+
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('game-info').style.display = 'flex';
+        document.getElementById('game-field').style.display = 'block';
+        
+        updateUI();
+        createBalloons();
+    }
+
+    function createBalloons() {
+        const field = document.getElementById('game-field');
+        field.innerHTML = '';
+        balloonsLeft = 12;
+        const fieldWidth = field.offsetWidth - 100;
+        const fieldHeight = field.offsetHeight - 180;
+
+        let types = ['bonus', 'oops', ...Array(10).fill('normal')];
+        types = types.sort(() => Math.random() - 0.5);
+
+        types.forEach((type) => {
+            const b = document.createElement('div');
+            b.className = 'balloon';
+            b.style.backgroundColor = `hsl(${Math.random() * 360}, 75%, 85%)`;
+            b.style.left = (Math.random() * fieldWidth + 50) + 'px';
+            b.style.top = (Math.random() * fieldHeight + 50) + 'px';
+            b.style.animationDuration = (4 + Math.random() * 4) + 's';
+            
+            b.onclick = () => popBalloon(b, type);
+            field.appendChild(b);
+        });
+    }
+
+    function popBalloon(element, type) {
+        document.getElementById('pop-sound').currentTime = 0;
+        document.getElementById('pop-sound').play();
+        element.style.display = 'none';
+        
+        if (type === 'bonus') {
+            scores[currentPlayer] += 5;
+            showFeedback("🌟 BONUS! +5 Points!", true);
+        } else if (type === 'oops') {
+            scores[currentPlayer] -= 5;
+            showFeedback("💀 OOPS! -5 Points!", false);
+        } else {
+            handleQuiz();
+        }
+    }
+
+    function handleQuiz() {
+        // GET AND REMOVE QUESTION FROM POOL (NO REPEATS)
+        if (gameQuestions.length === 0) {
+            // Refill if we somehow run out, but keep it shuffled
+            gameQuestions = [...allQuestions].sort(() => Math.random() - 0.5);
+        }
+        
+        const qData = gameQuestions.shift(); // Pulls the first one out and removes it
+        
+        document.getElementById('q-text').innerText = qData.q;
+        const optCont = document.getElementById('q-options');
+        optCont.innerHTML = '';
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('quiz-overlay').style.display = 'flex';
+
+        let timeLeft = 15;
+        document.getElementById('timer-box').innerText = `Time: ${timeLeft}s`;
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-box').innerText = `Time: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishQuiz(false, qData.a);
+            }
+        }, 1000);
+
+        qData.c.forEach((choice, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'ans-btn';
+            btn.innerText = choice;
+            btn.onclick = () => {
+                clearInterval(timerInterval);
+                finishQuiz(idx === qData.r, qData.a);
+            };
+            optCont.appendChild(btn);
+        });
+    }
+
+    function finishQuiz(isCorrect, correctAns) {
+        const btns = document.querySelectorAll('.ans-btn');
+        btns.forEach(b => b.disabled = true);
+        
+        const fb = document.getElementById('feedback');
+        if (isCorrect) {
+            scores[currentPlayer] += 10;
+            document.getElementById('correct-sound').play();
+            confetti({ particleCount: 60 });
+            fb.innerHTML = "✅ Correct! +10 Pts";
+            fb.style.color = "green";
+        } else {
+            document.getElementById('fail-sound').play();
+            fb.innerHTML = `❌ Wrong! Correct: ${correctAns}`;
+            fb.style.color = "red";
+        }
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function showFeedback(text, isGood) {
+        document.getElementById('q-text').innerText = "Balloon Event!";
+        document.getElementById('q-options').innerHTML = "";
+        document.getElementById('timer-box').innerText = "";
+        const fb = document.getElementById('feedback');
+        fb.innerText = text;
+        fb.style.color = isGood ? "green" : "red";
+        document.getElementById('quiz-overlay').style.display = 'flex';
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function closeQuiz() {
+        document.getElementById('quiz-overlay').style.display = 'none';
+        balloonsLeft--;
+        if (balloonsLeft <= 0) endGame();
+        else {
+            if (players.length > 1) currentPlayer = (currentPlayer + 1) % 2;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('turn-display').innerText = `🎈 ${players[currentPlayer]}'s Turn`;
+        document.getElementById('score-p1').innerText = `${players[0]}: ${scores[0]}`;
+        if (players[1]) document.getElementById('score-p2').innerText = `${players[1]}: ${scores[1]}`;
+    }
+
+    function endGame() {
+        document.getElementById('winner-screen').style.display = 'flex';
+        document.getElementById('back-btn').style.display = 'none';
+        let title = "Game Over!";
+        let scoreText = "";
+
+        if (players.length === 1) {
+            title = `Great job, ${players[0]}!`;
+            scoreText = `Score: ${scores[0]}`;
+        } else {
+            if (scores[0] > scores[1]) title = `${players[0]} Wins!`;
+            else if (scores[1] > scores[0]) title = `${players[1]} Wins!`;
+            else title = "Draw!";
+            scoreText = `${scores[0]} - ${scores[1]}`;
+        }
+        document.getElementById('winner-title').innerText = title;
+        document.getElementById('winner-score').innerText = scoreText;
+        confetti({ particleCount: 300, spread: 150 });
+    }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Goblin Rush</title>
+    <style>
+        :root {
+            --primary: #1abc9c;
+            --danger: #e74c3c;
+            --bg: #2c3e50;
+            --gold: #f1c40f;
+            --purple: #9b59b6;
+            --success: #2ecc71;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            color: white; margin: 0; padding: 0;
+            overflow: hidden; height: 100vh; width: 100vw;
+            display: flex; align-items: center; justify-content: center; 
+        }
+
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        #loader-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a1a1a; z-index: 9999; display: flex; 
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loading-box { width: 250px; text-align: center; }
+        .loading-bar { width: 100%; height: 12px; background: #333; border-radius: 6px; margin: 15px 0; overflow: hidden; border: 2px solid white; }
+        .loading-fill { width: 0%; height: 100%; background: var(--primary); }
+        .animate-fill { animation: fillProgress 2s forwards ease-in-out; }
+        @keyframes fillProgress { from { width: 0%; } to { width: 100%; } }
+
+        #game-container { 
+            background: rgba(44, 62, 80, 0.95); padding: 20px; 
+            border: 6px solid white; box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            position: relative; width: 100%; height: 100%;
+            max-width: 800px; max-height: 1000px;
+            text-align: center; display: flex; flex-direction: column; justify-content: center;
+        }
+
+        @media (min-width: 768px) { #game-container { border-radius: 30px; height: 95vh; } }
+
+        .top-left-controls { position: absolute; top: 15px; left: 15px; z-index: 2000; display: flex; gap: 10px; }
+        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 2000; }
+        
+        .back-btn-fixed { 
+            background: #c0392b !important; border: 3px solid white !important;
+            box-shadow: 0 4px 0 #8e1e14; color: white; padding: 12px 20px; border-radius: 12px; 
+            cursor: pointer; font-size: 16px; font-weight: bold;
+        }
+
+        .nav-btn { background: rgba(0,0,0,0.7); border: 2px solid white; color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .hint-btn { background: var(--purple); border: 2px solid white; color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: bold; }
+
+        #q-timer-container { width: 100%; height: 12px; background: #ddd; border-radius: 6px; margin: 10px 0; overflow: hidden; border: 2px solid white; }
+        #q-timer-fill { width: 100%; height: 100%; background: #2ecc71; transition: width 0.1s linear; }
+
+        #track { position: relative; height: 75px; background: rgba(0,0,0,0.3); border-radius: 35px; margin: 15px 0; border: 3px solid #ecf0f1; overflow: hidden;}
+        #goblin { position: absolute; font-size: 50px; bottom: 5px; left: 0%; transition: left 0.3s ease-out; z-index: 10; }
+        #hero-mark { position: absolute; font-size: 50px; bottom: 5px; right: 15px; z-index: 5; }
+
+        .option-btn { 
+            background: #f39c12; color: white; border: none; padding: 14px; 
+            font-size: 16px; border-radius: 12px; cursor: pointer; margin: 5px 0; 
+            width: 100%; transition: 0.2s; border-bottom: 5px solid #e67e22; font-weight: bold; 
+        }
+        
+        .instruction-card { background: rgba(0,0,0,0.6); border-radius: 15px; padding: 15px; text-align: left; margin-bottom: 15px; font-size: 14px; border: 1px solid var(--gold); }
+        .hidden { display: none !important; }
+        input[type="text"] { padding: 15px; width: 100%; border-radius: 12px; border: none; font-size: 18px; margin-bottom: 10px; text-align: center; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        th { color: var(--gold); border-bottom: 1px solid white; }
+
+        /* How to Play Overlay */
+        #how-to-play-btn { background: var(--primary); margin-bottom: 10px; width: auto; padding: 8px 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="loader-screen">
+        <div class="loading-box">
+            <h2 style="margin: 0; letter-spacing: 2px;">GOBLIN RUSH</h2>
+            <div class="loading-bar"><div id="loading-fill" class="loading-fill animate-fill"></div></div>
+            <p id="loading-text" style="font-size: 12px; color: var(--primary);">Synchronizing Audio Loops...</p>
+        </div>
+    </div>
+
+    <div class="top-left-controls">
+        <button id="back-btn" class="back-btn-fixed" onclick="handleBackNavigation()">⬅ BACK</button>
+        <button id="hint-btn" class="hint-btn hidden" onclick="useHint()">💡 HINT</button>
+    </div>
+
+    <div class="top-right-controls">
+        <button id="mute-btn" class="nav-btn" onclick="toggleMute()">🔊 SOUND: ON</button>
+    </div>
+
+    <div id="game-container" onclick="initAudio()">
+        <div id="start-screen">
+            <h1 style="margin: 0; font-size: 2.5em;">🛡️GOBLIN RUSH</h1>
+            <p style="color: var(--gold); font-weight: bold; margin-bottom: 20px;">Protect Your Spine from the Slouch Goblin!</p>
+            
+            <div class="instruction-card">
+                <h3 style="margin-top:0; color: var(--gold);">📜 HOW TO PLAY:</h3>
+                <ul style="padding-left: 20px; line-height: 1.6;">
+                    <li><b>Objective:</b> Answer questions to push the 👹 Goblin back!</li>
+                    <li><b>Speed:</b> You only have <b>5 Seconds</b> per question.</li>
+                    <li><b>Movement:</b> Correct ✅ = Goblin moves back. Wrong/Timeout ❌ = Goblin moves closer.</li>
+                    <li><b>Game Over:</b> If the Goblin reaches you, the mission fails!</li>
+                </ul>
+            </div>
+
+            <input type="text" id="player-name" placeholder="Enter Your Name..." maxlength="10">
+            <button class="option-btn" onclick="startGame()">START GAME⚔️</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="display-name" style="color: var(--gold); font-weight: bold;"></span>
+                <span id="q-clock" style="font-weight: bold; color: #f1c40f;">⏳ 5s</span>
+                <span id="display-score" style="background: var(--danger); padding: 5px 15px; border-radius: 20px; font-size: 14px;">0</span>
+            </div>
+            <div id="q-timer-container"><div id="q-timer-fill"></div></div>
+            <div id="track"><div id="goblin">👹</div><div id="hero-mark">🧍</div></div>
+            <div id="question-text" style="font-size: 18px; font-weight: bold; min-height: 50px; margin-bottom: 10px;"></div>
+            <div id="options"></div>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <h1 id="result-title">GAME CLEAR!</h1>
+            <div id="round-stats" style="font-size: 18px; font-weight: bold;"></div>
+            <table>
+                <thead><tr><th>Hero</th><th>G1</th><th>G2</th><th>Total</th></tr></thead>
+                <tbody id="end-leaderboard-body"></tbody>
+            </table>
+            <button id="btn-replay" class="option-btn" style="margin-top:20px" onclick="triggerNextRound()">TRY AGAIN🚀</button>
+            <button class="option-btn" style="background:#95a5a6; border-color:#7f8c8d;" onclick="location.reload()">MAIN MENU 🏠</button>
+        </div>
+    </div>
+
+<script>
+    let state = { 
+        name: "", round: 1, score1: 0, score2: 0, totalScore: 0, 
+        qIndex: 0, goblinPos: 0, gameActive: false, muted: false, qTimeLeft: 5 
+    };
+    
+    let audioCtx, musicInterval, qTimer;
+    let audioInitialized = false;
+
+    // --- SOUND TRACKS ---
+    const melodies = [
+        [{f: 261, d: 0.2}, {f: 329, d: 0.2}, {f: 392, d: 0.2}, {f: 523, d: 0.4}], // C Major
+        [{f: 349, d: 0.2}, {f: 440, d: 0.2}, {f: 523, d: 0.2}, {f: 698, d: 0.4}], // F Major
+        [{f: 392, d: 0.2}, {f: 493, d: 0.2}, {f: 587, d: 0.2}, {f: 783, d: 0.4}]  // G Major
+    ];
+    let currentMelodyIndex = 0;
+
+    function handleBackNavigation() {
+        if (!document.getElementById('quiz-screen').classList.contains('hidden') || 
+            !document.getElementById('result-screen').classList.contains('hidden')) {
+            location.reload(); 
+        } else {
+            if (window.history.length > 1) window.history.back();
+            else window.location.href = "about:blank"; 
+        }
+    }
+
+    const questions = {
+        r1: [
+            { q: "Where should the tablet screen be?", a: ["In your lap", "At eye level", "On the floor"], c: 1 },
+            { q: "What is 'Text Neck'?", a: ["A dance", "Neck pain from gadgets", "A phone case"], c: 1 },
+            { q: "Back position while sitting?", a: ["Curved", "Straight", "Slouching"], c: 1 },
+            { q: "Your feet should be...?", a: ["Dangling", "Flat on floor", "Tucked"], c: 1 },
+            { q: "Take a break every...?", a: ["Hour", "20 minutes", "Once a day"], c: 1 },
+            { q: "Elbow shape?", a: ["L-shape", "Straight", "V-shape"], c: 0 },
+            { q: "Eyes feeling tired?", a: ["Stare harder", "Look far away", "Brighten screen"], c: 1 },
+            { q: "Tablet stand goes on...?", a: ["A table", "Soft pillow", "Your lap"], c: 0 },
+            { q: "Why take breaks?", a: ["Body stretching", "Catching bugs", "Boredom"], c: 0 },
+            { q: "Good chair supports...?", a: ["Legs", "Lower back", "Elbows"], c: 1 }
+        ],
+        r2: [
+            { q: "The 20-20-20 rule helps your...?", a: ["Hair", "Eyes", "Toes"], c: 1 },
+            { q: "What is 'Turtle Back'?", a: ["A shell", "Slouching forward", "Swimming"], c: 1 },
+            { q: "Screen distance?", a: ["Touching nose", "Arm's length", "10 feet"], c: 1 },
+            { q: "Before bed, gadgets should...?", a: ["Stay on", "Be put away", "Hide under pillow"], c: 1 },
+            { q: "Wrist pain?", a: ["Stop and stretch", "Keep going", "Ignore it"], c: 0 },
+            { q: "Shoulders should be...?", a: ["Up at ears", "Relaxed", "Bent"], c: 1 },
+            { q: "Blinking avoids...?", a: ["Dry eyes", "Battery loss", "Goblins"], c: 0 },
+            { q: "Ergonomics means...?", a: ["Game study", "Working comfortably", "New app"], c: 1 },
+            { q: "Bright screen in dark is...?", a: ["Great", "Bad for sleep", "Healthy"], c: 1 },
+            { q: "Good posture makes you...?", a: ["Energetic", "Sleepy", "Angry"], c: 0 }
+        ]
+    };
+
+    function initAudio() {
+        if (audioInitialized) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioInitialized = true;
+    }
+
+    function startMusicLoop() {
+        if (musicInterval) clearInterval(musicInterval);
+        let step = 0;
+        musicInterval = setInterval(() => {
+            if (!state.muted && state.gameActive && audioCtx) {
+                let melody = melodies[currentMelodyIndex];
+                let note = melody[step % melody.length];
+                playNote(note.f, 'sine', note.d, 1.0);
+                step++;
+                // Change melody every 8 notes
+                if (step % 8 === 0) currentMelodyIndex = (currentMelodyIndex + 1) % melodies.length;
+            }
+        }, 300);
+    }
+
+    function playNote(freq, type, dur, vol = 0.05) {
+        if (state.muted || !audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+    }
+
+    // CONFETTI SOUND (High pitched rapid notes)
+    function playWinSound() {
+        const notes = [523, 659, 783, 1046, 1318];
+        notes.forEach((f, i) => {
+            setTimeout(() => playNote(f, 'square', 0.1, 0.03), i * 100);
+        });
+    }
+
+    // FAILED SOUND (Deep sliding down tone)
+    function playFailSound() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 1);
+    }
+
+    function showLoading(callback) {
+        const loader = document.getElementById('loader-screen');
+        const fill = document.getElementById('loading-fill');
+        loader.style.display = 'flex';
+        fill.classList.remove('animate-fill');
+        void fill.offsetWidth; fill.classList.add('animate-fill');
+        setTimeout(() => {
+            loader.style.display = 'none';
+            if(callback) callback();
+        }, 2100);
+    }
+
+    window.addEventListener('load', () => { showLoading(); });
+
+    function startGame() {
+        const val = document.getElementById('player-name').value;
+        if (!val) { alert("Please enter a Hero Name!"); return; }
+        state.name = val;
+        initAudio();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        document.getElementById('hint-btn').classList.remove('hidden');
+        document.getElementById('display-name').innerText = state.name;
+        state.gameActive = true; 
+        startMusicLoop();
+        loadQuestion(); gameLoop();
+    }
+
+    function gameLoop() {
+        if (!state.gameActive) return;
+        state.goblinPos += (state.round === 1 ? 0.07 : 0.1);
+        document.getElementById('goblin').style.left = state.goblinPos + "%";
+        if (state.goblinPos >= 82) endRound(false);
+        else requestAnimationFrame(gameLoop);
+    }
+
+    function loadQuestion() {
+        const pool = state.round === 1 ? questions.r1 : questions.r2;
+        const q = pool[state.qIndex];
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('hint-btn').disabled = false;
+        
+        const opts = document.getElementById('options'); opts.innerHTML = "";
+        q.a.forEach((opt, i) => {
+            const b = document.createElement('button'); b.className = "option-btn";
+            b.innerText = opt; b.onclick = () => {
+                const allBtns = document.querySelectorAll('#options .option-btn');
+                allBtns.forEach(btn => btn.disabled = true); 
+
+                if(i === q.c) {
+                    playNote(880, 'sine', 0.2);
+                    if(state.round === 1) state.score1 += 10; else state.score2 += 10;
+                    state.goblinPos = Math.max(0, state.goblinPos - 15);
+                } else { 
+                    state.goblinPos += 12; 
+                    playNote(150, 'sawtooth', 0.3, 0.05); 
+                }
+                
+                state.totalScore = state.score1 + state.score2;
+                document.getElementById('display-score').innerText = state.totalScore;
+                
+                setTimeout(() => {
+                    state.qIndex++;
+                    if(state.qIndex < 10) loadQuestion(); else endRound(true);
+                }, 400);
+            };
+            opts.appendChild(b);
+        });
+        startQuestionTimer();
+    }
+
+    function startQuestionTimer() {
+        clearInterval(qTimer);
+        state.qTimeLeft = 5;
+        qTimer = setInterval(() => {
+            if (!state.gameActive) return;
+            state.qTimeLeft -= 0.1;
+            document.getElementById('q-timer-fill').style.width = (state.qTimeLeft * 20) + "%";
+            document.getElementById('q-clock').innerText = `⏳ ${Math.ceil(state.qTimeLeft)}s`;
+            
+            if (state.qTimeLeft <= 0) {
+                clearInterval(qTimer);
+                state.goblinPos += 15;
+                if (state.goblinPos >= 82) endRound(false);
+                else {
+                    state.qIndex++;
+                    if(state.qIndex < 10) loadQuestion(); else endRound(true);
+                }
+            }
+        }, 100);
+    }
+
+    function endRound(win) {
+        state.gameActive = false; clearInterval(qTimer);
+        clearInterval(musicInterval);
+
+        if(win) playWinSound(); else playFailSound();
+
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('hint-btn').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        
+        document.getElementById('result-title').innerText = win ? "GAME CLEAR! 🎉" : "GOBLIN CAUGHT YOU! 💀";
+        document.getElementById('result-title').style.color = win ? "var(--success)" : "var(--danger)";
+        
+        document.getElementById('round-stats').innerText = `Final Score: ${state.totalScore}`;
+        if (state.round === 2 || !win) {
+            document.getElementById('btn-replay').classList.add('hidden');
+            saveScore();
+        }
+        renderLeaderboard();
+    }
+
+    function triggerNextRound() {
+        showLoading(() => {
+            state.round = 2; state.qIndex = 0; state.goblinPos = 0;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('hint-btn').classList.remove('hidden');
+            state.gameActive = true; 
+            startMusicLoop();
+            loadQuestion(); gameLoop();
+        });
+    }
+
+    function useHint() {
+        if (state.totalScore < 5) return;
+        state.totalScore -= 5;
+        if (state.round === 1) state.score1 -= 5; else state.score2 -= 5;
+        document.getElementById('display-score').innerText = state.totalScore;
+        const pool = state.round === 1 ? questions.r1 : questions.r2;
+        const btns = document.querySelectorAll('#options .option-btn');
+        btns[pool[state.qIndex].c].style.background = "#2ecc71";
+        document.getElementById('hint-btn').disabled = true;
+    }
+
+    function saveScore() {
+        let s = JSON.parse(localStorage.getItem('gobS') || '[]');
+        s.push({ n: state.name, g1: state.score1, g2: state.score2, t: state.totalScore });
+        s.sort((a,b) => b.t - a.t);
+        localStorage.setItem('gobS', JSON.stringify(s.slice(0, 5)));
+    }
+
+    function renderLeaderboard() {
+        const s = JSON.parse(localStorage.getItem('gobS') || '[]');
+        document.getElementById('end-leaderboard-body').innerHTML = s.map(x => `<tr><td>${x.n}</td><td>${x.g1}</td><td>${x.g2}</td><td>${x.t}</td></tr>`).join('');
+    }
+
+    function toggleMute() {
+        state.muted = !state.muted;
+        document.getElementById('mute-btn').innerText = state.muted ? "🔇 OFF" : "🔊 ON";
+    }
+</script>
+</body>
+</html>
+

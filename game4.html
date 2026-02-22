@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Quest: Digital Master</title>
+    <style>
+        :root { --primary: #6c5ce7; --success: #00b894; --error: #ff7675; --warning: #fdcb6e; --dark: #2d3436; }
+        * { touch-action: manipulation; box-sizing: border-box; }
+        body { font-family: 'Comic Sans MS', sans-serif; background: #a29bfe; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        
+        .back-btn { position: absolute; top: 20px; left: 20px; background: white; border: 3px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 15px; font-weight: bold; cursor: pointer; z-index: 5000; box-shadow: 0 4px 0 var(--primary); display: none; }
+        .vol-btn { position: absolute; top: 20px; right: 20px; background: white; border: 3px solid var(--primary); font-size: 24px; padding: 5px 12px; border-radius: 15px; cursor: pointer; z-index: 5000; box-shadow: 0 4px 0 var(--primary); }
+
+        #loader { position: fixed; inset: 0; background: #6c5ce7; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; cursor: pointer; }
+        .spinner { width: 80px; height: 80px; border: 10px solid rgba(255,255,255,0.3); border-top-color: var(--warning); border-radius: 50%; animation: spin 0.6s linear infinite; margin-bottom: 20px; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #entrance { position: fixed; inset: 0; background: #6c5ce7; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        
+        .app-container { background: white; border-radius: 40px; width: 95%; max-width: 1000px; height: 680px; position: relative; border: 10px solid rgba(255,255,255,0.3); overflow: hidden; display: flex; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .page { display: none; flex-direction: column; width: 100%; height: 100%; padding: 25px; align-items: center; justify-content: center; text-align: center; }
+        .active { display: flex; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Directions Styling */
+        .instruction-card { background: #f0f3ff; padding: 20px; border-radius: 25px; border: 4px solid var(--primary); width: 100%; max-width: 700px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+        .step { background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 0 #ddd; font-weight: bold; font-size: 16px; color: var(--dark); }
+
+        .battery-bar { width: 80%; height: 25px; background: #eee; border-radius: 15px; margin: 10px 0; border: 3px solid #ddd; overflow: hidden; }
+        #battery-fill { width: 100%; height: 100%; background: var(--success); transition: width 0.1s linear; }
+
+        .stats-bar { display: flex; justify-content: space-between; width: 90%; font-weight: bold; color: var(--primary); font-size: 18px; margin-bottom: 5px; }
+        .score-box { background: var(--warning); color: #000; padding: 5px 15px; border-radius: 10px; border: 2px solid #000; }
+
+        .slot { width: 45px; height: 55px; border-bottom: 6px solid var(--primary); font-size: 36px; font-weight: bold; display: inline-block; margin: 0 5px; color: var(--dark); line-height: 50px; }
+        .wheel { position: relative; width: 260px; height: 260px; background: #fff; border-radius: 50%; border: 6px dashed #6c5ce7; margin-bottom: 20px; }
+        .letter-btn { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--primary); color: white; font-size: 26px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #4834d4; }
+        .btn-main { padding: 18px 50px; background: var(--success); color: white; border: none; border-radius: 50px; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #009470; margin: 10px; }
+        .overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    </style>
+</head>
+<body>
+
+<button id="back-global" class="back-btn" onclick="goBack()">⬅ BACK</button>
+<button id="vol-toggle" class="vol-btn" onclick="toggleMute()">🔊</button>
+
+<div id="loader" onclick="startInitialLoad()">
+    <div class="spinner" id="loader-spinner"></div>
+    <h1 id="loader-text">🎮 CLICK TO START 🎮</h1>
+    <p id="loader-subtext">Are you ready for the quest?</p>
+</div>
+
+<div id="entrance">
+    <h1 style="font-size: 60px;">🎮 Screen Quest</h1>
+    <p id="set-indicator" style="font-size: 22px; background: white; color: var(--primary); padding: 10px 30px; border-radius: 30px; font-weight: bold;">Mission: Set 1</p>
+    <br><br>
+    <button class="btn-main" onclick="navPage('page1')">PLAY NOW! ▶️</button>
+</div>
+
+<div class="app-container">
+    <div id="page1" class="page">
+        <h1>📜 How to Play</h1>
+        <div class="instruction-card">
+            <div class="step">💡 Read the Clue</div>
+            <div class="step">🎡 Tap the Letter Wheel</div>
+            <div class="step">❌ Use Clear if you miss</div>
+            <div class="step">🏆 Earn 5 points per word</div>
+        </div>
+        <p style="font-weight:bold; color:var(--error);">⚠️ Solve it before the battery dies!</p>
+        <button class="btn-main" onclick="navPage('page2')">Got It! ➡️</button>
+    </div>
+
+    <div id="page2" class="page">
+        <h1>👤 Profile</h1>
+        <input type="text" id="user-name" placeholder="Enter Name..." oninput="validate()" style="padding:15px; border-radius:20px; border:4px solid var(--primary); width:280px; font-size:24px; text-align:center;">
+        <p><label><input type="checkbox" id="pledge" onchange="validate()"> I promise screen breaks! ✋</label></p>
+        <button class="btn-main" id="start-btn" onclick="startGame()" disabled>START! 🚀</button>
+    </div>
+
+    <div id="page3" class="page">
+        <div class="stats-bar">
+            <span id="greeting-msg">Hello!</span>
+            <span class="score-box">SCORE: <span id="current-score">0</span> / 50</span>
+        </div>
+        <div style="font-weight:bold; color:var(--primary); margin-bottom: 5px;">MISSION <span id="lvl">1</span>/10</div>
+        <div class="battery-bar"><div id="battery-fill"></div></div>
+        <div id="hint" style="font-size: 22px; margin-bottom: 10px; height: 45px;"></div>
+        <div id="slots" style="margin-bottom: 15px;"></div>
+        <div class="wheel" id="wheel"></div>
+        <button id="clear-btn" style="visibility:hidden; background:#636e72; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer;" onclick="clearSelection()">CLEAR ❌</button>
+        
+        <div class="overlay" id="win-modal">
+            <h1 style="color:var(--success)">CORRECT! +5 🌟</h1>
+            <p id="fact" style="padding: 0 20px; font-size: 18px;"></p>
+            <button class="btn-main" onclick="nextLevel()">Next Word ➡️</button>
+        </div>
+        
+        <div class="overlay" id="score-modal">
+            <h2 id="congrats-text" style="color:var(--primary); margin: 0;"></h2>
+            <h1 id="title-text" style="font-size: 45px; margin: 10px 0; color:var(--gold);"></h1>
+            <p style="font-size: 24px; margin:0;">You scored <span id="final-score" style="font-weight:bold;">0</span> out of 50!</p>
+            <div style="margin-top: 20px;">
+                <button class="btn-main" onclick="location.reload()">Finish ✅</button>
+                <button class="btn-main" id="set2-btn" style="background:var(--warning); color:black;" onclick="switchToSet2()">Try Set 2 🎡</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const AudioEngine = {
+        ctx: null, bgmStarted: false, isMuted: false,
+        init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+        playSfx(freq, type, dur, vol) {
+            if (this.isMuted || !this.ctx) return;
+            const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            g.gain.setValueAtTime(vol, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+            osc.connect(g); g.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + dur);
+        },
+        startExcitingBGM() {
+            if (this.bgmStarted || this.isMuted) return;
+            this.bgmStarted = true;
+            const melody = [261, 329, 392, 523, 440, 349, 392, 329];
+            let step = 0;
+            setInterval(() => {
+                if (this.isMuted) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator(); const g = this.ctx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(melody[step % melody.length], now);
+                g.gain.setValueAtTime(1.0, now); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                osc.connect(g); g.connect(this.ctx.destination); osc.start(now); osc.stop(now + 0.3);
+                step++;
+            }, 200);
+        }
+    };
+
+    const set1 = [{w:"SIT", h:"Keep your back straight and ___ up tall!", f:"Sitting tall makes you feel strong!"},{w:"EYES", h:"Rest your __ every 20 minutes.", f:"Your eyes need a break!"},{w:"TIME", h:"Set a ___ limit for your tablets.", f:"Balance is key!"},{w:"OFF", h:"Turn _ the tablet before bedtime.", f:"Sleep is your superpower!"},{w:"BLINK", h:"You should __ often to keep eyes wet.", f:"Blinking cleans eyes!"},{w:"WATER", h:"Drink ___ to stay smart.", f:"Hydrate your brain!"},{w:"BREAK", h:"Take a ___ every 20 minutes.", f:"Stand up and stretch!"},{w:"TALL", h:"Sit up __, do not slouch!", f:"Good posture helps breathing."},{w:"ARM", h:"Keep the screen at an _'s distance.", f:"Protect those eyes!"},{w:"SAFE", h:"Keep your password ___.", f:"Safety first!"}];
+    const set2 = [{w:"KIND", h:"Be __ to others online.", f:"Kindness wins!"},{w:"LIGHT", h:"Play in a room with good ___.", f:"See clearly!"},{w:"CLEAN", h:"Keep your hands ___.", f:"Keep germs away!"},{w:"ASK", h:"_ a teacher if you are scared.", f:"Adults are here to help."},{w:"GAME", h:"It is fun to play a ___.", f:"Winning feels great!"},{w:"MOVE", h:"__ your body often!", f:"Stay fit!"},{w:"TRUTH", h:"Not everything is the __.", f:"Think for yourself!"},{w:"SHARE", h:"Don't __ your name to strangers.", f:"Private stays private!"},{w:"SLEEP", h:"Get good __ tonight.", f:"Grow big and strong!"},{w:"LEARN", h:"__ something new online!", f:"Knowledge is power!"}];
+
+    let current = 0, selected = "", points = 0, time = 30, timer, activeSet = 1, historyStack = ['entrance'], userName = "";
+
+    function startInitialLoad() {
+        AudioEngine.init(); AudioEngine.startExcitingBGM();
+        document.getElementById('loader-spinner').style.display = 'block';
+        document.getElementById('loader-text').innerText = "LOADING CHALLENGE...";
+        setTimeout(() => { document.getElementById('loader').style.display = 'none'; showScreen('entrance'); }, 2000);
+    }
+
+    function toggleMute() { AudioEngine.isMuted = !AudioEngine.isMuted; document.getElementById('vol-toggle').innerText = AudioEngine.isMuted ? '🔇' : '🔊'; }
+
+    function navPage(id) { historyStack.push(id); showScreen(id); }
+    function goBack() { if (historyStack.length > 1) { historyStack.pop(); clearInterval(timer); showScreen(historyStack[historyStack.length - 1]); } }
+
+    function showScreen(id) {
+        document.getElementById('entrance').style.display = 'none';
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        if (id === 'entrance') { document.getElementById('entrance').style.display = 'flex'; document.getElementById('back-global').style.display = 'none'; }
+        else { document.getElementById(id).classList.add('active'); document.getElementById('back-global').style.display = 'block'; }
+    }
+
+    function validate() { 
+        const name = document.getElementById('user-name').value; 
+        const check = document.getElementById('pledge').checked; 
+        document.getElementById('start-btn').disabled = !(name.length > 1 && check); 
+    }
+
+    function startGame() { 
+        userName = document.getElementById('user-name').value.toUpperCase();
+        document.getElementById('greeting-msg').innerText = "HELLO, " + userName + "! 👋";
+        navPage('page3'); loadLevel(); 
+    }
+
+    function loadLevel() {
+        const pool = (activeSet === 1) ? set1 : set2;
+        if(current >= pool.length) { 
+            clearInterval(timer);
+            showFinalScore();
+            return; 
+        }
+        document.getElementById('win-modal').style.display = 'none';
+        const data = pool[current];
+        document.getElementById('lvl').innerText = (current + 1);
+        document.getElementById('hint').innerText = data.h;
+        selected = ""; 
+        document.getElementById('slots').innerHTML = data.w.split('').map((_,i) => `<div class="slot" id="s${i}"></div>`).join('');
+        
+        const wh = document.getElementById('wheel'); wh.innerHTML = "";
+        const chars = data.w.split('').sort(() => Math.random() - 0.5);
+        chars.forEach((c, i) => {
+            const b = document.createElement('button'); b.className = 'letter-btn'; b.innerText = c;
+            const ang = (i / chars.length) * 6.28;
+            b.style.left = (100 + 80 * Math.cos(ang)) + "px"; b.style.top = (100 + 80 * Math.sin(ang)) + "px";
+            b.onclick = () => {
+                if(selected.length < data.w.length) {
+                    AudioEngine.playSfx(400 + (selected.length * 100), 'sine', 0.1, 0.4);
+                    document.getElementById('s' + selected.length).innerText = c;
+                    selected += c; document.getElementById('clear-btn').style.visibility = 'visible';
+                    if(selected === data.w) {
+                        clearInterval(timer); AudioEngine.playSfx(523, 'triangle', 0.5, 0.5);
+                        points += 5;
+                        document.getElementById('current-score').innerText = points;
+                        document.getElementById('fact').innerText = data.f;
+                        document.getElementById('win-modal').style.display = 'flex'; current++;
+                    } else if (selected.length === data.w.length) {
+                        AudioEngine.playSfx(150, 'sawtooth', 0.3, 0.5);
+                        document.querySelector('.app-container').classList.add('shake');
+                        setTimeout(clearSelection, 300);
+                    }
+                }
+            };
+            wh.appendChild(b);
+        });
+        time = 30; startTimer();
+    }
+
+    function showFinalScore() {
+        let title = "Screen Explorer";
+        if(points >= 50) title = "🏆 DIGITAL MASTER";
+        else if(points >= 40) title = "🌟 SCREEN HERO";
+        else if(points >= 25) title = "⚡ TECH PRO";
+
+        document.getElementById('congrats-text').innerText = "CONGRATULATIONS, " + userName + "!";
+        document.getElementById('title-text').innerText = title;
+        document.getElementById('final-score').innerText = points;
+        document.getElementById('set2-btn').style.display = (activeSet === 1) ? 'inline-block' : 'none';
+        document.getElementById('score-modal').style.display = 'flex';
+    }
+
+    function startTimer() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+            time -= 0.1;
+            document.getElementById('battery-fill').style.width = (time / 30) * 100 + "%";
+            if (time <= 0) { clearSelection(); time = 30; }
+        }, 100);
+    }
+
+    function clearSelection() { selected = ""; document.querySelectorAll('.slot').forEach(s => s.innerText = ""); document.getElementById('clear-btn').style.visibility = 'hidden'; }
+    function nextLevel() { loadLevel(); }
+    
+    function switchToSet2() {
+        activeSet = 2; current = 0; points = 0;
+        document.getElementById('current-score').innerText = "0";
+        document.getElementById('score-modal').style.display = 'none';
+        document.getElementById('set-indicator').innerText = "Mission: Set 2";
+        document.getElementById('loader-text').innerText = "LOADING SET 2...";
+        document.getElementById('loader').style.display = 'flex';
+        setTimeout(() => { document.getElementById('loader').style.display = 'none'; loadLevel(); }, 2000);
+    }
+</script>
+</body>
+</html>
+

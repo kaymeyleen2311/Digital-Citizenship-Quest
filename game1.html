@@ -1,0 +1,1597 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Citizenship Board Game</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .board-space {
+            width: 100%;
+            min-width: 50px;
+            height: 70px;
+            border: 3px solid #374151;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 768px) {
+            .board-space {
+                height: 90px;
+                font-size: 18px;
+            }
+        }
+        .board-space:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .space-start { background: #22c55e; color: white; }
+        .space-posture { background: #3b82f6; color: white; }
+        .space-screen-time { background: #eab308; color: white; }
+        .space-safety { background: #ef4444; color: white; }
+        .space-challenge { background: #10b981; color: white; }
+        .space-bonus { background: #8b5cf6; color: white; }
+        .space-finish { background: #ec4899; color: white; }
+        
+        .player-piece {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid white;
+            position: absolute;
+            z-index: 5;
+            animation: bounce 0.5s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .player-piece:nth-child(2) { top: -8px; left: -8px; }
+        .player-piece:nth-child(3) { top: -8px; right: -8px; }
+        .player-piece:nth-child(4) { bottom: -8px; left: -8px; }
+        .player-piece:nth-child(5) { bottom: -8px; right: -8px; }
+        .player-piece:nth-child(6) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 3px solid #374151;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .dice:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            backdrop-filter: blur(5px);
+            padding: 1rem;
+        }
+        
+        .current-turn {
+            animation: pulse 2s infinite;
+            border: 3px solid #fbbf24 !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8); }
+        }
+        
+        .winner-celebration {
+            animation: celebrate 2s infinite;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
+
+        /* Sound Toggle Button */
+        .sound-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            background: #ffffff;
+        }
+        .sound-off {
+            opacity: 0.7;
+            background: #e5e7eb;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #374151;
+        }
+        .back-btn:hover {
+            transform: scale(1.05);
+            background: #ffffff;
+        }
+
+        .fixed-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 50%, #8b5cf6 100%);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="min-h-full font-sans">
+  
+  <div class="fixed-bg"></div>
+
+  <button class="back-btn" onclick="goBack()" title="Go Back">
+      ↩ Back
+  </button>
+
+  <button id="soundToggle" class="sound-toggle" title="Toggle Sound">
+      <span id="soundIcon">🔊</span>
+  </button>
+
+  <div class="container mx-auto px-4 py-6 max-w-7xl"><div class="text-center mb-6">
+    <h1 id="gameTitle" class="text-4xl font-bold text-white drop-shadow-lg mb-2">Welcome!</h1>
+    <p id="welcomeMessage" class="text-lg text-blue-100 font-medium drop-shadow-md">Click anywhere to start music.</p>
+   </div><div id="welcomeScreen" class="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 mb-6"><div id="loadingSection" class="text-center">
+     <h2 class="text-4xl font-bold text-blue-700 mb-4">Digital Citizenship Board Game</h2>
+     <p class="text-xl text-gray-600 mb-8">Master Digital Health, Wellness &amp; Online Safety!</p>
+     <div class="mb-8">
+      <div class="w-64 h-4 bg-gray-200 rounded-full mx-auto mb-4">
+       <div id="loadingBar" class="h-4 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <p id="loadingText" class="text-gray-600">Loading game...</p>
+     </div>
+    </div><div id="mechanicsSection" class="hidden">
+     <div class="text-center mb-6">
+      <h3 class="text-2xl font-bold text-blue-700 mb-4">🎯 Game Mechanics</h3>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-blue-50 p-6 rounded-lg">
+       <h4 class="text-lg font-bold text-blue-700 mb-3">🎲 How to Play</h4>
+       <ul class="space-y-2 text-sm text-gray-700">
+        <li>• Roll the dice to move around the board</li>
+        <li>• Answer questions correctly to earn points</li>
+        <li>• First player to reach space 20 wins!</li>
+        <li>• Learn about digital citizenship along the way</li>
+       </ul>
+      </div>
+      <div class="bg-green-50 p-6 rounded-lg">
+       <h4 class="text-lg font-bold text-green-700 mb-3">Scoring System</h4>
+       <ul class="space-y-2 text-sm text-gray-700">
+        <li>• Correct Answer: +5 points</li>
+        <li>• Wrong Answer: Lose 3 points + Chaos increases</li>
+        <li>• Complete bonus challenges: +3 points</li>
+        <li>• High chaos may trigger special consequences</li>
+       </ul>
+      </div>
+      <div class="bg-purple-50 p-6 rounded-lg">
+       <h4 class="text-lg font-bold text-purple-700 mb-3">📚 Question Categories</h4>
+       <ul class="space-y-2 text-sm text-gray-700">
+        <li>• 🪑 Posture &amp; Ergonomics</li>
+        <li>• ⏰ Screen Time Management</li>
+        <li>• 🛡️ Internet Safety &amp; Security</li>
+        <li>• ⚡ Digital Citizenship Challenges</li>
+       </ul>
+      </div>
+      <div class="bg-yellow-50 p-6 rounded-lg">
+       <h4 class="text-lg font-bold text-yellow-700 mb-3">👥 Multiplayer Rules</h4>
+       <ul class="space-y-2 text-sm text-gray-700">
+        <li>• 1-5 players can join the game</li>
+        <li>• Take turns rolling the dice</li>
+        <li>• Help each other learn together</li>
+        <li>• Celebrate everyone's progress!</li>
+       </ul>
+      </div>
+     </div>
+     <div class="bg-gray-50 p-6 rounded-lg mb-6">
+      <div class="flex items-start space-x-3"><input type="checkbox" id="agreeCheckbox" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500"> <label for="agreeCheckbox" class="text-gray-700"> <span class="font-semibold">I understand and agree to the game mechanics.</span> <br><span class="text-sm">I will play respectfully, learn actively, and help create a positive gaming environment for all players.</span> </label>
+      </div>
+     </div>
+     <div class="text-center"><button id="proceedBtn" class="bg-gradient-to-r from-blue-500 to-green-600 text-white py-3 px-8 rounded-lg font-semibold hover:from-blue-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled> 🚀 Proceed to Player Setup </button>
+     </div>
+    </div>
+   </div><div id="setupScreen" class="hidden bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 mb-6">
+    <div class="text-center mb-6">
+     <h2 class="text-2xl font-bold text-blue-700">Digital Citizenship Multiplayer Game</h2>
+     <p class="text-gray-600 mt-2">Enter player names (1-5 players) and start learning together!</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"><div class="p-4 border-2 border-red-200 rounded-lg bg-red-50">
+      <div class="flex items-center mb-2">
+       <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div><label class="font-semibold text-red-700">Player 1 (Required)</label>
+      </div><input type="text" id="player1Name" class="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Player 1 name...">
+     </div><div class="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+      <div class="flex items-center mb-2">
+       <div class="w-4 h-4 bg-blue-500 rounded-full mr-2"></div><label class="font-semibold text-blue-700">Player 2 (Optional)</label>
+      </div><input type="text" id="player2Name" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter Player 2 name...">
+     </div><div class="p-4 border-2 border-green-200 rounded-lg bg-green-50">
+      <div class="flex items-center mb-2">
+       <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div><label class="font-semibold text-green-700">Player 3 (Optional)</label>
+      </div><input type="text" id="player3Name" class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter Player 3 name...">
+     </div><div class="p-4 border-2 border-yellow-200 rounded-lg bg-yellow-50">
+      <div class="flex items-center mb-2">
+       <div class="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div><label class="font-semibold text-yellow-700">Player 4 (Optional)</label>
+      </div><input type="text" id="player4Name" class="w-full px-3 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" placeholder="Enter Player 4 name...">
+     </div><div class="p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+      <div class="flex items-center mb-2">
+       <div class="w-4 h-4 bg-purple-500 rounded-full mr-2"></div><label class="font-semibold text-purple-700">Player 5 (Optional)</label>
+      </div><input type="text" id="player5Name" class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter Player 5 name...">
+     </div>
+    </div>
+    <div class="text-center"><button id="startGameBtn" class="bg-gradient-to-r from-blue-500 to-green-600 text-white py-3 px-8 rounded-lg font-semibold hover:from-blue-600 hover:to-green-700 transition-all duration-200"> Start Game </button>
+     <p class="text-sm text-gray-500 mt-2">At least Player 1 name is required to start</p>
+    </div>
+   </div><div id="gameBoard" class="hidden"><div class="bg-white rounded-lg shadow-md p-4 mb-6">
+     <h3 class="text-lg font-bold text-gray-800 mb-3">Players in Game</h3>
+     <div id="playersList" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+    </div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"><div class="bg-white rounded-lg shadow-md p-4">
+      <h3 class="font-bold text-gray-800 mb-2">Current Turn</h3>
+      <p id="currentTurn" class="text-lg font-semibold text-blue-600">Waiting for game to start...</p>
+      <p class="text-sm text-gray-600">Roll the dice to move!</p>
+     </div><div class="bg-white rounded-lg shadow-md p-4 text-center">
+      <h3 class="font-bold text-gray-800 mb-3">Roll Dice</h3>
+      <div id="dice" class="dice mx-auto">
+       ?
+      </div><button id="rollDiceBtn" class="mt-3 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50" disabled> Roll Dice </button>
+     </div><div class="bg-white rounded-lg shadow-md p-4">
+      <h3 class="font-bold text-gray-800 mb-2">Current Player Stats</h3>
+      <div class="space-y-1 text-sm">
+       <p>Position: <span id="currentPosition" class="font-semibold">START</span>/20</p>
+       <p>Score: <span id="currentScore" class="font-semibold text-green-600">0</span> points</p>
+       <p>Correct: <span id="currentCorrect" class="font-semibold text-blue-600">0</span> answers</p>
+      </div><div class="mt-4 pt-3 border-t border-gray-200">
+       <h4 class="font-bold text-red-600 mb-2">Chaos Meter</h4>
+       <div class="flex space-x-1 mb-2">
+        <div id="chaos1" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+        <div id="chaos2" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+        <div id="chaos3" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+        <div id="chaos4" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+        <div id="chaos5" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+       </div>
+       <p class="text-xs text-gray-600">Wrong answers add chaos!</p>
+       <p id="chaosEffect" class="text-xs text-red-600 font-semibold hidden">CHAOS ACTIVE!</p>
+      </div>
+     </div>
+    </div><div class="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-6">
+     <h3 class="text-lg md:text-xl font-bold text-center text-gray-800 mb-4 md:mb-6">Digital Citizenship Journey </h3><div class="relative bg-gradient-to-br from-blue-50 to-green-50 p-4 md:p-6 rounded-lg border-4 border-gray-300"><div class="flex justify-center mb-2 md:mb-3">
+       <div id="space-0" class="board-space space-start" data-space="0" style="width: 100%; max-width: 280px; height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 20px;">
+        START
+       </div>
+      </div><div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+       <div id="space-1" class="board-space space-posture" data-space="1">
+        1
+       </div>
+       <div id="space-2" class="board-space space-screen-time" data-space="2">
+        2
+       </div>
+       <div id="space-3" class="board-space space-safety" data-space="3">
+        3
+       </div>
+       <div id="space-4" class="board-space space-challenge" data-space="4">
+        4
+       </div>
+       <div id="space-5" class="board-space space-bonus" data-space="5">
+        5
+       </div>
+      </div><div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+       <div id="space-6" class="board-space space-challenge" data-space="6">
+        6
+       </div>
+       <div id="space-7" class="board-space space-safety" data-space="7">
+        7
+       </div>
+       <div id="space-8" class="board-space space-screen-time" data-space="8">
+        8
+       </div>
+       <div id="space-9" class="board-space space-posture" data-space="9">
+        9
+       </div>
+       <div id="space-10" class="board-space space-bonus" data-space="10">
+        10
+       </div>
+      </div><div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+       <div id="space-11" class="board-space space-safety" data-space="11">
+        11
+       </div>
+       <div id="space-12" class="board-space space-posture" data-space="12">
+        12
+       </div>
+       <div id="space-13" class="board-space space-screen-time" data-space="13">
+        13
+       </div>
+       <div id="space-14" class="board-space space-challenge" data-space="14">
+        14
+       </div>
+       <div id="space-15" class="board-space space-bonus" data-space="15">
+        15
+       </div>
+      </div><div class="grid grid-cols-5 gap-1 md:gap-2 mb-2 md:mb-3">
+       <div id="space-16" class="board-space space-posture" data-space="16">
+        16
+       </div>
+       <div id="space-17" class="board-space space-challenge" data-space="17">
+        17
+       </div>
+       <div id="space-18" class="board-space space-screen-time" data-space="18">
+        18
+       </div>
+       <div id="space-19" class="board-space space-safety" data-space="19">
+        19
+       </div>
+       <div id="space-20" class="board-space space-bonus" data-space="20">
+        20
+       </div>
+      </div><div class="flex justify-center mt-2 md:mt-3">
+       <div id="space-21" class="board-space space-finish" data-space="21" style="width: 100%; max-width: 280px; height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 20px;">
+        FINISH
+       </div>
+      </div>
+     </div><div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-6 text-xs">
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-posture rounded"></div><span>Posture</span>
+      </div>
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-screen-time rounded"></div><span>Screen Time</span>
+      </div>
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-safety rounded"></div><span>Internet Safety</span>
+      </div>
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-challenge rounded"></div><span>Challenge</span>
+      </div>
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-bonus rounded"></div><span>Bonus</span>
+      </div>
+      <div class="flex items-center space-x-2">
+       <div class="w-4 h-4 space-finish rounded"></div><span>Finish</span>
+      </div>
+     </div>
+    </div><div class="bg-white rounded-lg shadow-md p-6">
+     <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 Leaderboard</h3>
+     <div id="leaderboard" class="space-y-2"></div>
+    </div>
+   </div>
+   
+   <div id="questionModal" class="question-modal hidden">
+    <div class="bg-white rounded-xl shadow-2xl p-4 md:p-6 max-w-xl w-full mx-4 max-h-[95vh] flex flex-col modal-content">
+     <div class="text-center mb-2 flex-shrink-0">
+      <div id="questionIcon" class="text-4xl mb-1 md:mb-2">❓</div>
+      <h3 id="questionTitle" class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Digital Citizenship Question</h3>
+      <p id="questionCategory" class="text-sm md:text-lg text-blue-600 font-semibold">Category</p>
+      <p id="questionPlayer" class="text-xs md:text-md text-gray-600 font-medium">Player's Turn</p>
+     </div>
+     <div id="questionText" class="text-base md:text-lg text-gray-700 mb-3 text-center flex-shrink-0">
+      Question will appear here...
+     </div>
+     <div id="questionOptions" class="space-y-2 mb-2 overflow-y-auto flex-grow px-1"></div>
+     <div id="questionFeedback" class="hidden text-center p-2 md:p-3 rounded-lg mt-2 mb-2 flex-shrink-0 overflow-y-auto max-h-[25vh]"></div>
+     <div class="text-center flex-shrink-0 pt-2">
+      <button id="nextQuestionBtn" class="hidden w-full bg-gradient-to-r from-blue-500 to-green-600 text-white py-2 md:py-3 px-8 rounded-lg font-bold text-base md:text-lg hover:from-blue-600 hover:to-green-700 transition-all duration-200 shadow-lg"> ➡️ Continue Game </button>
+     </div>
+    </div>
+   </div>
+   
+   <div id="winnerModal" class="question-modal hidden">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg mx-4 text-center">
+     <div class="winner-celebration text-8xl mb-4">
+      🏆
+     </div>
+     <h3 class="text-3xl font-bold text-yellow-600 mb-4">Congratulations!</h3>
+     <p id="winnerText" class="text-xl text-gray-700 mb-6">You are a Digital Citizenship Master!</p>
+     <div class="space-y-2 mb-6">
+      <p class="text-lg">Final Score: <span id="winnerScore" class="font-bold text-green-600">0</span> points</p>
+      <p class="text-lg">Correct Answers: <span id="winnerCorrect" class="font-bold text-blue-600">0</span></p>
+     </div><button id="newGameBtn" class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-200"> 🎮 Play Again </button>
+    </div>
+   </div>
+  </div>
+  <script>
+       
+        const AudioController = {
+            ctx: null,
+            isMuted: false, // Start unmuted
+            isPlaying: false,
+            tempo: 120,
+            step: 0,
+            intervalId: null,
+            
+            notes: {
+                'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'B3': 246.94,
+                'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+                'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77
+            },
+
+            melody: [
+                'E4', 'G4', 'C5', null, 'E5', 'D5', 'C5', null,
+                'A4', 'C5', 'F5', null, 'A5', 'G5', 'F5', null,
+                'D4', 'F4', 'B4', null, 'D5', 'C5', 'B4', null,
+                'C5', 'E4', 'G4', 'C5', 'G4', 'E4', 'C4', null,
+                'E4', null, 'G4', null, 'C5', null, 'E5', null,
+                'D5', 'C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4'
+            ],
+            
+            bassline: [
+                'C3', null, 'G3', null, 'C3', null, 'E3', null,
+                'F3', null, 'C4', null, 'F3', null, 'A3', null,
+                'G3', null, 'D4', null, 'G3', null, 'B3', null,
+                'C3', null, 'G3', null, 'C3', null, 'C3', null,
+                'C3', null, 'G3', null, 'C3', null, 'E3', null,
+                'G3', null, 'B3', null, 'D4', null, 'G3', null
+            ],
+
+            init: function() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            toggleMute: function() {
+                this.isMuted = !this.isMuted;
+                const btn = document.getElementById('soundToggle');
+                const icon = document.getElementById('soundIcon');
+                
+                if (this.isMuted) {
+                    this.stopBGM();
+                    btn.classList.add('sound-off');
+                    icon.textContent = '🔇';
+                } else {
+                    this.init();
+                    this.startBGM();
+                    this.playClick();
+                    btn.classList.remove('sound-off');
+                    icon.textContent = '🔊';
+                }
+            },
+
+            playTone: function(freq, type, duration, vol = 0.1) {
+                if (this.isMuted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                const now = this.ctx.currentTime;
+                gain.gain.setValueAtTime(vol, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                
+                osc.start();
+                osc.stop(now + duration);
+            },
+
+            startBGM: function() {
+                if(this.isMuted || this.isPlaying) return;
+                this.init();
+                this.isPlaying = true;
+                const stepTime = (60 / this.tempo) / 4 * 1000;
+                
+                this.intervalId = setInterval(() => {
+                    if(!this.isPlaying || this.isMuted) return;
+
+                    const noteName = this.melody[this.step % this.melody.length];
+                    if(noteName && this.notes[noteName]) {
+                        this.playTone(this.notes[noteName], 'square', 0.1, 1.0); // MAX VOLUME
+                    }
+
+                    const bassName = this.bassline[this.step % this.bassline.length];
+                    if(bassName && this.notes[bassName]) {
+                        this.playTone(this.notes[bassName], 'triangle', 0.2, 1.0); // MAX VOLUME
+                    }
+
+                    this.step++;
+                }, stepTime);
+            },
+
+            stopBGM: function() {
+                this.isPlaying = false;
+                if(this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+            },
+
+            playClick: function() { this.playTone(800, 'sine', 0.1, 1.0); }, // MAX VOLUME
+            playDice: function() {
+                if (this.isMuted || !this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.1;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 1000;
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                gain.gain.setValueAtTime(1.0, this.ctx.currentTime); // MAX VOLUME
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                noise.start();
+            },
+            playCorrect: function() {
+                setTimeout(() => this.playTone(523.25, 'sine', 0.3, 1.0), 0); // MAX VOLUME
+                setTimeout(() => this.playTone(659.25, 'sine', 0.3, 1.0), 100); // MAX VOLUME
+                setTimeout(() => this.playTone(783.99, 'sine', 0.5, 1.0), 200); // MAX VOLUME
+            },
+            playWrong: function() {
+                if (this.isMuted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                gain.gain.setValueAtTime(1.0, this.ctx.currentTime); // MAX VOLUME
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.4);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.4);
+            },
+            playWin: function() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((note, i) => {
+                    setTimeout(() => this.playTone(note, 'square', 0.4, 1.0), i * 150); // MAX VOLUME
+                });
+            }
+        };
+
+       // CUSTOM GO BACK FUNCTION FOR SINGLE PAGE APP
+        function goBack() {
+            AudioController.playClick();
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const setupScreen = document.getElementById('setupScreen');
+            const gameBoard = document.getElementById('gameBoard');
+            
+            if (!gameBoard.classList.contains('hidden')) {
+                // If on Game Board, go back to Setup Screen
+                gameBoard.classList.add('hidden');
+                setupScreen.classList.remove('hidden');
+                // The music will now keep playing perfectly!
+            } else if (!setupScreen.classList.contains('hidden')) {
+                // If on Setup Screen, go back to Welcome/Mechanics Screen
+                setupScreen.classList.add('hidden');
+                welcomeScreen.classList.remove('hidden');
+                // Ensure the mechanics show up instead of the loading bar
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('mechanicsSection').classList.remove('hidden');
+            } else {
+                // If already on the first screen, exit webpage
+                if(window.parent && window.parent.backToMenu) { 
+                    window.parent.backToMenu(); 
+                } else { 
+                    window.history.back(); 
+                }
+            }
+        }
+
+        // AUTO-MUSIC TRIGGER: Plays on the first click anywhere
+        document.addEventListener('click', function unlockAudio() {
+            AudioController.init();
+            AudioController.startBGM();
+            // Remove listener after first interaction to avoid repeated restarts
+            document.removeEventListener('click', unlockAudio);
+        }, { once: true });
+
+        // Special Challenge Spaces with Chaos Meter
+        let chaosLevel = 0;
+        const maxChaos = 5;
+        
+        // Expanded Digital Citizenship Questions with Grade 4 Challenges
+        const questions = {
+            posture: [
+                {
+                    question: "Ano ang tamang layo ng mata sa computer screen?",
+                    options: ["10-20 cm", "50-70 cm", "1-2 metro", "Kahit anong layo"],
+                    correct: 1,
+                    explanation: "Ang tamang layo ay 50-70 cm o arm's length para maiwasan ang eye strain.",
+                    challenge: "POSTURE CHALLENGE: Show proper sitting position for 10 seconds!"
+                },
+                {
+                    question: "Paano ang tamang posisyon ng likod habang gumagamit ng computer?",
+                    options: ["Nakayuko", "Tuwid at nakadikit sa upuan", "Nakatagilid", "Nakaharap sa gilid"],
+                    correct: 1,
+                    explanation: "Ang likod ay dapat tuwid at nakadikit sa upuan para sa tamang posture.",
+                    challenge: "BACK CHALLENGE: Stretch your arms up high 5 times!"
+                },
+                {
+                    question: "Saan dapat nakalagay ang computer monitor?",
+                    options: ["Mas mataas sa mata", "Pantay sa mata", "Mas mababa sa mata", "Kahit saan"],
+                    correct: 1,
+                    explanation: "Ang monitor ay dapat pantay sa mata para maiwasan ang neck strain.",
+                    challenge: "NECK CHALLENGE: Turn your head left and right 3 times slowly!"
+                },
+                {
+                    question: "Paano ang tamang posisyon ng mga paa habang naka-upo?",
+                    options: ["Nakaangat", "Flat sa sahig", "Nakatayo", "Nakapatong sa upuan"],
+                    correct: 1,
+                    explanation: "Ang mga paa ay dapat flat sa sahig para sa stable na posisyon.",
+                    challenge: "FEET CHALLENGE: March in place for 10 seconds!"
+                },
+                {
+                    question: "Ilang oras ang maximum na pwedeng mag-computer nang tuloy-tuloy?",
+                    options: ["30 minuto", "1 oras", "2 oras", "Buong araw"],
+                    correct: 1,
+                    explanation: "Maximum 1 oras lang dapat ang tuloy-tuloy na paggamit ng computer.",
+                    challenge: "TIME CHALLENGE: Do 5 gentle wall push-ups!"
+                },
+                {
+                    question: "Ano ang tamang taas ng upuan para sa computer work?",
+                    options: ["Mataas na upuan", "Mababang upuan", "Pantay ng siko sa desk", "Kahit anong taas"],
+                    correct: 2,
+                    explanation: "Ang upuan ay dapat pantay ng siko sa desk para sa tamang arm position."
+                },
+                {
+                    question: "Paano dapat nakaposisyon ang keyboard?",
+                    options: ["Mataas", "Mababa", "Pantay ng kamay", "Nakatayo"],
+                    correct: 2,
+                    explanation: "Ang keyboard ay dapat pantay ng kamay para maiwasan ang wrist strain."
+                },
+                {
+                    question: "Ano ang dapat gawin sa mga kamay habang nag-type?",
+                    options: ["I-rest sa desk", "Nakalutang", "Nakapatong sa wrist rest", "Nakataas"],
+                    correct: 1,
+                    explanation: "Ang mga kamay ay dapat nakalutang habang nag-type para sa proper wrist position."
+                },
+                {
+                    question: "Ilang degrees ang tamang angle ng screen?",
+                    options: ["90 degrees", "Slightly tilted back", "Forward tilt", "Flat"],
+                    correct: 1,
+                    explanation: "Ang screen ay dapat slightly tilted back para sa comfortable viewing."
+                },
+                {
+                    question: "Ano ang dapat gawin sa lighting habang gumagamit ng computer?",
+                    options: ["Madilim na kwarto", "Sobrang liwanag", "Balanced lighting", "Walang ilaw"],
+                    correct: 2,
+                    explanation: "Balanced lighting ang dapat para maiwasan ang eye strain at glare."
+                }
+            ],
+            screenTime: [
+                {
+                    question: "Ano ang 20-20-20 rule?",
+                    options: ["20 min work, 20 min break, 20 steps", "Every 20 min, look 20 feet away for 20 sec", "20 hours screen time daily", "20 apps maximum"],
+                    correct: 1,
+                    explanation: "Every 20 minutes, tingnan ang 20 feet away for 20 seconds para sa eye health.",
+                    challenge: "EYE CHALLENGE: Look far away and blink 10 times!"
+                },
+                {
+                    question: "Ilang oras ang recommended screen time para sa mga estudyante?",
+                    options: ["Walang limit", "2 oras para sa entertainment", "8 oras", "12 oras"],
+                    correct: 1,
+                    explanation: "2 oras lang ang recommended recreational screen time para sa mga estudyante.",
+                    challenge: "MOVEMENT CHALLENGE: Do 5 arm circles forward!"
+                },
+                {
+                    question: "Kailan dapat mag-break sa paggamit ng computer?",
+                    options: ["Kapag pagod na", "Every 30-60 minutes", "End of day", "Hindi kailangan"],
+                    correct: 1,
+                    explanation: "Every 30-60 minutes dapat mag-break para sa eye at body health."
+                },
+                {
+                    question: "Ano ang epekto ng sobrang screen time sa mata?",
+                    options: ["Walang epekto", "Eye strain at dry eyes", "Mas malinaw ang mata", "Mas matalino"],
+                    correct: 1,
+                    explanation: "Sobrang screen time ay nagdudulot ng eye strain at dry eyes."
+                },
+                {
+                    question: "Ano ang dapat gawin bago matulog para sa better sleep?",
+                    options: ["Mag-phone pa", "Avoid screens 1 hour before bed", "Mag-computer games", "Watch TV"],
+                    correct: 1,
+                    explanation: "Iwasan ang screens 1 hour before bedtime para sa better sleep quality."
+                },
+                {
+                    question: "Ano ang blue light at bakit nakakasama?",
+                    options: ["Walang epekto", "Nakakaantok", "Nakakagising at nakakaapekto sa sleep", "Nakakaganda ng mata"],
+                    correct: 2,
+                    explanation: "Blue light ay nakakagising at nakakaapekto sa natural sleep cycle."
+                },
+                {
+                    question: "Paano mababawasan ang eye fatigue?",
+                    options: ["Mag-sunglasses", "Blink more often", "Wag mag-blink", "Mag-eye drops lang"],
+                    correct: 1,
+                    explanation: "Blink more often para ma-lubricate ang mata at mabawasan ang dryness."
+                },
+                {
+                    question: "Ano ang screen time curfew para sa mga bata?",
+                    options: ["Walang curfew", "1 hour before bedtime", "30 minutes before bedtime", "Habang natutulog"],
+                    correct: 1,
+                    explanation: "1 hour before bedtime ay dapat walang screen time para sa better sleep."
+                },
+                {
+                    question: "Ano ang dapat gawin sa weekend screen time?",
+                    options: ["Unlimited", "Same limits pa rin", "Double ang limit", "Walang screen time"],
+                    correct: 1,
+                    explanation: "Same limits pa rin dapat sa weekend para sa consistent healthy habits."
+                },
+                {
+                    question: "Paano ma-monitor ang screen time?",
+                    options: ["Hindi kailangan", "Use built-in screen time tools", "Tantya lang", "Pag may problema na"],
+                    correct: 1,
+                    explanation: "Use built-in screen time tools para ma-track at ma-manage ang usage."
+                }
+            ],
+            safety: [
+                {
+                    question: "Ano ang dapat gawin sa suspicious email?",
+                    options: ["I-click agad", "I-delete without opening", "I-forward sa friends", "I-reply"],
+                    correct: 1,
+                    explanation: "I-delete ang suspicious emails without opening para sa security.",
+                    challenge: "SAFETY CHALLENGE: Say 'Delete bad emails!' 3 times!"
+                },
+                {
+                    question: "Paano gumawa ng strong password?",
+                    options: ["Pangalan lang", "Mix of letters, numbers, symbols", "Birthday", "123456"],
+                    correct: 1,
+                    explanation: "Strong password ay may mix ng letters, numbers, at symbols.",
+                    challenge: "PASSWORD CHALLENGE: Clap your hands while spelling 'S-A-F-E'!"
+                },
+                {
+                    question: "Sino ang pwedeng bigyan ng personal information online?",
+                    options: ["Kahit sino", "Mga kaibigan lang", "Trusted adults/parents", "Strangers"],
+                    correct: 2,
+                    explanation: "Personal information ay dapat ibigay lang sa trusted adults o parents."
+                },
+                {
+                    question: "Ano ang dapat gawin sa cyberbullying?",
+                    options: ["Ignore lang", "Report sa adults/authorities", "Gumanti", "Mag-share pa"],
+                    correct: 1,
+                    explanation: "I-report ang cyberbullying sa adults o authorities para sa tulong."
+                },
+                {
+                    question: "Paano makikilala ang secure website?",
+                    options: ["May ads", "May https:// at lock icon", "Maraming kulay", "Mabilis mag-load"],
+                    correct: 1,
+                    explanation: "Secure websites ay may https:// at lock icon sa address bar."
+                },
+                {
+                    question: "Ano ang dapat gawin sa unknown downloads?",
+                    options: ["I-download agad", "Huwag i-download", "I-share sa iba", "I-click lahat"],
+                    correct: 1,
+                    explanation: "Huwag mag-download ng unknown files para maiwasan ang virus."
+                },
+                {
+                    question: "Ano ang two-factor authentication?",
+                    options: ["Dalawang password", "Extra security layer", "Dalawang account", "Dalawang device"],
+                    correct: 1,
+                    explanation: "Two-factor authentication ay extra security layer na gumagamit ng dalawang verification method."
+                },
+                {
+                    question: "Paano mag-share ng photos online nang ligtas?",
+                    options: ["I-share lahat", "Check privacy settings", "Public lahat", "Walang limit"],
+                    correct: 1,
+                    explanation: "Check privacy settings at mag-isip kung sino ang makakakita ng photos."
+                },
+                {
+                    question: "Ano ang phishing?",
+                    options: ["Pangingisda", "Fake emails/websites na nagnakaw ng info", "Online game", "Social media"],
+                    correct: 1,
+                    explanation: "Phishing ay fake emails o websites na nagtutulad sa legitimate para magnakaw ng information."
+                },
+                {
+                    question: "Paano mag-logout nang tama?",
+                    options: ["I-close lang ang browser", "Click logout button", "I-minimize lang", "Walang kailangan"],
+                    correct: 1,
+                    explanation: "Always click logout button especially sa public computers para sa security."
+                }
+            ],
+            challenge: [
+                {
+                    question: "Alin ang HINDI tamang digital habit?",
+                    options: ["Regular breaks", "Proper posture", "Sharing passwords", "Safe browsing"],
+                    correct: 2,
+                    explanation: "Hindi dapat mag-share ng passwords kahit sa mga kaibigan.",
+                    challenge: "HABIT CHALLENGE: Do 3 squats while saying 'No sharing passwords!'"
+                },
+                {
+                    question: "Ano ang digital wellness?",
+                    options: ["Paggamit ng maraming gadgets", "Healthy relationship with technology", "Pag-avoid sa technology", "Gaming lang"],
+                    correct: 1,
+                    explanation: "Digital wellness ay healthy relationship sa technology.",
+                    challenge: "WELLNESS CHALLENGE: Take 3 deep breaths and stretch up!"
+                },
+                {
+                    question: "Bakit importante ang digital citizenship?",
+                    options: ["Para sa grades", "Para maging responsible digital user", "Para sa popularity", "Para sa games"],
+                    correct: 1,
+                    explanation: "Digital citizenship ay para maging responsible at safe digital user."
+                },
+                {
+                    question: "Ano ang digital footprint?",
+                    options: ["Paa sa computer", "Traces ng online activity", "Computer virus", "Internet speed"],
+                    correct: 1,
+                    explanation: "Digital footprint ay mga traces ng inyong online activities na nananatili sa internet."
+                },
+                {
+                    question: "Paano maging responsible sa social media?",
+                    options: ["Post lahat", "Think before posting", "Share personal info", "Add strangers"],
+                    correct: 1,
+                    explanation: "Think before posting at mag-isip kung appropriate ba ang content."
+                },
+                {
+                    question: "Ano ang netiquette?",
+                    options: ["Internet net", "Online etiquette/manners", "Network settings", "Computer program"],
+                    correct: 1,
+                    explanation: "Netiquette ay online etiquette o tamang ugali sa internet."
+                },
+                {
+                    question: "Paano mag-fact-check ng information online?",
+                    options: ["Maniwala agad", "Check multiple sources", "Share agad", "Ignore"],
+                    correct: 1,
+                    explanation: "Check multiple reliable sources bago maniwala sa information online."
+                },
+                {
+                    question: "Ano ang copyright sa digital world?",
+                    options: ["Walang kahulugan", "Legal protection ng creative works", "Computer program", "Internet rule"],
+                    correct: 1,
+                    explanation: "Copyright ay legal protection ng creative works - hindi pwedeng gamitin without permission."
+                },
+                {
+                    question: "Paano mag-handle ng online disagreements?",
+                    options: ["Mag-away", "Respectful discussion", "Mag-block agad", "Mag-report"],
+                    correct: 1,
+                    explanation: "Respectful discussion at civil discourse ang tamang way sa online disagreements."
+                },
+                {
+                    question: "Ano ang digital divide?",
+                    options: ["Math operation", "Gap between those with/without tech access", "Computer error", "Internet speed"],
+                    correct: 1,
+                    explanation: "Digital divide ay gap between people na may at walang access sa technology."
+                }
+            ],
+            bonus: [
+                {
+                    question: "Ano ang dapat gawin para sa healthy digital lifestyle?",
+                    options: ["Screen time lang", "Balance screen time with physical activities", "Avoid technology", "Use technology 24/7"],
+                    correct: 1,
+                    explanation: "I-balance ang screen time with physical activities para sa healthy lifestyle.",
+                    challenge: "BALANCE CHALLENGE: Stand on one foot for 5 seconds!"
+                },
+                {
+                    question: "Ano ang digital detox?",
+                    options: ["Computer cleaning", "Taking break from technology", "Antivirus", "Internet upgrade"],
+                    correct: 1,
+                    explanation: "Digital detox ay taking intentional break from technology para sa mental health.",
+                    challenge: "DETOX CHALLENGE: Close your eyes and count to 10!"
+                },
+                {
+                    question: "Paano ma-maintain ang work-life balance sa digital age?",
+                    options: ["Work 24/7", "Set boundaries", "Always online", "No technology"],
+                    correct: 1,
+                    explanation: "Set clear boundaries between work time at personal time."
+                },
+                {
+                    question: "Ano ang mindful technology use?",
+                    options: ["Unconscious usage", "Intentional at purposeful use", "Random clicking", "Multitasking always"],
+                    correct: 1,
+                    explanation: "Mindful technology use ay intentional at purposeful na paggamit ng technology."
+                },
+                {
+                    question: "Paano ma-develop ang digital literacy?",
+                    options: ["Ignore technology", "Continuous learning", "Use one app lang", "Avoid updates"],
+                    correct: 1,
+                    explanation: "Continuous learning at staying updated sa technology trends at safety practices."
+                },
+                {
+                    question: "Ano ang digital wellness routine?",
+                    options: ["24/7 online", "Scheduled tech breaks", "Random usage", "No planning"],
+                    correct: 1,
+                    explanation: "Digital wellness routine ay may scheduled tech breaks at planned usage."
+                },
+                {
+                    question: "Paano ma-maintain ang healthy sleep sa digital age?",
+                    options: ["Sleep with phone", "No screens before bed", "Watch TV to sleep", "Use phone as alarm"],
+                    correct: 1,
+                    explanation: "No screens before bedtime para sa better sleep quality."
+                },
+                {
+                    question: "Ano ang digital minimalism?",
+                    options: ["Use all apps", "Intentional tech use", "No technology", "Latest gadgets"],
+                    correct: 1,
+                    explanation: "Digital minimalism ay intentional at purposeful na paggamit ng technology."
+                },
+                {
+                    question: "Paano mag-create ng healthy digital boundaries?",
+                    options: ["No boundaries", "Set specific times", "Always available", "Random limits"],
+                    correct: 1,
+                    explanation: "Set specific times para sa work, personal time, at rest."
+                },
+                {
+                    question: "Ano ang importance ng digital sabbath?",
+                    options: ["Not needed", "Mental health break", "Waste of time", "Only for adults"],
+                    correct: 1,
+                    explanation: "Digital sabbath ay important para sa mental health at real-world connections."
+                }
+            ]
+        };
+
+        // Game state
+        let gameState = {
+            players: [],
+            currentPlayerIndex: 0,
+            gameStarted: false,
+            diceValue: 0
+        };
+
+        // Player colors and icons
+        const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+        const playerIcons = ['🎮', '⭐', '🚀', '🎯', '💎'];
+
+        // Element SDK configuration
+        const defaultConfig = {
+            game_title: "Digital Citizenship Board Game",
+            welcome_message: "Master Digital Health, Wellness & Online Safety!",
+            start_message: "Begin Your Digital Journey!",
+            finish_message: "Digital Citizenship Master!"
+        };
+
+        // Initialize Element SDK
+        async function initializeSDK() {
+            try {
+                if (window.elementSdk) {
+                    await window.elementSdk.init({
+                        defaultConfig,
+                        onConfigChange: async (config) => {
+                            document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+                            document.getElementById('welcomeMessage').textContent = config.welcome_message || defaultConfig.welcome_message;
+                        },
+                        mapToCapabilities: (config) => ({
+                            recolorables: [],
+                            borderables: [],
+                            fontEditable: undefined,
+                            fontSizeable: undefined
+                        }),
+                        mapToEditPanelValues: (config) => new Map([
+                            ["game_title", config.game_title || defaultConfig.game_title],
+                            ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                            ["start_message", config.start_message || defaultConfig.start_message],
+                            ["finish_message", config.finish_message || defaultConfig.finish_message]
+                        ])
+                    });
+                }
+            } catch (error) {
+                console.error('SDK initialization error:', error);
+            }
+        }
+
+        function startGame() {
+            AudioController.playClick();
+            
+            // Collect player names
+            const players = [];
+            for (let i = 1; i <= 5; i++) {
+                const nameInput = document.getElementById(`player${i}Name`);
+                const name = nameInput.value.trim();
+                if (name) {
+                    players.push({
+                        id: i,
+                        name: name,
+                        color: playerColors[i - 1],
+                        icon: playerIcons[i - 1],
+                        position: 0,
+                        score: 0,
+                        correctAnswers: 0,
+                        chaosLevel: 0
+                    });
+                }
+            }
+
+            // Validate at least one player
+            if (players.length === 0) {
+                showToast('Please enter at least Player 1 name!', 'warning');
+                return;
+            }
+
+            // Initialize game state
+            gameState.players = players;
+            gameState.currentPlayerIndex = 0;
+            gameState.gameStarted = true;
+
+            // Show game board
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameBoard').classList.remove('hidden');
+
+            // Reset and update displays
+            updateChaosDisplay();
+            updatePlayersDisplay();
+            updateCurrentTurn();
+            updateBoard();
+            updateLeaderboard();
+
+            // Start music when game starts
+            AudioController.init();
+            AudioController.startBGM();
+
+            showToast(`Game started with ${players.length} player${players.length > 1 ? 's' : ''}!`, 'success');
+        }
+
+        function updatePlayersDisplay() {
+            const container = document.getElementById('playersList');
+            container.innerHTML = '';
+            
+            gameState.players.forEach((player, index) => {
+                const isCurrentPlayer = index === gameState.currentPlayerIndex;
+                const playerDiv = document.createElement('div');
+                playerDiv.className = `flex items-center space-x-2 p-3 rounded-lg transition-all ${
+                    isCurrentPlayer ? 'bg-yellow-100 border-2 border-yellow-400 current-turn' : 'bg-gray-50'
+                }`;
+                playerDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-lg" style="background-color: ${player.color}">${player.icon}</div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm">${player.name}</div>
+                        <div class="text-xs text-gray-600">Position: ${player.position === 0 ? 'START' : player.position}/20</div>
+                    </div>
+                    ${isCurrentPlayer ? '<div class="text-yellow-600 font-bold">Current</div>' : ''}
+                `;
+                container.appendChild(playerDiv);
+            });
+        }
+
+        function updateCurrentTurn() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            document.getElementById('currentTurn').textContent = `${currentPlayer.name}'s Turn`;
+            document.getElementById('rollDiceBtn').disabled = false;
+            document.getElementById('rollDiceBtn').textContent = `${currentPlayer.name} - Roll Dice!`;
+            
+            // Update current player stats
+            document.getElementById('currentPosition').textContent = currentPlayer.position === 0 ? 'START' : currentPlayer.position === 101 ? 'WINNER!' : currentPlayer.position;
+            document.getElementById('currentScore').textContent = currentPlayer.score;
+            document.getElementById('currentCorrect').textContent = currentPlayer.correctAnswers;
+        }
+
+        function updateBoard() {
+            // Clear all player pieces
+            document.querySelectorAll('.player-piece').forEach(piece => piece.remove());
+            
+            // Add player pieces to their positions
+            gameState.players.forEach((player, index) => {
+                const spaceElement = document.getElementById(`space-${player.position}`);
+                if (spaceElement) {
+                    const piece = document.createElement('div');
+                    piece.className = 'player-piece';
+                    piece.style.backgroundColor = player.color;
+                    piece.textContent = player.icon;
+                    piece.title = player.name;
+                    spaceElement.appendChild(piece);
+                }
+            });
+        }
+
+        function updateChaosDisplay() {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            if (!currentPlayer) return;
+            
+            for (let i = 1; i <= maxChaos; i++) {
+                const chaosElement = document.getElementById(`chaos${i}`);
+                if (i <= currentPlayer.chaosLevel) {
+                    chaosElement.style.backgroundColor = '#ef4444';
+                    chaosElement.classList.add('animate-pulse');
+                } else {
+                    chaosElement.style.backgroundColor = 'transparent';
+                    chaosElement.classList.remove('animate-pulse');
+                }
+            }
+            
+            const chaosEffect = document.getElementById('chaosEffect');
+            if (currentPlayer.chaosLevel >= 3) {
+                chaosEffect.classList.remove('hidden');
+                chaosEffect.textContent = `CHAOS LEVEL ${currentPlayer.chaosLevel}!`;
+            } else {
+                chaosEffect.classList.add('hidden');
+            }
+        }
+
+        function updateLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            
+            const sortedPlayers = [...gameState.players].sort((a, b) => {
+                if (a.position !== b.position) {
+                    return b.position - a.position;
+                }
+                return b.score - a.score;
+            });
+            
+            sortedPlayers.forEach((player, index) => {
+                const position = index + 1;
+                const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `${position}.`;
+                
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                playerDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="text-lg">${medal}</span>
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 border-white" style="background-color: ${player.color}">${player.icon}</div>
+                        <span class="font-semibold">${player.name}</span>
+                    </div>
+                    <div class="text-right text-sm">
+                        <div>Position: ${player.position === 0 ? 'START' : player.position === 21 ? 'WINNER!' : player.position}/20</div>
+                        <div class="text-green-600">Score: ${player.score}</div>
+                    </div>
+                `;
+                container.appendChild(playerDiv);
+            });
+        }
+
+        async function rollDice() {
+            if (!gameState.gameStarted) return;
+            
+            AudioController.init(); // Ensure audio is ready
+            AudioController.playClick();
+            
+            const dice = document.getElementById('dice');
+            const rollBtn = document.getElementById('rollDiceBtn');
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            
+            dice.classList.add('rolling');
+            rollBtn.disabled = true;
+            
+            // Dice rolling sound loop
+            const rollSoundInterval = setInterval(() => {
+                AudioController.playDice();
+            }, 150);
+
+            // Simulate rolling animation
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                dice.textContent = Math.floor(Math.random() * 6) + 1;
+                rollCount++;
+                
+                if (rollCount >= 10) {
+                    clearInterval(rollInterval);
+                    clearInterval(rollSoundInterval); // Stop sound
+                    
+                    const finalValue = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = finalValue;
+                    dice.classList.remove('rolling');
+                    gameState.diceValue = finalValue;
+                    
+                    // Show dice result message before moving
+                    showToast(`${currentPlayer.name} rolled a ${finalValue}!`, 'info');
+                    
+                    // Wait 1.5 seconds before moving and showing question
+                    setTimeout(() => {
+                        movePlayer(finalValue);
+                    }, 1500);
+                }
+            }, 100);
+        }
+
+        function movePlayer(steps) {
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            const newPosition = Math.min(21, currentPlayer.position + steps);
+            
+            // Play a small click for movement
+            AudioController.playClick();
+
+            // Check if player reached the end
+            if (newPosition >= 21) {
+                currentPlayer.position = 21;
+                updateBoard();
+                showWinner(currentPlayer);
+                return;
+            }
+
+            // Update player position
+            currentPlayer.position = newPosition;
+            updateBoard();
+            
+            // Show question based on space type
+            const spaceElement = document.getElementById(`space-${newPosition}`);
+            const spaceType = getSpaceType(spaceElement);
+            
+            showQuestion(spaceType, currentPlayer);
+        }
+
+        function getSpaceType(spaceElement) {
+            if (spaceElement.classList.contains('space-posture')) return 'posture';
+            if (spaceElement.classList.contains('space-screen-time')) return 'screenTime';
+            if (spaceElement.classList.contains('space-safety')) return 'safety';
+            if (spaceElement.classList.contains('space-challenge')) return 'challenge';
+            if (spaceElement.classList.contains('space-bonus')) return 'bonus';
+            return 'posture'; // default
+        }
+
+        function showQuestion(category, player) {
+            const categoryQuestions = questions[category];
+            if (!categoryQuestions || categoryQuestions.length === 0) return;
+            
+            const question = categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
+            
+            // Set up question modal
+            const icons = {
+                posture: 'POSTURE',
+                screenTime: 'SCREEN TIME',
+                safety: 'SAFETY',
+                challenge: 'CHALLENGE',
+                bonus: 'BONUS'
+            };
+            
+            const categories = {
+                posture: 'Tamang Posisyon at Ergonomics',
+                screenTime: 'Screen Time Management',
+                safety: 'Internet Safety at Security',
+                challenge: 'Digital Citizenship Challenge',
+                bonus: 'Bonus Question'
+            };
+            
+            document.getElementById('questionIcon').textContent = icons[category];
+            document.getElementById('questionTitle').textContent = 'Digital Citizenship Question';
+            document.getElementById('questionCategory').textContent = categories[category];
+            document.getElementById('questionPlayer').textContent = `${player.name}'s Turn`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Set up options
+            const optionsContainer = document.getElementById('questionOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'w-full text-left p-2 md:p-3 border-2 border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-sm md:text-base';
+                button.innerHTML = `<span class="font-semibold">${String.fromCharCode(65 + index)}:</span> ${option}`;
+                button.onclick = () => answerQuestion(index, question.correct, question.explanation, player, question);
+                // Add click sound to options with max volume
+                button.addEventListener('mouseenter', () => AudioController.playTone(600, 'sine', 0.05, 1.0)); 
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('questionModal').classList.remove('hidden');
+        }
+
+        function answerQuestion(selectedIndex, correctIndex, explanation, player, question) {
+            const isCorrect = selectedIndex === correctIndex;
+            const feedback = document.getElementById('questionFeedback');
+            
+            if (isCorrect) {
+                AudioController.playCorrect(); // SOUND EFFECT
+                feedback.className = 'text-center p-2 md:p-3 rounded-lg mb-2 flex-shrink-0 overflow-y-auto max-h-[25vh] bg-green-100 border border-green-300';
+                let feedbackHTML = `
+                    <div class="text-green-700 font-semibold mb-1">Tama! +5 points</div>
+                    <div class="text-green-600 mb-1">${explanation}</div>
+                `;
+                
+                // Add physical challenge for Grade 4 learners (no extra points)
+                if (question.challenge) {
+                    feedbackHTML += `
+                        <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-2 mt-2">
+                            <div class="text-yellow-700 font-bold mb-1">PHYSICAL ACTIVITY!</div>
+                            <div class="text-yellow-600 text-sm">${question.challenge}</div>
+                        </div>
+                    `;
+                }
+                
+                feedback.innerHTML = feedbackHTML;
+                player.score += 5;
+                player.correctAnswers += 1;
+            } else {
+                AudioController.playWrong(); // SOUND EFFECT
+                // Wrong answer consequences (only ones that actually work)
+                const wrongConsequences = [
+                    "Move back 1 space",
+                    "Do 5 jumping jacks",
+                    "Lose 3 points"
+                ];
+                
+                const consequence = wrongConsequences[Math.floor(Math.random() * wrongConsequences.length)];
+                
+                // Apply consequence
+                if (consequence === "Move back 1 space") {
+                    player.position = Math.max(0, player.position - 1);
+                    updateBoard();
+                } else if (consequence === "Lose 3 points") {
+                    player.score = Math.max(0, player.score - 3);
+                }
+                
+                // Increase player's chaos level
+                player.chaosLevel = Math.min(maxChaos, player.chaosLevel + 1);
+                updateChaosDisplay();
+                
+                feedback.className = 'text-center p-2 md:p-3 rounded-lg mb-2 flex-shrink-0 overflow-y-auto max-h-[25vh] bg-red-100 border border-red-300';
+                let feedbackHTML = `
+                    <div class="text-red-700 font-semibold mb-1">Mali. Tamang sagot: ${String.fromCharCode(65 + correctIndex)}</div>
+                    <div class="text-red-600 mb-1">${explanation}</div>
+                    <div class="bg-orange-100 border border-orange-300 rounded-lg p-2 mt-2">
+                        <div class="text-orange-700 font-bold mb-1">CONSEQUENCE:</div>
+                        <div class="text-orange-600 text-sm">${consequence}</div>
+                    </div>
+                `;
+                
+                // Add chaos effect for high chaos levels
+                if (player.chaosLevel >= 4) {
+                    const chaosEvents = [
+                        "CHAOS EVENT: Move back 1 more space!",
+                        "CHAOS EVENT: Do 3 more jumping jacks!",
+                        "CHAOS EVENT: Next wrong answer loses 10 points!",
+                        "CHAOS EVENT: Critical chaos level reached!"
+                    ];
+                    const randomEvent = chaosEvents[Math.floor(Math.random() * chaosEvents.length)];
+                    feedbackHTML += `
+                        <div class="bg-red-200 border border-red-400 rounded-lg p-2 mt-2">
+                            <div class="text-red-800 font-bold text-sm">${randomEvent}</div>
+                        </div>
+                    `;
+                }
+                
+                feedback.innerHTML = feedbackHTML;
+            }
+            
+            feedback.classList.remove('hidden');
+            document.getElementById('nextQuestionBtn').classList.remove('hidden');
+            
+            // Disable option buttons
+            document.querySelectorAll('#questionOptions button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50');
+            });
+            
+            // Update displays
+            updateLeaderboard();
+            updateCurrentTurn();
+        }
+
+        function closeQuestion() {
+            AudioController.playClick();
+            document.getElementById('questionModal').classList.add('hidden');
+            document.getElementById('questionFeedback').classList.add('hidden');
+            document.getElementById('nextQuestionBtn').classList.add('hidden');
+            
+            // Move to next player's turn
+            gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+            updatePlayersDisplay();
+            updateCurrentTurn();
+        }
+
+        function showWinner(player) {
+            AudioController.stopBGM();
+            AudioController.playWin(); // SOUND EFFECT
+            document.getElementById('winnerText').textContent = `${player.name} is a Digital Citizenship Master!`;
+            document.getElementById('winnerScore').textContent = player.score;
+            document.getElementById('winnerCorrect').textContent = player.correctAnswers;
+            document.getElementById('winnerModal').classList.remove('hidden');
+        }
+
+        function startWelcomeSequence() {
+            const loadingBar = document.getElementById('loadingBar');
+            const loadingText = document.getElementById('loadingText');
+            
+            const loadingSteps = [
+                { width: 20, text: 'Loading game assets...' },
+                { width: 40, text: 'Preparing questions...' },
+                { width: 60, text: 'Setting up board...' },
+                { width: 80, text: 'Initializing multiplayer...' },
+                { width: 100, text: 'Ready to play!' }
+            ];
+            
+            let currentStep = 0;
+            
+            const loadingInterval = setInterval(() => {
+                if (currentStep < loadingSteps.length) {
+                    const step = loadingSteps[currentStep];
+                    loadingBar.style.width = step.width + '%';
+                    loadingText.textContent = step.text;
+                    currentStep++;
+                } else {
+                    clearInterval(loadingInterval);
+                    setTimeout(() => {
+                        document.getElementById('loadingSection').classList.add('hidden');
+                        document.getElementById('mechanicsSection').classList.remove('hidden');
+                    }, 1000);
+                }
+            }, 800);
+        }
+
+        function proceedToSetup() {
+            AudioController.init(); // Initialize audio context
+            AudioController.playClick();
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
+        }
+
+        function newGame() {
+            AudioController.playClick();
+            gameState = {
+                players: [],
+                currentPlayerIndex: 0,
+                gameStarted: false,
+                diceValue: 0
+            };
+            
+            document.getElementById('gameBoard').classList.add('hidden');
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('winnerModal').classList.add('hidden');
+            
+            // Clear all player name inputs
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`player${i}Name`).value = '';
+            }
+            
+            document.getElementById('dice').textContent = '?';
+            
+            // Show welcome screen and reset it
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('mechanicsSection').classList.add('hidden');
+            document.getElementById('agreeCheckbox').checked = false;
+            document.getElementById('proceedBtn').disabled = true;
+            
+            // Restart welcome sequence
+            setTimeout(startWelcomeSequence, 500);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-green-500',
+                warning: 'bg-yellow-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            toast.style.transform = 'translateX(100%)';
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('soundToggle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            AudioController.toggleMute();
+        });
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+        document.getElementById('rollDiceBtn').addEventListener('click', rollDice);
+        document.getElementById('nextQuestionBtn').addEventListener('click', closeQuestion);
+        document.getElementById('newGameBtn').addEventListener('click', newGame);
+        document.getElementById('proceedBtn').addEventListener('click', proceedToSetup);
+
+        // Checkbox event listener
+        document.getElementById('agreeCheckbox').addEventListener('change', (e) => {
+            AudioController.playClick();
+            document.getElementById('proceedBtn').disabled = !e.target.checked;
+        });
+
+        // Allow Enter key to start game from Player 1 input
+        document.getElementById('player1Name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSDK();
+            startWelcomeSequence();
+        });
+    </script>
+ </body>
+</html>
