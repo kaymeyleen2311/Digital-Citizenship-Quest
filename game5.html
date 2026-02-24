@@ -171,7 +171,8 @@
       <span id="soundIcon">🔊</span>
   </button>
 
-  <div id="app" class="w-full h-full flex flex-col overflow-hidden"><div id="loading-screen" class="flex flex-col items-center justify-center min-h-full p-6 block">
+  <div id="app" class="w-full h-full flex flex-col overflow-hidden">
+   <div id="loading-screen" class="flex flex-col items-center justify-center min-h-full p-6 block">
     <div class="text-8xl mb-6 float">
      👁️
     </div>
@@ -254,8 +255,12 @@
      <div class="bg-white/20 backdrop-blur px-3 py-1.5 md:px-5 md:py-2 rounded-full"><span class="text-purple-200 font-bold">👤 <span id="player-display">Player</span></span></div>
     </div>
     
-    <div class="flex-1 flex items-center justify-center overflow-hidden">
+    <div class="flex-1 flex items-center justify-center overflow-hidden relative">
      <div id="game-board" class="grid gap-2 md:gap-4 p-2 w-full max-w-4xl mx-auto"></div>
+     
+     <div id="countdown-overlay" class="hidden absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl m-2">
+      <div id="countdown-text" class="text-8xl md:text-[150px] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-500 drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-bounce">3</div>
+     </div>
     </div>
     
     <div id="info-panel" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
@@ -640,24 +645,50 @@
       
       clearInterval(timerInterval); // Siguraduhing walang tumatakbong lumang timer
 
-      // --- BAGONG FEATURE: CARD PREVIEW ---
+      // --- BAGONG FEATURE: CARD PREVIEW WITH COUNTDOWN ---
       const allCards = document.querySelectorAll('.card');
+      const countdownOverlay = document.getElementById('countdown-overlay');
+      const countdownText = document.getElementById('countdown-text');
+      
+      let count = 3;
+      countdownText.textContent = count;
+      countdownOverlay.classList.remove('hidden');
 
-      // 1. I-flip lahat ng cards pabukas pagkatapos ng konting delay (300ms)
+      // 1. I-flip lahat ng cards pabukas pagkatapos ng konting delay
       setTimeout(() => {
         AudioController.playFlip();
         allCards.forEach(card => card.classList.add('flipped'));
-      }, 300);
-
-      // 2. I-flip pabalik lahat pagkatapos ng 2.5 seconds (2800ms total)
-      setTimeout(() => {
-        allCards.forEach(card => card.classList.remove('flipped'));
-        AudioController.playFlip();
         
-        // I-unlock na ang board at i-start ang countdown timer
-        isProcessing = false; 
-        startTimer(); 
-      }, 2800); 
+        // 2. Umpisahan ang countdown (3... 2... 1... GO!)
+        const countdownInterval = setInterval(() => {
+          count--;
+          
+          if (count > 0) {
+            countdownText.textContent = count;
+            AudioController.playClick(); // Tutunog kada bilang
+          } else if (count === 0) {
+            countdownText.textContent = "GO!";
+            countdownText.classList.remove('animate-bounce');
+            countdownText.classList.add('animate-pulse'); 
+            AudioController.playTone(800, 'sine', 0.2, 1.0); // Mataas na tunog para sa GO!
+          } else {
+            // Tapos na ang countdown, itago na ang text
+            clearInterval(countdownInterval);
+            countdownOverlay.classList.add('hidden');
+            countdownText.classList.remove('animate-pulse');
+            countdownText.classList.add('animate-bounce'); // I-reset ang animation para sa next round
+            
+            // I-flip pabalik lahat ng cards
+            allCards.forEach(card => card.classList.remove('flipped'));
+            AudioController.playFlip();
+            
+            // I-unlock na ang board at i-start ang game timer
+            isProcessing = false; 
+            startTimer(); 
+          }
+        }, 1000); // Tumakbo ito bawat isang segundo (1000ms)
+        
+      }, 300);
     }
 
     function createCards(numPairs, gridCols) {
