@@ -625,7 +625,9 @@
       moves = 0;
       timeLeft = settings.time;
       flippedCards = [];
-      isProcessing = false;
+      
+      // I-set sa true para hindi ma-click ng player ang cards habang naka-preview
+      isProcessing = true; 
       
       document.getElementById('player-display').textContent = playerName;
       document.getElementById('matches-display').textContent = '0';
@@ -636,8 +638,26 @@
       totalPairs = settings.pairs;
       createCards(settings.pairs, settings.gridCols);
       
-      clearInterval(timerInterval); // ensure old interval is cleared
-      startTimer();
+      clearInterval(timerInterval); // Siguraduhing walang tumatakbong lumang timer
+
+      // --- BAGONG FEATURE: CARD PREVIEW ---
+      const allCards = document.querySelectorAll('.card');
+
+      // 1. I-flip lahat ng cards pabukas pagkatapos ng konting delay (300ms)
+      setTimeout(() => {
+        AudioController.playFlip();
+        allCards.forEach(card => card.classList.add('flipped'));
+      }, 300);
+
+      // 2. I-flip pabalik lahat pagkatapos ng 2.5 seconds (2800ms total)
+      setTimeout(() => {
+        allCards.forEach(card => card.classList.remove('flipped'));
+        AudioController.playFlip();
+        
+        // I-unlock na ang board at i-start ang countdown timer
+        isProcessing = false; 
+        startTimer(); 
+      }, 2800); 
     }
 
     function createCards(numPairs, gridCols) {
