@@ -62,7 +62,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// 3. Activate Event: Cleans up old caches 
+// 3. Activate Event: Cleans up old caches if you update CACHE_NAME
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
