@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Hub</title>
+  
+  <!-- 1. ADDED MANIFEST LINK FOR PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#667eea">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -50,6 +55,7 @@
 
     <div class="flex-1 flex items-center justify-center pb-12">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full px-4">
+        <!-- Game Cards -->
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(1)">
           <div class="text-6xl mb-4 text-center">🎲</div>
           <h3 class="text-2xl font-bold text-white text-center mb-2">Digital Citizenship Board Game</h3>
@@ -90,6 +96,15 @@
 </div>
 
 <script>
+  // 2. REGISTER THE SERVICE WORKER
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => console.log('ServiceWorker registration successful'))
+        .catch(err => console.log('ServiceWorker registration failed: ', err));
+    });
+  }
+
   const AudioController = {
     ctx: null, isMuted: false, isPlaying: false, step: 0, intervalId: null,
     notes: { 'C4': 261.63, 'E4': 329.63, 'G4': 392.00, 'B4': 493.88, 'C5': 523.25 },
@@ -132,11 +147,8 @@
     }
   };
 
-  // AUTO-PLAY LOGIC: Music starts on the first click anywhere on the page
   window.addEventListener('click', () => {
     AudioController.init();
-    // FIX: Only start the background music if the user is still on the main menu.
-    // If they clicked a game card, loadGame() already hid the main menu.
     if (!document.getElementById('main-menu').classList.contains('hidden')) {
       AudioController.startBGM();
     }
