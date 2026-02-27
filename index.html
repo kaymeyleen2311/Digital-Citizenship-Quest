@@ -52,27 +52,27 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full px-4">
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(1)">
           <div class="text-6xl mb-4 text-center">🎲</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Game 1</h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-2">Digital Citizenship Board Game</h3>
           <div class="bg-cyan-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
         </div>
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(2)">
           <div class="text-6xl mb-4 text-center">🎈</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Game 2</h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-2">Balloon Pop</h3>
           <div class="bg-green-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
         </div>
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(3)">
           <div class="text-6xl mb-4 text-center">🛡️</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Game 3</h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-2">Goblin Rush</h3>
           <div class="bg-purple-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
         </div>
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(4)">
           <div class="text-6xl mb-4 text-center">🛞</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Game 4</h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-2">Screen Quest</h3>
           <div class="bg-pink-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
         </div>
         <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(5)">
           <div class="text-6xl mb-4 text-center">👀</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Game 5</h3>
+          <h3 class="text-2xl font-bold text-white text-center mb-2">Eye Care</h3>
           <div class="bg-yellow-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
         </div>
       </div>
@@ -135,7 +135,11 @@
   // AUTO-PLAY LOGIC: Music starts on the first click anywhere on the page
   window.addEventListener('click', () => {
     AudioController.init();
-    AudioController.startBGM();
+    // FIX: Only start the background music if the user is still on the main menu.
+    // If they clicked a game card, loadGame() already hid the main menu.
+    if (!document.getElementById('main-menu').classList.contains('hidden')) {
+      AudioController.startBGM();
+    }
   }, { once: true });
 
   function loadGame(num) {
