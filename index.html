@@ -3,146 +3,287 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Hub</title>
+  <title>Digital Hero Hub</title>
   
-  <!-- 1. ADDED MANIFEST LINK FOR PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#7e22ce">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  
   <style>
-    body { box-sizing: border-box; user-select: none; margin: 0; }
-    .app-wrapper { font-family: 'Fredoka', sans-serif; }
-    .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-    .game-card:hover { transform: translateY(-8px) scale(1.02); filter: brightness(1.1); }
-    
-    @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-20px);} }
-    @keyframes pop-in { 0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;} }
-    .float { animation: float 3s ease-in-out infinite; }
-    
-    .click-sound { position:fixed; font-size:1.5rem; font-weight:bold; pointer-events:none; z-index:1000; animation: pop-in 0.4s ease-out forwards; text-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
-    
-    /* Sound Toggle Styles */
-    #soundToggle { position:fixed; top:1.5rem; right:1.5rem; z-index:100; background:rgba(255,255,255,0.25); backdrop-filter:blur(8px); padding:0.75rem; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; border:2px solid white; cursor:pointer; transition: opacity 0.3s, visibility 0.3s; }
-    .sound-off { opacity: 0.5; background: rgba(0,0,0,0.4); }
-    .hidden-ui { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+    body { box-sizing: border-box; user-select: none; margin: 0; font-family: 'Fredoka', sans-serif; background: #0f172a; overflow-x: hidden; }
 
+    /* --- FLOATING DIGITAL ICONS --- */
+    .decor { position: fixed; pointer-events: none; z-index: -1; opacity: 0.3; color: white; filter: drop-shadow(0 0 10px white); animation: drift 10s infinite ease-in-out; font-size: 2.5rem; }
+    @keyframes drift {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(40px, -60px) rotate(15deg); }
+        66% { transform: translate(-30px, 50px) rotate(-15deg); }
+    }
+
+    /* --- EMOJI ANIMATIONS --- */
+    @keyframes dice-roll {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(90deg) scale(1.2); }
+      50% { transform: rotate(180deg) scale(1); }
+      75% { transform: rotate(270deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .icon-dice { display: inline-block; animation: dice-roll 3s infinite ease-in-out; }
+
+    @keyframes balloon-float {
+      0%, 100% { transform: translateY(0) rotate(-5deg) scale(1); }
+      50% { transform: translateY(-30px) rotate(5deg) scale(1.1); }
+    }
+    .icon-balloon { display: inline-block; animation: balloon-float 2.5s infinite ease-in-out; }
+
+    @keyframes shield-pulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.2); filter: brightness(1.5) drop-shadow(0 0 20px #fff); }
+    }
+    .icon-shield { display: inline-block; animation: shield-pulse 2s infinite ease-in-out; }
+
+    @keyframes wheel-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .icon-wheel { display: inline-block; animation: wheel-spin 4s infinite linear; }
+
+    @keyframes eyes-blink {
+      0%, 45%, 55%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.1); }
+    }
+    .icon-eyes { display: inline-block; animation: eyes-blink 3.5s infinite; }
+
+    /* --- UI DESIGN --- */
     .fixed-bg {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(135deg, #667eea, #764ba2, #ff758c);
+        background: linear-gradient(135deg, #1e3a8a, #7e22ce, #be185d);
         background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite; z-index: -1;
+        animation: gradientBG 15s ease infinite; z-index: -2;
     }
     @keyframes gradientBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    .game-card { 
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        cursor: pointer; 
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(15px);
+        border: 4px solid rgba(255,255,255,0.2);
+        border-radius: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .game-card:hover { transform: translateY(-15px) scale(1.02); background: rgba(255,255,255,0.2); border-color: white; }
+    
+    .ui-btn { position:fixed; z-index:100; background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; cursor:pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    #soundToggle { top:1rem; right:1rem; width:60px; height:60px; }
+    #aboutToggle { top:1rem; left:1rem; width:60px; height:60px; font-weight: bold; color: white; font-size: 1.5rem; }
+    .hidden-ui { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    /* Loading Screen */
+    #loading-screen { position: fixed; inset: 0; background: #0f172a; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .power-icon { font-size: 5rem; animation: pulse 1s infinite alternate; }
+    @keyframes pulse { from { opacity: 0.5; transform: scale(1); } to { opacity: 1; transform: scale(1.2); } }
+
+    /* --- WIDER ABOUT SIDEBAR --- */
+    #about-sidebar { 
+        position: fixed; top: 0; left: 0; height: 100%; 
+        width: 480px; 
+        max-width: 90%;
+        background: white; 
+        z-index: 150; 
+        transform: translateX(-100%); 
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+        border-right: 8px solid #7e22ce; 
+        overflow-y: auto;
+    }
+    #about-sidebar.open { transform: translateX(0); }
+    #sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 140; display: none; backdrop-filter: blur(4px); }
   </style>
 </head>
-<body class="h-full overflow-hidden">
+<body class="h-full">
+
+<!-- FLOATING DIGITAL ICONS -->
+<div class="decor" style="top:10%; left:5%; animation-delay: 0s;">⚡️</div>
+<div class="decor" style="top:25%; right:8%; animation-delay: -2.5s;">🌐</div>
+<div class="decor" style="bottom:15%; left:12%; animation-delay: -4s;">☁️</div>
+<div class="decor" style="bottom:10%; right:6%; animation-delay: -6.5s;">📱</div>
+<div class="decor" style="top:50%; left:3%; animation-delay: -1.2s;">🖱️</div>
+<div class="decor" style="top:8%; right:35%; animation-delay: -3.8s;">📶</div>
+<div class="decor" style="bottom:35%; right:4%; animation-delay: -5.2s;">🔋</div>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+    <div class="power-icon mb-6">⚡️</div>
+    <h2 class="text-white font-bold tracking-[0.3em] mb-4 text-xl uppercase" style="font-family:'Space Grotesk'">System Starting...</h2>
+    <div class="w-72 h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
+        <div id="loader-bar" class="h-full bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 w-0 transition-all duration-300"></div>
+    </div>
+</div>
 
 <div class="fixed-bg"></div>
 
-<button id="soundToggle" title="Toggle Hub Music">
+<!-- BUTTONS -->
+<button id="aboutToggle" class="ui-btn" onclick="toggleAbout()">i</button>
+<button id="soundToggle" class="ui-btn" title="Toggle Music">
     <span id="soundIcon">🔊</span>
 </button>
 
-<div id="app" class="app-wrapper w-full h-full flex flex-col overflow-auto relative">
-  <div id="main-menu" class="min-h-full flex flex-col p-6">
-    <div class="text-center mb-8 mt-8">
-      <div class="text-7xl mb-4 float">🎮</div>
-      <h1 class="text-5xl md:text-7xl font-black text-white mb-3" style="font-family:'Space Grotesk',sans-serif;">GAME HUB</h1>
-      <p class="text-xl text-white/90">Click anywhere to start the music!</p>
+<!-- ABOUT SIDEBAR -->
+<div id="sidebar-overlay" onclick="toggleAbout()"></div>
+<div id="about-sidebar" class="flex flex-col shadow-2xl">
+   
+    <div class="w-full relative">
+        <button onclick="toggleAbout()" class="absolute top-4 right-4 z-10 bg-red-600 text-white font-bold w-10 h-10 rounded-full shadow-lg">✕</button>
+        <div class="w-full bg-gray-200">
+            
+            <img src="TheTeam.png" alt="The Creators" class="w-full h-auto block border-b-8 border-purple-600">
+        </div>
     </div>
 
-    <div class="flex-1 flex items-center justify-center pb-12">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full px-4">
-        <!-- Game Cards -->
-        <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(1)">
-          <div class="text-6xl mb-4 text-center">🎲</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Digital Citizenship Board Game</h3>
-          <div class="bg-cyan-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
+    <div class="p-8 space-y-6">
+        <h2 class="text-4xl font-black text-purple-800 uppercase" style="font-family:'Space Grotesk'">Meet the Creators!</h2>
+        
+        <div class="text-gray-700 space-y-4 text-lg font-medium leading-relaxed">
+            <p class="bg-yellow-100 p-5 rounded-3xl border-l-8 border-yellow-500">
+                <b>Kumusta, Digital Hero! </b> Kami ang mga gumawa ng Game Hub na ito para matulungan kang maging ligtas at matalino sa online world.
+            </p>
+            
+            <p>Binuo namin ang mga larong ito para maging masaya ang iyong pag-aaral tungkol sa digital citizenship at pangangalaga sa iyong kalusugan habang gumagamit ng gadgets.</p>
+            
+            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-[2.5rem] shadow-xl">
+                <h4 class="font-bold text-xl mb-2">Our Goal:</h4>
+                <p class="text-sm opacity-90">To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀</p>
+            </div>
         </div>
-        <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(2)">
-          <div class="text-6xl mb-4 text-center">🎈</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Balloon Pop</h3>
-          <div class="bg-green-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
+    </div>
+</div>
+
+<!-- MAIN HUB -->
+<div id="app" class="app-wrapper w-full h-full flex flex-col overflow-auto relative">
+  <div id="main-menu" class="min-h-full flex flex-col p-6">
+    <div class="text-center mb-12 mt-20">
+      <h1 class="text-7xl md:text-9xl font-black text-white mb-4" style="font-family:'Space Grotesk'; text-shadow: 0 10px 20px rgba(0,0,0,0.3);">GAME HUB</h1>
+      <p class="text-2xl text-yellow-300 font-bold tracking-[0.2em] bg-black/30 inline-block px-12 py-3 rounded-full border-4 border-yellow-300/40 uppercase">Click anywhere to start music</p>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center pb-24">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl w-full px-4">
+        
+        <div class="game-card p-12 text-center" onclick="loadGame(1)">
+          <div class="text-8xl mb-6 icon-dice">🎲</div>
+          <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Digital Citizenship Board Game</h3>
+          <div class="mt-8 bg-white text-blue-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
         </div>
-        <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(3)">
-          <div class="text-6xl mb-4 text-center">🛡️</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Goblin Rush</h3>
-          <div class="bg-purple-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
+
+        <div class="game-card p-12 text-center" onclick="loadGame(2)">
+          <div class="text-8xl mb-6 icon-balloon">🎈</div>
+          <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Balloon Safety Pop</h3>
+          <div class="mt-8 bg-white text-green-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
         </div>
-        <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(4)">
-          <div class="text-6xl mb-4 text-center">🛞</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Screen Quest</h3>
-          <div class="bg-pink-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
+
+        <div class="game-card p-12 text-center" onclick="loadGame(3)">
+          <div class="text-8xl mb-6 icon-shield">🛡️</div>
+          <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Goblin Rush</h3>
+          <div class="mt-8 bg-white text-purple-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
         </div>
-        <div class="game-card bg-white/10 backdrop-blur-md rounded-3xl p-6 border-2 border-white/20 relative" onclick="loadGame(5)">
-          <div class="text-6xl mb-4 text-center">👀</div>
-          <h3 class="text-2xl font-bold text-white text-center mb-2">Eye Care</h3>
-          <div class="bg-yellow-500 rounded-full py-2 text-center text-white font-bold text-sm">PLAY NOW</div>
+
+        <div class="game-card p-12 text-center" onclick="loadGame(4)">
+          <div class="text-8xl mb-6 icon-wheel">🛞</div>
+          <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Screen Quest</h3>
+          <div class="mt-8 bg-white text-pink-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
         </div>
+
+        <div class="game-card p-12 text-center" onclick="loadGame(5)">
+          <div class="text-8xl mb-6 icon-eyes">👀</div>
+          <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Online Eye Care</h3>
+          <div class="mt-8 bg-white text-yellow-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <div id="game-screen" class="hidden w-full h-full flex flex-col bg-black absolute top-0 left-0 z-50">
-    <div class="bg-gray-900 px-4 py-3 flex items-center justify-between">
-      <button onclick="backToMenu()" class="bg-white/10 text-white font-bold py-2 px-6 rounded-full hover:bg-white/20 transition-colors">↩ Exit Game</button>
-      <h2 id="current-game-title" class="text-white font-bold text-xl">Loading...</h2>
-      <div class="w-12"></div>
+  <div id="game-screen" class="hidden w-full h-full flex flex-col bg-white absolute top-0 left-0 z-50">
+    <div class="bg-gray-900 border-b-4 border-white/20 px-6 py-5 flex items-center justify-between">
+      <button onclick="backToMenu()" class="bg-red-600 text-white font-black py-2 px-10 rounded-full border-2 border-red-400 shadow-lg active:scale-95 hover:brightness-125 transition-all uppercase">Exit Mission</button>
+      <h2 id="current-game-title" class="text-white font-black text-2xl uppercase tracking-widest">Loading...</h2>
+      <div class="w-20"></div>
     </div>
-    <div id="game-content" class="flex-1 w-full bg-white"></div>
+    <div id="game-content" class="flex-1 w-full overflow-hidden bg-white"></div>
   </div>
 </div>
 
 <script>
-  // 2. REGISTER THE SERVICE WORKER
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(registration => console.log('ServiceWorker registration successful'))
-        .catch(err => console.log('ServiceWorker registration failed: ', err));
-    });
+  // LOADING LOGIC
+  window.addEventListener('DOMContentLoaded', () => {
+    let progress = 0;
+    const bar = document.getElementById('loader-bar');
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.style.opacity = '0';
+                loader.style.transition = 'opacity 0.6s ease';
+                setTimeout(() => loader.remove(), 600);
+            }, 600);
+        }
+        bar.style.width = progress + '%';
+    }, 120);
+  });
+
+  // SIDEBAR LOGIC
+  function toggleAbout() {
+    const sidebar = document.getElementById('about-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const isOpen = sidebar.classList.contains('open');
+    if (isOpen) {
+        sidebar.classList.remove('open');
+        overlay.style.display = 'none';
+    } else {
+        sidebar.classList.add('open');
+        overlay.style.display = 'block';
+        AudioController.playTone(600, 0.1, 0.2);
+    }
   }
 
+  // MUSIC LOGIC
   const AudioController = {
     ctx: null, isMuted: false, isPlaying: false, step: 0, intervalId: null,
-    notes: { 'C4': 261.63, 'E4': 329.63, 'G4': 392.00, 'B4': 493.88, 'C5': 523.25 },
-    sequence: ['C4', 'E4', 'G4', 'B4', 'C5', 'G4', 'E4', 'C4'],
-    
-    init() { 
-        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-    },
-    
-    playTone(freq, duration, vol) {
-      if (this.isMuted || !this.ctx) return;
+    bass: [261, 0, 261, 329, 392, 0, 392, 349], 
+    lead: [523, 523, 659, 783, 1046, 783, 659, 698],
+    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+    playTone(freq, duration, vol, type='square') {
+      if (this.isMuted || !this.ctx || freq === 0) return;
+      this.ctx.resume();
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = 'triangle'; osc.frequency.value = freq;
+      osc.type = type; osc.frequency.value = freq;
       osc.connect(gain); gain.connect(this.ctx.destination);
       gain.gain.setValueAtTime(vol, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
       osc.start(); osc.stop(this.ctx.currentTime + duration);
     },
-
     startBGM() {
       if (this.isPlaying || this.isMuted) return;
       this.isPlaying = true;
       this.intervalId = setInterval(() => {
-        const note = this.sequence[this.step % this.sequence.length];
-        this.playTone(this.notes[note], 0.4, 1.0);
+        const b = this.bass[this.step % this.bass.length];
+        const l = this.lead[this.step % this.lead.length];
+        this.playTone(b, 0.4, 0.1, 'triangle'); 
+        if (this.step % 2 === 0) this.playTone(l, 0.2, 0.05, 'square');
         this.step++;
-      }, 200);
+      }, 165);
     },
-
-    stopBGM() { this.isPlaying = false; clearInterval(this.intervalId); },
-
+    stopBGM() { this.isPlaying = false; clearInterval(this.intervalId); this.intervalId = null; },
     toggle() {
       this.init();
       this.isMuted = !this.isMuted;
       document.getElementById('soundIcon').innerText = this.isMuted ? '🔇' : '🔊';
-      document.getElementById('soundToggle').classList.toggle('sound-off', this.isMuted);
       this.isMuted ? this.stopBGM() : this.startBGM();
     }
   };
@@ -154,17 +295,22 @@
     }
   }, { once: true });
 
+  // GAME LOAD
   function loadGame(num) {
     AudioController.stopBGM();
     document.getElementById('soundToggle').classList.add('hidden-ui');
-    const content = document.getElementById('game-content');
-    const titles = ["🎲 Board Game", "🎈 Balloon Pop", "🛡️ Goblin Rush", "🛞 Screen Quest", "👀 Eye Care"];
+    document.getElementById('aboutToggle').classList.add('hidden-ui');
+    const titles = ["Digital Citizenship Board Game", "Balloon Safety Pop", "Goblin Rush", "Screen Quest", "Online Eye Care"];
     document.getElementById('current-game-title').innerText = titles[num-1];
-    content.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
-    iframe.src = `game${num}.html`;
-    content.appendChild(iframe);
+    const content = document.getElementById('game-content');
+    content.innerHTML = '<div class="h-full flex flex-col items-center justify-center bg-gray-900"><div class="text-9xl icon-shield mb-8">🛡️</div><h2 class="text-white text-3xl font-black animate-pulse">CONNECTING TO MISSION...</h2></div>';
+    setTimeout(() => {
+        content.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+        iframe.src = `game${num}.html`;
+        content.appendChild(iframe);
+    }, 1500);
     document.getElementById('main-menu').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
   }
@@ -172,21 +318,11 @@
   function backToMenu() {
     if (!AudioController.isMuted) AudioController.startBGM();
     document.getElementById('soundToggle').classList.remove('hidden-ui');
+    document.getElementById('aboutToggle').classList.remove('hidden-ui');
     document.getElementById('game-screen').classList.add('hidden');
     document.getElementById('main-menu').classList.remove('hidden');
     document.getElementById('game-content').innerHTML = '';
   }
-
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.game-card')) {
-      const el = document.createElement('div');
-      el.className = 'click-sound'; el.innerText = 'START! 🚀';
-      el.style.left = e.clientX + 'px'; el.style.top = e.clientY + 'px';
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 400);
-      AudioController.playTone(600, 0.1, 0.1);
-    }
-  });
 
   document.getElementById('soundToggle').onclick = () => AudioController.toggle();
 </script>
