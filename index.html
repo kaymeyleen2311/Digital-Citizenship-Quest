@@ -381,15 +381,27 @@
      }
    }, { once: true });
 
-   function loadGame(num) {
+  function loadGame(num) {
      AudioController.stopBGM();
      document.getElementById('soundToggle').classList.add('hidden-ui');
      document.getElementById('aboutToggle').classList.add('hidden-ui');
      document.getElementById('langToggle').classList.add('hidden-ui');
+
+     // LISTAHAN NG MGA TITLES, EMOJIS, AT ANIMATION CLASSES
      const titles = ["Board-band", "Balloon Safety Pop", "Goblin Rush", "Screen Quest", "Eye-dentify"];
+     const icons = ["🎲", "🎈", "🛡️", "🛞", "👀"];
+     const animClasses = ["icon-dice", "icon-balloon", "icon-shield", "icon-wheel", "icon-eyes"];
+
      document.getElementById('current-game-title').innerText = titles[num-1];
      const content = document.getElementById('game-content');
-     content.innerHTML = '<div class="h-full flex flex-col items-center justify-center bg-gray-900"><div class="text-9xl icon-shield mb-8">🛡️</div><h2 class="text-white text-3xl font-black animate-pulse">CONNECTING TO MISSION...</h2></div>';
+
+     // DYNAMIC LOADING SCREEN BASE SA GAME NUMBER
+     content.innerHTML = `
+        <div class="h-full flex flex-col items-center justify-center bg-gray-900">
+            <div class="text-9xl ${animClasses[num-1]} mb-8">${icons[num-1]}</div>
+            <h2 class="text-white text-3xl font-black animate-pulse uppercase">CONNECTING TO MISSION...</h2>
+        </div>`;
+
      setTimeout(() => {
          content.innerHTML = '';
          const iframe = document.createElement('iframe');
@@ -397,11 +409,11 @@
          iframe.src = `game${num}.html`;
          content.appendChild(iframe);
      }, 1500);
+
      document.getElementById('main-menu').classList.add('hidden');
      document.getElementById('game-screen').classList.remove('hidden');
    }
-
-function backToMenu() {
+   function backToMenu() {
      if (!AudioController.isMuted) AudioController.startBGM();
      document.getElementById('soundToggle').classList.remove('hidden-ui');
      document.getElementById('aboutToggle').classList.remove('hidden-ui');
@@ -411,17 +423,7 @@ function backToMenu() {
      document.getElementById('game-content').innerHTML = '';
    }
 
-  
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
-
-   // SERVICE WORKER REGISTRATION GUMANA KA NA PLS LANG
-   if ('serviceWorker' in navigator) {
-     window.addEventListener('load', () => {
-       navigator.serviceWorker.register('sw.js') 
-         .then(reg => console.log('Service Worker Active! 🚀'))
-         .catch(err => console.log('Service Worker Error ❌', err));
-     });
-   }
  </script>
 </body>
 </html>
