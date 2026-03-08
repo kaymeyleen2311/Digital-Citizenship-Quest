@@ -1,7 +1,7 @@
 {
   "name": "Digital Hero Game Hub",
   "short_name": "HeroHub",
-  "description": "Learn Digital Citizenship and Eye Care through fun offline mini-games!",
+  "description": "Learn Digital Citizenship through fun offline mini-games!",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",
