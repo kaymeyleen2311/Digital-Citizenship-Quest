@@ -401,7 +401,7 @@
      document.getElementById('game-screen').classList.remove('hidden');
    }
 
- function backToMenu() {
+function backToMenu() {
      if (!AudioController.isMuted) AudioController.startBGM();
      document.getElementById('soundToggle').classList.remove('hidden-ui');
      document.getElementById('aboutToggle').classList.remove('hidden-ui');
@@ -411,21 +411,17 @@
      document.getElementById('game-content').innerHTML = '';
    }
 
-   document.getElementById('soundToggle').onclick = () => AudioController.toggle();
-
   
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
 
-   // SERVICE WORKER REGISTRATION SANA GUMANA NA PLSSSSS HUHUE 
+   // SERVICE WORKER REGISTRATION GUMANA KA NA PLS LANG
    if ('serviceWorker' in navigator) {
-     navigator.serviceWorker.register('sw.js') 
-       .then(reg => console.log('Service Worker Active! 🚀'))
-       .catch(err => console.log('Service Worker Error ❌', err));
- 
+     window.addEventListener('load', () => {
+       navigator.serviceWorker.register('sw.js') 
+         .then(reg => console.log('Service Worker Active! 🚀'))
+         .catch(err => console.log('Service Worker Error ❌', err));
+     });
    }
  </script>
 </body>
 </html>
-
-
-
