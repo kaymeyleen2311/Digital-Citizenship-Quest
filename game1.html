@@ -1,417 +1,1542 @@
 <!doctype html>
-<html lang="en" class="h-full">
-<head>
+<html lang="en">
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Digital Hero Hub</title>
-     
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#7e22ce">
-  
+  <title>Board-band</title>
+  <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-  
   <style>
-    body { box-sizing: border-box; user-select: none; margin: 0; font-family: 'Fredoka', sans-serif; background: #0f172a; overflow-x: hidden; }
-
-    /* --- FLOATING DIGITAL ICONSCH --- */
-    .decor { position: fixed; pointer-events: none; z-index: -1; opacity: 0.3; color: white; filter: drop-shadow(0 0 10px white); animation: drift 10s infinite ease-in-out; font-size: 2.5rem; }
-    @keyframes drift {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        33% { transform: translate(40px, -60px) rotate(15deg); }
-        66% { transform: translate(-30px, 50px) rotate(-15deg); }
-    }
-
-    /* --- EMOJI ANIMATIONS YARN --- */
-    @keyframes dice-roll {
-      0% { transform: rotate(0deg) scale(1); }
-      25% { transform: rotate(90deg) scale(1.2); }
-      50% { transform: rotate(180deg) scale(1); }
-      75% { transform: rotate(270deg) scale(1.2); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-    .icon-dice { display: inline-block; animation: dice-roll 3s infinite ease-in-out; }
-
-    
-    .balloon-container { display: inline-block; width: 100px; height: 120px; position: relative; }
-    
-    .balloon-red { 
-        fill: #ef4444; 
-        transform-origin: 50% 50%;
-        animation: balloon-burst 3s infinite;
-    }
-    .balloon-string { 
-        stroke: white; stroke-width: 2; fill: none; 
-        animation: string-sway 3s infinite;
-        transform-origin: 50% 0%;
-    }
-    .pop-effect {
-        fill: white; opacity: 0;
-        transform-origin: 50% 40%;
-        animation: pop-flash 3s infinite;
-    }
-
-    @keyframes balloon-burst {
-        0%, 70% { transform: scale(1); opacity: 1; }
-        75% { transform: scale(1.2); opacity: 1; }
-        77% { transform: scale(0); opacity: 0; } /* Popping i2 */
-        95% { opacity: 0; transform: scale(0); }
-        100% { transform: scale(1); opacity: 1; } /* Reset i2 */
-    }
-    @keyframes pop-flash {
-        0%, 76% { opacity: 0; transform: scale(0.5); }
-        77% { opacity: 1; transform: scale(1.2); }
-        80% { opacity: 0; transform: scale(1.5); }
-    }
-    @keyframes string-sway {
-        0%, 100% { transform: rotate(-5deg) translateY(0); }
-        50% { transform: rotate(5deg) translateY(-5px); }
-        77% { transform: rotate(0deg) translateY(5px); } /* String nya i2 */
-    }
-
-    @keyframes shield-pulse {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.2); filter: brightness(1.5) drop-shadow(0 0 20px #fff); }
-    }
-    .icon-shield { display: inline-block; animation: shield-pulse 2s infinite ease-in-out; }
-
-    @keyframes wheel-spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .icon-wheel { display: inline-block; animation: wheel-spin 4s infinite linear; }
-
-    @keyframes eyes-blink {
-      0%, 45%, 55%, 100% { transform: scaleY(1); }
-      50% { transform: scaleY(0.1); }
-    }
-    .icon-eyes { display: inline-block; animation: eyes-blink 3.5s infinite; }
-
-    /* --- UI DESIGN --- */
-    .fixed-bg {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(135deg, #1e3a8a, #7e22ce, #be185d);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite; z-index: -2;
-    }
-    @keyframes gradientBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-
-    .game-card { 
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        cursor: pointer; 
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(15px);
-        border: 4px solid rgba(255,255,255,0.2);
-        border-radius: 2.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    .game-card:hover { transform: translateY(-15px) scale(1.02); background: rgba(255,255,255,0.2); border-color: white; }
-    
-    .ui-btn { position:fixed; z-index:100; background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; cursor:pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-    #soundToggle { top:1rem; right:1rem; width:60px; height:60px; }
-    #aboutToggle { top:1rem; left:1rem; width:60px; height:60px; font-weight: bold; color: white; font-size: 1.5rem; }
-    
-    /* LANGUAGE TOGGLE */
-    .lang-container { 
-        position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); 
-        z-index: 100; display: flex; 
-        background: rgba(255,255,255,0.15); 
-        backdrop-filter: blur(15px); 
-        padding: 6px; border-radius: 1.5rem; 
-        border: 2px solid rgba(255,255,255,0.3);
-    }
-    .lang-btn { 
-        color: white; padding: 10px 24px; 
-        border-radius: 1.2rem; 
-        font-weight: 700; cursor: pointer; 
-        transition: all 0.3s ease; border: none;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-        letter-spacing: 0.05em;
-        background: transparent;
-    }
-    .lang-btn.active { background: white; color: #7e22ce; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    
-    .hidden-ui { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    /* Loading Screen */
-    #loading-screen { position: fixed; inset: 0; background: #0f172a; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .power-icon { font-size: 5rem; animation: pulse 1s infinite alternate; }
-    @keyframes pulse { from { opacity: 0.5; transform: scale(1); } to { opacity: 1; transform: scale(1.2); } }
-
-    /* --- ABOUT SIDEBAR --- */
-    #about-sidebar { 
-        position: fixed; top: 0; left: 0; height: 100%; 
-        width: 480px; max-width: 90%;
-        background: white; z-index: 150; 
-        transform: translateX(-100%); 
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
-        border-right: 8px solid #7e22ce; 
-        overflow-y: auto;
-    }
-    #about-sidebar.open { transform: translateX(0); }
-    #sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 140; display: none; backdrop-filter: blur(4px); }
-  </style>
-</head>
-<body class="h-full">
-
- <div class="decor" style="top:10%; left:5%; animation-delay: 0s;">⚡️</div>
- <div class="decor" style="top:25%; right:8%; animation-delay: -2.5s;">🌐</div>
- <div class="decor" style="bottom:15%; left:12%; animation-delay: -4s;">☁️</div>
- <div class="decor" style="bottom:10%; right:6%; animation-delay: -6.5s;">📱</div>
- <div class="decor" style="top:50%; left:3%; animation-delay: -1.2s;">🖱️</div>
- <div class="decor" style="top:8%; right:35%; animation-delay: -3.8s;">📶</div>
- <div class="decor" style="bottom:35%; right:4%; animation-delay: -5.2s;">🔋</div>
-
- <div id="loading-screen">
-     <div class="power-icon mb-6">⚡️</div>
-     <h2 class="text-white font-bold tracking-[0.3em] mb-4 text-xl uppercase" style="font-family:'Space Grotesk'">System Starting...</h2>
-     <div class="w-72 h-3 bg-white/10 rounded-full overflow-hidden border border-white/20">
-         <div id="loader-bar" class="h-full bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 w-0 transition-all duration-300"></div>
-     </div>
- </div>
-
- <div class="fixed-bg"></div>
-
- <button id="aboutToggle" class="ui-btn" onclick="toggleAbout()">i</button>
- 
- <div id="langToggle" class="lang-container">
-    <button onclick="setLanguage('en')" id="btn-en" class="lang-btn">ENGLISH</button>
-    <button onclick="setLanguage('tl')" id="btn-tl" class="lang-btn active">TAGALOG</button>
- </div>
-
- <button id="soundToggle" class="ui-btn" title="Toggle Music">
-     <span id="soundIcon">🔊</span>
- </button>
-
- <div id="sidebar-overlay" onclick="toggleAbout()"></div>
- <div id="about-sidebar" class="flex flex-col shadow-2xl">
-    <div class="w-full relative">
-        <button onclick="toggleAbout()" class="absolute top-4 right-4 z-10 bg-red-600 text-white font-bold w-10 h-10 rounded-full shadow-lg">✕</button>
+        body {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .board-space {
+            width: 100%;
+            min-width: 50px;
+            height: 70px;
+            border: 3px solid #374151;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        @media (min-width: 768px) {
+            .board-space {
+                height: 90px;
+                font-size: 18px;
+            }
+        }
+        .board-space:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .space-start { background: #22c55e; color: white; }
+        .space-posture { background: #3b82f6; color: white; }
+        .space-screen-time { background: #eab308; color: white; }
+        .space-safety { background: #ef4444; color: white; }
+        .space-computer-hardware-and-function { background: #10b981; color: white; }
+        .space-basic-computer-operation { background: #8b5cf6; color: white; }
+        .space-finish { background: #ec4899; color: white; }
         
-        <div class="p-8 pb-4">
-            <h2 id="about-title" class="text-4xl font-black text-purple-800 uppercase" style="font-family:'Space Grotesk'">Meet the Creators!</h2>
-        </div>
+        .player-piece {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid white;
+            position: absolute;
+            z-index: 5;
+            animation: bounce 0.5s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .player-piece:nth-child(2) { top: -8px; left: -8px; }
+        .player-piece:nth-child(3) { top: -8px; right: -8px; }
+        .player-piece:nth-child(4) { bottom: -8px; left: -8px; }
+        .player-piece:nth-child(5) { bottom: -8px; right: -8px; }
+        .player-piece:nth-child(6) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 3px solid #374151;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .dice:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .dice.rolling {
+            animation: roll 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            backdrop-filter: blur(5px);
+            padding: 1rem;
+        }
+        
+        .current-turn {
+            animation: pulse 2s infinite;
+            border: 3px solid #fbbf24 !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8); }
+        }
+        
+        .winner-celebration {
+            animation: celebrate 2s infinite;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+        }
 
-        <div class="w-full bg-gray-200">                 
-            <img src="TheTeam.png" alt="The Creators" class="w-full h-auto block border-b-8 border-purple-600 border-t-8">
-        </div>
+        /* Nav Container */
+        .top-nav {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 110;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .sound-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .sound-toggle:hover {
+            transform: scale(1.1);
+            background: #ffffff;
+        }
+        .sound-off {
+            opacity: 0.7;
+            background: #e5e7eb;
+        }
+
+        /* Language Button Styles */
+        .lang-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            border-radius: 9999px;
+            border: 2px solid #e5e7eb;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            color: #374151;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+        .lang-active {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: rgba(255,255,255,0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #374151;
+        }
+        .back-btn:hover {
+            transform: scale(1.05);
+            background: #ffffff;
+        }
+
+        .fixed-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #10b981 50%, #8b5cf6 100%);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="min-h-full font-sans">
+  
+  <div class="fixed-bg"></div>
+
+  <div class="top-nav">
+    <button class="back-btn" onclick="goBack()" title="Go Back">
+        ↩ <span data-i18n="back">Back</span>
+    </button>
+    <div class="lang-group">
+        <button class="lang-btn lang-active" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" onclick="setLanguage('tl')">Tagalog</button>
     </div>
+  </div>
 
-    <div class="p-8 space-y-6">
-        <div class="text-gray-700 space-y-4 text-lg font-medium leading-relaxed">
-            <p id="about-p1" class="bg-yellow-100 p-5 rounded-3xl border-l-8 border-yellow-500">
-                <b>Kumusta, Digital Hero! </b> Kami ang mga gumawa ng Game Hub na ito para matulungan kang maging ligtas at matalino sa online world.
-            </p>
-            <p id="about-p2">Ginawa namin ang mga larong ito para maging masaya ang iyong pag-aaral tungkol sa digital citizenship at pangangalaga sa iyong kalusugan habang gumagamit ng gadgets.</p>
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-[2.5rem] shadow-xl">
-                <h4 id="about-goal-title" class="font-bold text-xl mb-2">Our Goal:</h4>
-                <p id="about-goal-text" class="text-sm opacity-90">To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀</p>
+  <button id="soundToggle" class="sound-toggle" title="Toggle Sound">
+      <span id="soundIcon">🔊</span>
+  </button>
+
+  <div class="container mx-auto px-4 py-6 max-w-7xl">
+    <div class="text-center mb-6 pt-12">
+        <h1 id="gameTitle" class="text-4xl font-bold text-white drop-shadow-lg mb-2" data-i18n="game_title">Board-band/h1>
+        <p id="welcomeMessage" class="text-lg text-blue-100 font-medium drop-shadow-md" data-i18n="tagline">Click anywhere to start music.</p>
+    </div>
+    
+    <div id="welcomeScreen" class="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 mb-6">
+        <div id="loadingSection" class="text-center">
+            <h2 class="text-4xl font-bold text-blue-700 mb-4" data-i18n="game_title">Board-band</h2>
+            <p class="text-xl text-gray-600 mb-8" data-i18n="tagline">Master Digital Health, Wellness &amp; Online Safety!</p>
+            <div class="mb-8">
+                <div class="w-64 h-4 bg-gray-200 rounded-full mx-auto mb-4">
+                    <div id="loadingBar" class="h-4 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="loadingText" class="text-gray-600" data-i18n="loading">Loading game...</p>
+            </div>
+        </div>
+        
+        <div id="mechanicsSection" class="hidden">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-blue-700 mb-4" data-i18n="mech_title">🎯 Game Mechanics</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-bold text-blue-700 mb-3" data-i18n="how_to_play">🎲 How to Play</h4>
+                    <ul class="space-y-2 text-sm text-gray-700" data-i18n="how_to_play_list">
+                        <li>• Roll the dice to move around the board</li>
+                        <li>• Answer questions correctly to earn points</li>
+                        <li>• First player to reach space 20 with correct answer wins!</li>
+                        <li>• Learn about digital citizenship along the way</li>
+                    </ul>
+                </div>
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-bold text-green-700 mb-3" data-i18n="scoring">Scoring System</h4>
+                    <ul class="space-y-2 text-sm text-gray-700" data-i18n="scoring_list">
+                        <li>• Correct Answer: +5 points</li>
+                        <li>• Wrong Answer: Lose 3 points + Chaos increases</li>
+                        <li>• Complete bonus challenges: +3 points</li>
+                        <li>• 5 chaos meter means eliminated</li>
+                    </ul>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-bold text-purple-700 mb-3" data-i18n="categories">📚 Question Categories</h4>
+                    <ul class="space-y-2 text-sm text-gray-700" data-i18n="categories_list">
+                        <li>• 🪑 Posture &amp; Ergonomics</li>
+                        <li>• ⏰ Screen Time Management</li>
+                        <li>• 🛡️ Internet Safety &amp; Security</li>
+                        <li>• 🖥️ Computer Hardware and Functions</li>
+                        <li>• ⚙️ Basic Computer Operations</li>
+                    </ul>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-lg">
+                    <h4 class="text-lg font-bold text-yellow-700 mb-3" data-i18n="multiplayer">👥 Multiplayer Rules</h4>
+                    <ul class="space-y-2 text-sm text-gray-700" data-i18n="multiplayer_list">
+                        <li>• 1-5 players can join the game</li>
+                        <li>• Take turns rolling the dice</li>
+                        <li>• Help each other learn together</li>
+                        <li>• Celebrate everyone's progress!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg mb-6">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" id="agreeCheckbox" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500"> 
+                    <label for="agreeCheckbox" class="text-gray-700"> 
+                        <span class="font-semibold" data-i18n="agree_1">I understand and agree to the game mechanics.</span> <br>
+                        <span class="text-sm" data-i18n="agree_2">I will play respectfully, learn actively, and help create a positive gaming environment for all players.</span> 
+                    </label>
+                </div>
+            </div>
+            <div class="text-center">
+                <button id="proceedBtn" class="bg-gradient-to-r from-blue-500 to-green-600 text-white py-3 px-8 rounded-lg font-semibold hover:from-blue-600 hover:to-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled data-i18n="proceed"> 🚀 Proceed to Player Setup </button>
             </div>
         </div>
     </div>
- </div>
 
- <div id="app" class="app-wrapper w-full h-full flex flex-col overflow-auto relative">
-   <div id="main-menu" class="min-h-full flex flex-col p-6">
-     <div class="text-center mb-12 mt-20">
-       <h1 class="text-7xl md:text-9xl font-black text-white mb-4" style="font-family:'Space Grotesk'; text-shadow: 0 10px 20px rgba(0,0,0,0.3);">GAME HUB</h1>
-       <p id="music-instruction" class="text-2xl text-yellow-300 font-bold tracking-[0.2em] bg-black/30 inline-block px-12 py-3 rounded-full border-4 border-yellow-300/40 uppercase">Click anywhere to start music</p>
-     </div>
+    <div id="setupScreen" class="hidden bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 mb-6">
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-blue-700" data-i18n="setup_title">Digital Citizenship Multiplayer Game</h2>
+            <p class="text-gray-600 mt-2" data-i18n="setup_desc">Enter player names (1-5 players) and start learning together!</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="p-4 border-2 border-red-200 rounded-lg bg-red-50">
+                <div class="flex items-center mb-2">
+                    <div class="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                    <label class="font-semibold text-red-700" data-i18n="p1">Player 1 (Required)</label>
+                </div>
+                <input type="text" id="player1Name" class="w-full px-3 py-2 border border-red-300 rounded-lg" data-placeholder-i18n="name_placeholder">
+            </div>
+            <div class="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+                <div class="flex items-center mb-2">
+                    <div class="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+                    <label class="font-semibold text-blue-700" data-i18n="p2">Player 2 (Optional)</label>
+                </div>
+                <input type="text" id="player2Name" class="w-full px-3 py-2 border border-blue-300 rounded-lg" data-placeholder-i18n="name_placeholder">
+            </div>
+            <div class="p-4 border-2 border-green-200 rounded-lg bg-green-50">
+                <div class="flex items-center mb-2">
+                    <div class="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                    <label class="font-semibold text-green-700" data-i18n="p3">Player 3 (Optional)</label>
+                </div>
+                <input type="text" id="player3Name" class="w-full px-3 py-2 border border-green-300 rounded-lg" data-placeholder-i18n="name_placeholder">
+            </div>
+            <div class="p-4 border-2 border-yellow-200 rounded-lg bg-yellow-50">
+                <div class="flex items-center mb-2">
+                    <div class="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                    <label class="font-semibold text-yellow-700" data-i18n="p4">Player 4 (Optional)</label>
+                </div>
+                <input type="text" id="player4Name" class="w-full px-3 py-2 border border-yellow-300 rounded-lg" data-placeholder-i18n="name_placeholder">
+            </div>
+            <div class="p-4 border-2 border-purple-200 rounded-lg bg-purple-50">
+                <div class="flex items-center mb-2">
+                    <div class="w-4 h-4 bg-purple-500 rounded-full mr-2"></div>
+                    <label class="font-semibold text-purple-700" data-i18n="p5">Player 5 (Optional)</label>
+                </div>
+                <input type="text" id="player5Name" class="w-full px-3 py-2 border border-purple-300 rounded-lg" data-placeholder-i18n="name_placeholder">
+            </div>
+        </div>
+        <div class="text-center">
+            <button id="startGameBtn" class="bg-gradient-to-r from-blue-500 to-green-600 text-white py-3 px-8 rounded-lg font-semibold hover:from-blue-600 hover:to-green-700 transition-all duration-200" data-i18n="start_game_btn"> Start Game </button>
+            <p class="text-sm text-gray-500 mt-2" data-i18n="setup_note">At least Player 1 name is required to start</p>
+        </div>
+    </div>
 
-     <div class="flex-1 flex items-center justify-center pb-24">
-       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl w-full px-4">
-         
-         <div class="game-card p-12 text-center" onclick="loadGame(1)">
-           <div class="text-8xl mb-6 icon-dice">🎲</div>
-           <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Board-band</h3>
-           <div class="mt-8 bg-white text-blue-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
-         </div>
+    <div id="gameBoard" class="hidden">
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-3" data-i18n="players_title">Players in Game</h3>
+            <div id="playersList" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <h3 class="font-bold text-gray-800 mb-2" data-i18n="turn_title">Current Turn</h3>
+                <p id="currentTurn" class="text-lg font-semibold text-blue-600">Waiting...</p>
+                <p class="text-sm text-gray-600" data-i18n="turn_desc">Roll the dice to move!</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center">
+                <h3 class="font-bold text-gray-800 mb-3" data-i18n="roll_title">Roll Dice</h3>
+                <div id="dice" class="dice mx-auto">?</div>
+                <button id="rollDiceBtn" class="mt-3 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50" disabled data-i18n="roll_dice"> Roll Dice </button>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <h3 class="font-bold text-gray-800 mb-2" data-i18n="stats_title">Current Player Stats</h3>
+                <div class="space-y-1 text-sm">
+                    <p><span data-i18n="stat_pos">Position</span>: <span id="currentPosition" class="font-semibold">START</span>/20</p>
+                    <p><span data-i18n="stat_score">Score</span>: <span id="currentScore" class="font-semibold text-green-600">0</span> points</p>
+                    <p><span data-i18n="stat_correct">Correct</span>: <span id="currentCorrect" class="font-semibold text-blue-600">0</span> answers</p>
+                </div>
+                <div class="mt-4 pt-3 border-t border-gray-200">
+                    <h4 class="font-bold text-red-600 mb-2" data-i18n="chaos_meter">Chaos Meter</h4>
+                    <div class="flex space-x-1 mb-2">
+                        <div id="chaos1" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+                        <div id="chaos2" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+                        <div id="chaos3" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+                        <div id="chaos4" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+                        <div id="chaos5" class="w-4 h-4 border-2 border-red-300 rounded-full"></div>
+                    </div>
+                    <p id="chaosEffect" class="text-xs text-red-600 font-semibold hidden">CHAOS ACTIVE!</p>
+                </div>
+            </div>
+        </div>
 
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-6">
+            <h3 class="text-lg md:text-xl font-bold text-center text-gray-800 mb-4 md:mb-6" data-i18n="journey_title">Digital Citizenship Journey</h3>
+            <div class="relative bg-gradient-to-br from-blue-50 to-green-50 p-4 md:p-6 rounded-lg border-4 border-gray-300">
+                <div class="flex justify-center mb-2 md:mb-3">
+                    <div id="space-0" class="board-space space-start" data-space="0" style="width: 100%; max-width: 280px; height: 80px; font-size: 20px;" data-i18n="start">START</div>
+                </div>
+              <div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+    <div id="space-1" class="board-space space-posture" data-space="1">1</div>
+    <div id="space-2" class="board-space space-screen-time" data-space="2">2</div>
+    <div id="space-3" class="board-space space-safety" data-space="3">3</div>
+    <div id="space-4" class="board-space space-computer-hardware-and-function" data-space="4">4</div>
+    <div id="space-5" class="board-space space-basic-computer-operation" data-space="5">5</div>
+</div>
+<div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+    <div id="space-6" class="board-space space-computer-hardware-and-function" data-space="6">6</div>
+    <div id="space-7" class="board-space space-safety" data-space="7">7</div>
+    <div id="space-8" class="board-space space-screen-time" data-space="8">8</div>
+    <div id="space-9" class="board-space space-posture" data-space="9">9</div>
+    <div id="space-10" class="board-space space-basic-computer-operation" data-space="10">10</div>
+</div>
+<div class="grid grid-cols-5 gap-1 md:gap-2 mb-1 md:mb-2">
+    <div id="space-11" class="board-space space-safety" data-space="11">11</div>
+    <div id="space-12" class="board-space space-posture" data-space="12">12</div>
+    <div id="space-13" class="board-space space-screen-time" data-space="13">13</div>
+    <div id="space-14" class="board-space space-computer-hardware-and-function" data-space="14">14</div>
+    <div id="space-15" class="board-space space-basic-computer-operation" data-space="15">15</div>
+</div>
+<div class="grid grid-cols-5 gap-1 md:gap-2 mb-2 md:mb-3">
+    <div id="space-16" class="board-space space-posture" data-space="16">16</div>
+    <div id="space-17" class="board-space space-computer-hardware-and-function" data-space="17">17</div>
+    <div id="space-18" class="board-space space-screen-time" data-space="18">18</div>
+    <div id="space-19" class="board-space space-safety" data-space="19">19</div>
+    <div id="space-20" class="board-space space-basic-computer-operation" data-space="20">20</div>
+</div>
+                <div class="flex justify-center mt-2 md:mt-3">
+                    <div id="space-21" class="board-space space-finish" data-space="21" style="width: 100%; max-width: 280px; height: 80px; font-size: 20px;" data-i18n="finish">FINISH</div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4 text-gray-800">Colors Legend</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-green-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Start</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Posture</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-yellow-400 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Screen Time</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-red-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Safety</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-emerald-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Computer Hardware & Function</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-purple-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Basic Computer Operation</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-pink-500 rounded border-2 border-gray-400"></div><span class="text-sm font-medium">Finish</span>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4" data-i18n="leaderboard">🏆 Leaderboard</h3>
+            <div id="leaderboard" class="space-y-2"></div>
+        </div>
+    </div>
+    
+    <div id="questionModal" class="question-modal hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-4 md:p-6 max-w-xl w-full mx-4 max-h-[95vh] flex flex-col modal-content">
+            <div class="text-center mb-2 flex-shrink-0">
+                <div id="questionIcon" class="text-4xl mb-1 md:mb-2">❓</div>
+                <h3 id="questionTitle" class="text-xl md:text-2xl font-bold text-gray-800 mb-1" data-i18n="q_modal_title">Digital Citizenship Question</h3>
+                <p id="questionCategory" class="text-sm md:text-lg text-blue-600 font-semibold">Category</p>
+                <p id="questionPlayer" class="text-xs md:text-md text-gray-600 font-medium">Player's Turn</p>
+            </div>
+            <div id="questionText" class="text-base md:text-lg text-gray-700 mb-3 text-center flex-shrink-0">Question Text</div>
+            <div id="questionOptions" class="space-y-2 mb-2 overflow-y-auto flex-grow px-1"></div>
+            <div id="questionFeedback" class="hidden text-center p-2 md:p-3 rounded-lg mt-2 mb-2 flex-shrink-0 overflow-y-auto max-h-[25vh]"></div>
+            <div class="text-center flex-shrink-0 pt-2">
+                <button id="nextQuestionBtn" class="hidden w-full bg-gradient-to-r from-blue-500 to-green-600 text-white py-2 md:py-3 px-8 rounded-lg font-bold text-base md:text-lg hover:from-blue-600 hover:to-green-700 transition-all duration-200 shadow-lg" data-i18n="continue"> ➡️ Continue Game </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="winnerModal" class="question-modal hidden">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg mx-4 text-center">
+            <div class="winner-celebration text-8xl mb-4">🏆</div>
+            <h3 class="text-3xl font-bold text-yellow-600 mb-4" data-i18n="congrats">Congratulations!</h3>
+            <p id="winnerText" class="text-xl text-gray-700 mb-6">You are a Digital Citizenship Master!</p>
+            <div class="space-y-2 mb-6 text-lg">
+                <p><span data-i18n="win_score">Final Score:</span> <span id="winnerScore" class="font-bold text-green-600">0</span></p>
+                <p><span data-i18n="win_correct">Correct Answers:</span> <span id="winnerCorrect" class="font-bold text-blue-600">0</span></p>
+            </div>
+            <button id="newGameBtn" class="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all duration-200" data-i18n="play_again"> 🎮 Play Again </button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+        /**
+         * 1. TRANSLATION SYSTEM
+         */
+        const i18n = {
+            en: {
+                back: "Back",
+                game_title: "Board-band",
+                tagline: "Master Digital Health, Wellness & Online Safety!",
+                loading: "Loading game...",
+                mech_title: "🎯 Game Mechanics",
+                how_to_play: "🎲 How to Play",
+                how_to_play_list: "<li>• Roll the dice to move around the board</li><li>• Answer questions correctly to earn points</li><li>• First player to reach space 20 wins!</li><li>• Learn about digital citizenship along the way</li>",
+                scoring: "Scoring System",
+                scoring_list: "<li>• Correct Answer: +5 points</li><li>• Wrong Answer: Lose 3 points + Chaos increases</li><li>• Complete bonus challenges: +3 points</li><li>• High chaos may trigger special consequences</li>",
+                categories: "📚 Question Categories",
+                categories_list: "<li>• 🪑 Posture & Ergonomics</li><li>• ⏰ Screen Time Management</li><li>• 🛡️ Internet Safety & Security</li><li>• 🖥️ Computer Hardware and Functions</li><li>•⚙️ Basic Computer Operations</li>",
+                multiplayer: "👥 Multiplayer Rules",
+                multiplayer_list: "<li>• 1-5 players can join the game</li><li>• Take turns rolling the dice</li><li>• Help each other learn together</li><li>• Celebrate everyone's progress!</li>",
+                agree_1: "I understand and agree to the game mechanics.",
+                agree_2: "I will play respectfully, learn actively, and help create a positive gaming environment for all players.",
+                proceed: "🚀 Proceed to Player Setup",
+                setup_title: "Digital Citizenship Multiplayer Game",
+                setup_desc: "Enter player names (1-5 players) and start learning together!",
+                p1: "Player 1 (Required)",
+                p2: "Player 2 (Optional)",
+                p3: "Player 3 (Optional)",
+                p4: "Player 4 (Optional)",
+                p5: "Player 5 (Optional)",
+                name_placeholder: "Enter player name...",
+                start_game_btn: "Start Game",
+                setup_note: "At least Player 1 name is required to start",
+                players_title: "Players in Game",
+                turn_title: "Current Turn",
+                turn_desc: "Roll the dice to move!",
+                roll_title: "Roll Dice",
+                roll_dice: "Roll Dice",
+                stats_title: "Current Player Stats",
+                stat_pos: "Position",
+                stat_score: "Score",
+                stat_correct: "Correct",
+                chaos_meter: "Chaos Meter",
+                journey_title: "Digital Citizenship Journey",
+                start: "START",
+                finish: "FINISH",
+                leaderboard: "🏆 Leaderboard",
+                q_modal_title: "Digital Citizenship Question",
+                continue: "➡️ Continue Game",
+                congrats: "Congratulations!",
+                win_score: "Final Score:",
+                win_correct: "Correct Answers:",
+                play_again: "🎮 Play Again",
+                cat_pos: "Posture and Ergonomics",
+                cat_screen: "Screen Time Management",
+                cat_safety: "Internet Safety and Security",
+                cat_comp: "Computer Hardware and Functions",
+                cat_basic: "Basic Computer Operation",
+                turn_suffix: "'s Turn",
+                correct_text: "Correct!",
+                wrong_text: "Wrong. Correct answer:",
+                phys_act: "PHYSICAL ACTIVITY!",
+                consequence: "CONSEQUENCE:",
+                chaos_event: "CHAOS EVENT:",
+                toast_start: "Game started with",
+                toast_rolled: "rolled a",
+                toast_p1_req: "Please enter Player 1 name!",
+                cons_move: "Move back 1 space",
+                cons_jacks: "Do 5 jumping jacks",
+                cons_points: "Lose 3 points",
+                disqualified: "ELIMINATED! Tanggal ka na sa laro."
+            },
+            tl: {
+                back: "Bumalik",
+                game_title: "Board-band",
+                tagline: "Maging Dalubhasa sa Kalusugang Digital at Kaligtasan!",
+                loading: "Naglo-load...",
+                mech_title: "🎯 Mekaniks ng Laro",
+                how_to_play: "🎲 Paano Maglaro",
+                how_to_play_list: "<li>• I-roll ang dice para gumalaw sa board</li><li>• Sagutin ang mga tanong para sa puntos</li><li>• Ang unang umabot sa space 20 ang panalo!</li><li>• Matuto tungkol sa digital citizenship</li>",
+                scoring: "Sistema ng Puntos",
+                scoring_list: "<li>• Tamang Sagot: +5 puntos</li><li>• Mali: -3 puntos + Tataas ang Chaos</li><li>• Bonus challenge: +3 puntos</li><li>• Ang mataas na chaos ay may parusa</li>",
+                categories: "📚 Mga Kategorya",
+                categories_list: "<li>• 🪑 Posisyon at Ergonomics</li><li>• ⏰ Oras ng paggamit ng gadgets</li><li>• 🛡️ Kaligtasan sa Internet</li>🖥️ Pisikal na Gamit ng Computer at Kanilang mga Tungkulin </li><li>•⚙️ Pangunahing Gawain sa Computer</li>",
+                multiplayer: "👥 Mga Panuntunan",
+                multiplayer_list: "<li>• 1-5 manlalaro ang pwedeng maglaro</li><li>• Magpalitan sa pag-roll ng dice</li><li>• Magtulungan sa pag-aaral</li><li>• Ipagdiwang ang progreso ng lahat!</li>",
+                agree_1: "Naintindihan ko at sumasang-ayon ako sa mekaniks.",
+                agree_2: "Maglalaro ako nang may respeto at aktibong makilalahok para sa ikagaganda ng laro para sa lahat.",
+                proceed: "🚀 Tumuloy sa Setup",
+                setup_title: "Setup ng Multiplayer",
+                setup_desc: "Ilagay ang pangalan (1-5 manlalaro) at simulan ang pag-aaral!",
+                p1: "Player 1 (Kailangan)",
+                p2: "Player 2 (Opsyonal)",
+                p3: "Player 3 (Opsyonal)",
+                p4: "Player 4 (Opsyonal)",
+                p5: "Player 5 (Opsyonal)",
+                name_placeholder: "Ilagay ang pangalan...",
+                start_game_btn: "Simulan ang Laro",
+                setup_note: "Kailangan ng kahit isang Player 1 para magsimula",
+                players_title: "Mga Manlalaro sa Laro",
+                turn_title: "Taya Ngayon",
+                turn_desc: "I-roll ang dice para gumalaw!",
+                roll_title: "I-roll ang Dice",
+                roll_dice: "I-roll ang Dice",
+                stats_title: "Istatistika ng Manlalaro",
+                stat_pos: "Posisyon",
+                stat_score: "Puntos",
+                stat_correct: "Tama",
+                chaos_meter: "Chaos Meter",
+                journey_title: "Paglalakbay sa Pagkamamamayang Digital",
+                start: "SIMULA",
+                finish: "DULO",
+                leaderboard: "🏆 Leaderboard",
+                q_modal_title: "Tanong",
+                continue: "➡️ Ituloy ang Laro",
+                congrats: "Maligayang Pagbati!",
+                win_score: "Kabuuang Puntos:",
+                win_correct: "Tamang Sagot:",
+                play_again: "🎮 Maglaro Muli",
+                cat_pos: "Tamang Posisyon at Ergonomics",
+                cat_screen: "Screen Time Management",
+                cat_safety: "Internet Safety at Security",
+                cat_comp: "Pisikal na Gamit ng Computer",
+                cat_basic: "Pangunahing Gawain sa Computer",
+                turn_suffix: "",
+                correct_text: "Tama!",
+                wrong_text: "Mali. Tamang sagot:",
+                phys_act: "GAWAING PISIKAL!",
+                consequence: "KAHIHINATNAN:",
+                chaos_event: "CHAOS EVENT:",
+                toast_start: "Nagsimula ang laro sa",
+                toast_rolled: "nakakuha ng",
+                toast_p1_req: "Mangyaring ilagay ang pangalan ng Player 1!",
+                cons_move: "Bumalik ng 1 space",
+                cons_jacks: "Gawin ang 5 jumping jacks",
+                cons_points: "Mabawasan ng 3 puntos",
+                disqualified: "ELIMINATED! Tanggal ka na sa laro."
+            }
+        };
+
+        const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+        const playerIcons = ['🎮', '⭐', '🚀', '🎯', '💎'];
+        const maxChaos = 5;
+
+        let gameState = {
+            players: [],
+            currentPlayerIndex: 0,
+            gameStarted: false,
+            diceValue: 0,
+            lastFeedback: null
+        };
+
+        let currentLanguage = 'en';
+        let currentActiveQuestion = null;
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('lang-active');
+                if (btn.textContent.toLowerCase().includes(lang === 'en' ? 'english' : 'tagalog')) {
+                    btn.classList.add('lang-active');
+                }
+            });
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
+            });
+            document.querySelectorAll('[data-placeholder-i18n]').forEach(el => {
+                const key = el.getAttribute('data-placeholder-i18n');
+                if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+            });
+            
+            if (gameState.gameStarted) {
+                updateCurrentTurn();
+                updateLeaderboard();
+                updatePlayersDisplay();
+            }
+
+         // Update modal if open
+if (currentActiveQuestion && !document.getElementById('questionModal').classList.contains('hidden')) {
+    const q = currentActiveQuestion;
+    const cat = q.categoryType;
+    
+    document.getElementById('questionText').textContent = q.question[lang];
+    document.getElementById('questionPlayer').textContent = gameState.players[gameState.currentPlayerIndex].name + i18n[lang].turn_suffix;
+
+    // TAMA NA MAPPING PARA SA CATEGORY LABELS
+    const catMap = { 
+        posture: 'cat_pos', 
+        screentime: 'cat_screen', 
+        safety: 'cat_safety', 
+        computerhardwareandfunctions: 'cat_comp', 
+        basiccomputeroperation: 'cat_basic' 
+    };
+    
+    document.getElementById('questionCategory').textContent = i18n[lang][catMap[cat]];
+    
+    // Itatranslate ang options
+    const buttons = document.querySelectorAll('#questionOptions button');
+    if (buttons.length > 0) {
+        buttons.forEach((btn, idx) => {
+            btn.innerHTML = `<span class="font-semibold">${String.fromCharCode(65 + idx)}:</span> ${q.options[idx][lang]}`;
+        });
+    }
+
+    if (!document.getElementById('questionFeedback').classList.contains('hidden')) {
+        renderFeedback();
+    }
+}
+            
+            AudioController.playClick();
+        }
+
+        const AudioController = {
+            ctx: null, isMuted: false, isPlaying: false, tempo: 120, step: 0, intervalId: null,
+            notes: {
+                'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'B3': 246.94,
+                'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+                'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77
+            },
+            melody: ['E4', 'G4', 'C5', null, 'E5', 'D5', 'C5', null, 'A4', 'C5', 'F5', null, 'A5', 'G5', 'F5', null],
+            bassline: ['C3', null, 'G3', null, 'C3', null, 'E3', null, 'F3', null, 'C4', null, 'F3', null, 'A3', null],
+            init: function() {
+                if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+            toggleMute: function() {
+                this.isMuted = !this.isMuted;
+                document.getElementById('soundIcon').textContent = this.isMuted ? '🔇' : '🔊';
+                if (this.isMuted) this.stopBGM(); else this.startBGM();
+            },
+            playTone: function(freq, type, duration, vol = 0.1) {
+                if (this.isMuted || !this.ctx) return;
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                osc.start(); osc.stop(this.ctx.currentTime + duration);
+            },
+            startBGM: function() {
+                if(this.isMuted || this.isPlaying) return; this.init(); this.isPlaying = true;
+                const stepTime = (60 / this.tempo) / 4 * 1000;
+                this.intervalId = setInterval(() => {
+                    if(this.isMuted) return;
+                    const n = this.melody[this.step % this.melody.length]; if(n) this.playTone(this.notes[n], 'square', 0.1, 1.0);
+                    const b = this.bassline[this.step % this.bassline.length]; if(b) this.playTone(this.notes[b], 'triangle', 0.2, 0.05);
+                    this.step++;
+                }, stepTime);
+            },
+            stopBGM: function() { this.isPlaying = false; if(this.intervalId) clearInterval(this.intervalId); },
+            playClick: function() { this.playTone(800, 'sine', 0.1, 0.2); },
+            playDice: function() { this.playTone(200, 'triangle', 0.1, 0.2); },
+            playCorrect: function() { 
+                this.playTone(523.25, 'sine', 0.3, 0.3); 
+                setTimeout(() => this.playTone(659.25, 'sine', 0.3, 0.3), 100);
+                setTimeout(() => this.playTone(783.99, 'sine', 0.5, 0.3), 200);
+            },
+            playWrong: function() { this.playTone(150, 'sawtooth', 0.4, 0.3); },
+            playWin: function() { [523, 659, 783, 1046].forEach((n, i) => setTimeout(() => this.playTone(n, 'square', 0.4, 0.3), i * 150)); }
+        };
+
+        const questions = {
+           posture: [
+    {
+        question: { en: "What is the proper distance of your eyes from the computer monitor?", tl: "Ano ang wastong layo ng iyong mga mata mula sa monitor ng computer?" },
+        options: [{en:"5 to 10 inches",tl:"5 hanggang 10 pulgada"}, {en:"18 to 24 inches",tl:"18 hanggang 24 pulgada"}, {en:"2 to 4 feet",tl:"2 hanggang 4 talampakan"}, {en:"As close as possible",tl:"Pinakamalapit na maaari"}],
+        correct: 1,
+        explanation: { en: "Maintaining a distance of 18–24 inches helps prevent eye strain.", tl: "Ang pagpapanatili ng 18–24 pulgada ay nakatutulong upang maiwasan ang pananakit ng mata." },
+        challenge: { en: "DISTANCE CHECK: Reach out your arm! Your monitor should be about one arm's length away.", tl: "DISTANCE CHECK: Iunat ang iyong kamay! Ang monitor ay dapat kasing-layo ng isang braso." }
+    },
+    {
+        question: { en: "How should your feet be positioned when sitting in front of a computer?", tl: "Paano mo dapat i-posisyon ang iyong mga paa habang nakaupo sa harap ng computer?" },
+        options: [{en:"Crossed",tl:"Nakadekuwatro"}, {en:"Hanging",tl:"Nakabitin"}, {en:"Flat on the floor",tl:"Nakalapat sa sahig"}, {en:"On the CPU",tl:"Nakapatong sa CPU"}],
+        correct: 2,
+        explanation: { en: "Feet flat on the floor support posture and circulation.", tl: "Ang nakalapat na paa ay nakatutulong sa tamang postura at daloy ng dugo." },
+        challenge: { en: "FEET CHALLENGE: Keep both feet flat on the floor for the next 20 seconds!", tl: "FEET CHALLENGE: Panatilihing nakalapat ang dalawang paa sa sahig sa loob ng 20 segundo!" }
+    },
+    {
+        question: { en: "At what level should the computer monitor be placed?", tl: "Sa anong lebel dapat nakalagay ang monitor ng computer?" },
+        options: [{en:"Above eye level",tl:"Mas mataas sa mata"}, {en:"Below keyboard",tl:"Sa ibaba ng keyboard"}, {en:"At eye level",tl:"Kapantay ng mata"}, {en:"On the floor",tl:"Sa sahig"}],
+        correct: 2,
+        explanation: { en: "The top of the screen should be at or slightly below eye level.", tl: "Ang itaas ng screen ay dapat kapantay o bahagyang mas mababa sa mata." },
+        challenge: { en: "NECK RELIEF: Slowly tilt your head up, down, left, and right to relax your neck!", tl: "NECK RELIEF: Dahan-dahang itungo, itingala, at ipaling ang ulo sa kaliwa at kanan!" }
+    },
+    {
+        question: { en: "How should your back be positioned while using a computer?", tl: "Paano ang tamang posisyon ng iyong likod habang gumagamit ng computer?" },
+        options: [{en:"Slouching",tl:"Nakakuba"}, {en:"Leaning far back",tl:"Nakasandal nang malayo"}, {en:"Straight and supported",tl:"Tuwid at nakasandal"}, {en:"Twisted",tl:"Nakapaling"}],
+        correct: 2,
+        explanation: { en: "A straight, supported back prevents backaches.", tl: "Ang nakatuwid na likod ay nakaiiwas sa pananakit." },
+        challenge: { en: "BACK CHALLENGE: Do 5 shoulder rolls backward to straighten your spine!", tl: "BACK CHALLENGE: Mag-shoulder roll nang paurong ng 5 beses para ituwid ang likod!" }
+    },
+    {
+        question: { en: "Which lighting setupis best when using a computer?", tl: "Aling setup ng ilaw ang pinakamainam kapag gumagamit ng computer?" },
+        options: [{en:"Very dark room",tl:"Madilim na silid"}, {en:"Bright light on screen",tl:"Maliwanag na ilaw sa screen"}, {en:"Well-lit room without glare",tl:"Maliwanag na silid na walang silaw"}, {en:"Flashlight",tl:"Flashlight"}],
+        correct: 2,
+        explanation: { en: "Good lighting reduces eye fatigue.", tl: "Ang maayos na ilaw ay nakapagpababawas ng pagod ng mata." },
+        challenge: { en: "EYE REST: Close your eyes and count to 10 to give them a break from the light!", tl: "EYE REST: Ipikit ang mata at magbilang hanggang 10 para makapagpahinga ang mga ito!" }
+    },
+    {
+        question: { en: "How should your wrists be positioned while typing?", tl: "Paano dapat nakaposisyon ang iyong pulso habang nagta-type?" },
+        options: [{en:"Bent upwards",tl:"Nakaangat"}, {en:"Resting flat",tl:"Nakalapat nang tuwid"}, {en:"Twisted sideways",tl:"Nakapaling"}, {en:"Hanging down",tl:"Nakalaylay"}],
+        correct: 1,
+        explanation: { en: "Flat wrists prevent strain and carpal tunnel.", tl: "Ang nakalapat na pulso ay nakakaiwas sa pananakit." },
+        challenge: { en: "WRIST STRETCH: Wave your hands and rotate your wrists 5 times in each direction!", tl: "WRIST STRETCH: Ikaway ang mga kamay at iikot ang mga pulso nang 5 beses!" }
+    },
+    {
+        question: { en: "Where should your keyboard be placed?", tl: "Saan dapat nakalagay ang iyong keyboard?" },
+        options: [{en:"Too high",tl:"Mataas"}, {en:"Too low",tl:"Mababa"}, {en:"At elbow level",tl:"Kapantay ng siko"}, {en:"On the floor",tl:"Sa sahig"}],
+        correct: 2,
+        explanation: { en: "Keyboard at elbow level keeps arms relaxed.", tl: "Ang keyboard na kapantay ng siko ay nakapagpapahinga ng braso." },
+        challenge: { en: "ARM STRETCH: Reach your arms forward and pull your fingers back gently for 5 seconds!", tl: "ARM STRETCH: Iunat ang mga kamay at dahan-dahang hilahin ang mga daliri paurong!" }
+    },
+    {
+        question: { en: "How should your chair be adjusted?", tl: "Paano dapat inaayos ang iyong upuan?" },
+        options: [{en:"Too high",tl:"Mataas"}, {en:"Too low",tl:"Mababa"}, {en:"Adjustable to support back",tl:"Nakaayos para suportahan ang likod"}, {en:"Without backrest",tl:"Walang sandalan"}],
+        correct: 2,
+        explanation: { en: "A supportive chair prevents back pain.", tl: "Ang upuang may sandalan ay nakaiiwas sa pananakit ng likod." },
+        challenge: { en: "STAND UP: Stand up, stretch tall like a tree, and sit back down properly!", tl: "STAND UP: Tumayo, mag-stretch nang mataas, at umupo muli nang maayos!" }
+    },
+    {
+        question: { en: "Why is posture important when using a computer?", tl: "Bakit mahalaga ang tamang postura sa paggamit ng computer?" },
+        options: [{en:"To look good",tl:"Para magmukhang maganda"}, {en:"To avoid injuries",tl:"Para maiwasan ang pinsala"}, {en:"To play faster",tl:"Para mas mabilis maglaro"}, {en:"To save electricity",tl:"Para makatipid sa kuryente"}],
+        correct: 1,
+        explanation: { en: "Good posture prevents long-term health problems.", tl: "Ang tamang postura ay nakaiiwas sa sakit." },
+        challenge: { en: "DEEP BREATHING: Sit straight and take 3 deep breaths to improve your focus!", tl: "DEEP BREATHING: Umupo nang tuwid at huminga nang malalim nang 3 beses!" }
+    },
+    {
+        question: { en: "How should your head be positioned?", tl: "Paano dapat nakaposisyon ang iyong ulo?" },
+        options: [{en:"Tilted down",tl:"Nakatungo"}, {en:"Tilted up",tl:"Nakaangat"}, {en:"Straight facing screen",tl:"Tuwid na nakaharap sa screen"}, {en:"Turned sideways",tl:"Nakapaling"}],
+        correct: 2,
+        explanation: { en: "A straight head position prevents neck strain.", tl: "Ang tuwid na posisyon ng ulo ay nakaiiwas sa pananakit ng leeg." },
+        challenge: { en: "CHIN TUCK: Gently tuck your chin towards your chest 3 times to align your neck!", tl: "CHIN TUCK: Dahan-dahang itungo ang baba sa dibdib nang 3 beses!" }
+    }
+],
+  screentime: [
+    {
+        question: { en: "What is the recommended '20-20-20' rule for eye care?", tl: "Ano ang iminumungkahing '20-20-20' rule para sa pangangalaga ng mata?" },
+        options: [{en:"Every 20 minutes, look 20 feet away for 20 seconds",tl:"Tuwing 20 minuto, tumingin sa 20 talampakan sa loob ng 20 segundo"}, {en:"Blink 20 times in 20 seconds",tl:"Kumurap nang 20 beses sa loob ng 20 segundo"}, {en:"Sleep for 20 hours",tl:"Matulog nang 20 oras"}, {en:"Drink 20 glasses of water",tl:"Uminom ng 20 baso ng tubig"}],
+        correct: 0,
+        explanation: { en: "This rule gives your eyes a break.", tl: "Ang panuntunang ito ay nagbibigay pahinga sa mata." },
+        challenge: { en: "EYE FOCUS: Look at something far away (about 20 feet) for 20 seconds!", tl: "EYE FOCUS: Tumingin sa isang bagay na malayo sa loob ng 20 segundo!" }
+    },
+    {
+        question: { en: "Why is it important to limit your screen time?", tl: "Bakit mahalagang limitahan mo ang iyong screen time?" },
+        options: [{en:"To save electricity",tl:"Para makatipid sa kuryente"}, {en:"To avoid health problems",tl:"Para maiwasan ang problema sa kalusugan"}, {en:"So the computer won’t overheat",tl:"Para hindi mag-init ang computer"}, {en:"To make internet faster",tl:"Para bumilis ang internet"}],
+        correct: 1,
+        explanation: { en: "Too much screen time harms health.", tl: "Ang labis na screen time ay nakasasama sa kalusugan." },
+        challenge: { en: "EYE ROLL: Slowly roll your eyes in a full circle 3 times to relax your eye muscles!", tl: "EYE ROLL: Iikot ang iyong mga mata nang dahan-dahan nang 3 beses!" }
+    },
+    {
+        question: { en: "What should you do before going to sleep?", tl: "Ano ang dapat mong gawin bago matulog?" },
+        options: [{en:"Play games in bed",tl:"Magplaro sa kama"}, {en:"Turn off screens 1 hour before",tl:"Patayin ang mga screen ng gadgets 1 oras bago matulog"}, {en:"Watch videos until asleep",tl:"Manood hanggang makatulog"}, {en:"Put cellphone under pillow",tl:"Ilagay ang cellphone sa ilalim ng unan"}],
+        correct: 1,
+        explanation: { en: "Blue light keeps the brain awake.", tl: "Ang blue light ay pinapanatiling gising ang utak kaya mahihirapan kang makatulog." },
+        challenge: { en: "BLINK CHALLENGE: Blink your eyes rapidly 10 times to keep them moist!", tl: "BLINK CHALLENGE: Kumurap nang mabilis nang 10 beses para hindi matuyo ang iyong mga mata!" }
+    },
+    {
+        question: { en: "What physical activity should you do during computer breaks?", tl: "Anong pisikal na aktibidad ang dapat mong gawing habang iyong pahinga sa computer?" },
+        options: [{en:"Keep staring",tl:"Tumitig pa rin"}, {en:"Check phone",tl:"Tingnan ang telepono"}, {en:"Stand, stretch, walk",tl:"Tumayo, mag-inat, maglakad"}, {en:"Eat junk food",tl:"Kumain ng junk food"}],
+        correct: 2,
+        explanation: { en: "Stretching improves circulation.", tl: "Ang pag-iinat ay nagpabubuti ng daloy ng dugo." },
+        challenge: { en: "STRETCH BREAK: Stand up and reach for the sky as high as you can for 10 seconds!", tl: "STRETCH BREAK: Tumayo at iabot ang mga kamay sa itaas nang 10 segundo!" }
+    },
+    {
+        question: { en: "What is a sign you’ve used the computer too long?", tl: "Ano ang senyales na masyadong matagal ka nang gumagamit ng computer?" },
+        options: [{en:"Lots of energy",tl:"Maraming enerhiya"}, {en:"Dry eyes, headache",tl:"Tuyong mata, masakit ang ulo"}, {en:"Very hungry",tl:"Gutom na gutom"}, {en:"Internet drops",tl:"Nawawala ang internet"}],
+        correct: 1,
+        explanation: { en: "Dry eyes and headaches show eye strain.", tl: "Ang tuyong mata at sakit ng ulo ay senyales ng pagod ng mata." },
+        challenge: { en: "PALMING: Rub your hands together and cover your closed eyes for 10 seconds to warm them up!", tl: "PALMING: Ipagkuskos ang mga palad at itakip sa nakapikit na mata nang 10 segundo!" }
+    },
+    {
+        question: { en: "How often should you take breaks?", tl: "Gaano kadalas ka dapat magpahinga?" },
+        options: [{en:"Every 10 minutes",tl:"Tuwing 10 minuto"}, {en:"Every 20–30 minutes",tl:"Tuwing 20–30 minuto"}, {en:"Once a day",tl:"Isang beses sa isang araw"}, {en:"Never",tl:"Huwag magpahinga"}],
+        correct: 1,
+        explanation: { en: "Short breaks every 20–30 minutes prevent fatigue.", tl: "Ang maikling pahinga tuwing 20–30 minuto ay nakaiiwas sa pagod." },
+        challenge: { en: "NECK STRETCH: Slowly tilt your head from side to side 4 times!", tl: "NECK STRETCH: I-stretch ang iyong leeg pakaliwa at pakanan nang 4 na beses!" }
+    },
+    {
+        question: { en: "How can you protect your eyes during long computer use?", tl: "Paano mo mapoprotektahan ang iyong mga mata sa matagal na paggamit ng computer?" },
+        options: [{en:"Never blink",tl:"Huwag kumurap"}, {en:"Use the 20-20-20 rule",tl:"Gamitin ang 20-20-20 rule"}, {en:"Sit closer to the screen",tl:"Umupo nang mas malapit sa screen"}, {en:"Increase screen brightness",tl:"Dagdagan ang liwanag ng screen"}],
+        correct: 1,
+        explanation: { en: "The 20-20-20 rule gives eyes regular rest.", tl: "Ang 20-20-20 rule ay nagbibigay ng pahinga sa mata." },
+        challenge: { en: "SQUEEZE CHALLENGE: Squeeze your eyes shut tight for 5 seconds, then open them wide!", tl: "SQUEEZE CHALLENGE: Ipikit nang mariin ang mata nang 5 segundo, saka idilat nang malaki!" }
+    },
+    {
+        question: { en: "What should you do if your eyes feel tired?", tl: "Ano ang dapat gawin kung napapagod ang iyong mga mata?" },
+        options: [{en:"Continue using the computer",tl:"Magpatuloy sa paggamit ng computer"}, {en:"Rest and look away",tl:"Magpahinga at tumingin sa malayo"}, {en:"Increase screen brightness",tl:"Dagdagan ang liwanag ng screen"}, {en:"Rub your eyes hard",tl:"Kusutin nang madiin ang mata"}],
+        correct: 1,
+        explanation: { en: "Looking away and resting relieves eye strain.", tl: "Ang pagtingin sa malayo at pagpapahinga ay nakaaalis ng pagod ng mga mata." },
+        challenge: { en: "DISTANCE FOCUS: Find the farthest object in the room and stare at it for 10 seconds!", tl: "DISTANCE FOCUS: Humanap ng pinakamalayong bagay sa kwarto at tumitig doon nang 10 segundo!" }
+    },
+    {
+        question: { en: "Why should you avoid using gadgets before bedtime?", tl: "Bakit dapat mong iwasan ang paggamit ng gadgets bago ka matulog?" },
+        options: [{en:"They make you sleepy faster",tl:"Mas mabilis kang makatutulog"}, {en:"Blue light keeps you awake",tl:"Ang blue light ay nagpapanatiling gising ka"}, {en:"Gadgets save electricity",tl:"Nakatitipid sa kuryente"}, {en:"Gadgets improve dreams",tl:"Pinagaganda ng gadgets ang panaginip"}],
+        correct: 1,
+        explanation: { en: "Blue light tricks the brain into staying awake.", tl: "Ang blue light ay niloloko ang utak na manatiling gising." },
+        challenge: { en: "FINGER STRETCH: Wiggle your fingers and stretch your hands out wide!", tl: "FINGER STRETCH: Igalaw ang mga daliri at i-stretch ang iyong mga kamay!" }
+    },
+    {
+        question: { en: "What is the benefit of limiting your screen time?", tl: "Ano ang benepisyo ng paglilimita ng iyong screen time?" },
+        options: [{en:"Better health and sleep",tl:"Mas mabuting kalusugan at tulog"}, {en:"Faster internet",tl:"Mas mabilis na internet"}, {en:"Longer battery life",tl:"Mas matagal ang baterya"}, {en:"More video time",tl:"Mas maraming oras sa video"}],
+        correct: 0,
+        explanation: { en: "Limiting screen time improves health and sleep quality.", tl: "Ang paglilimita ng screen time ay nagpabubuti ng kalusugan at kalidad ng tulog." },
+        challenge: { en: "DEEP BREATH: Close your eyes and take 3 deep breaths to relax your whole body!", tl: "DEEP BREATH: Ipikit ang mga mata at huminga nang malalim nang 3 beses!" }
+    }
+],           
+          safety: [
+    {
+        question: { en: "Who should you share your passwords with?", tl: "Sino ang dapat mong bahaginan ng iyong password?" },
+        options: [{en:"Best friend",tl:"Matalik na kaibigan"}, {en:"Stranger online",tl:"Estranghero online"}, {en:"Parents/Guardians",tl:"Magulang/Tagapag-alaga"}, {en:"Classmates",tl:"Mga kaklase"}],
+        correct: 2,
+        explanation: { en: "Only trusted adults should know your password to keep you safe.", tl: "Tanging mga nakatatandang pinagkakatiwalaan ang dapat makaalam ng iyong password para sa kaligtasan mo." },
+        challenge: { en: "PASSWORD SHIELD: Cross your arms like a shield and say 'My password is a secret!' 3 times!", tl: "PASSWORD SHIELD: I-cross ang mga kamay na parang shield at sabihing 'Ang password ko ay sikreto!' nang 3 beses!" }
+    },
+    {
+        question: { en: "What is considered personal information?", tl: "Ano ang itinuturing na personal na impormasyon?" },
+        options: [{en:"Favorite color",tl:"Paboritong kulay"}, {en:"Full name and home address",tl:"Buong pangalan at tirahan"}, {en:"Picture of a dog",tl:"Larawan ng aso"}, {en:"Favorite movie",tl:"Paboritong pelikula"}],
+        correct: 1,
+        explanation: { en: "Personal info can be used to find you in real life.", tl: "Ang personal na impormasyon ay maaaring gamitin ng iba upang hanapin ka sa totoong buhay." },
+        challenge: { en: "PRIVATE ZONE: Stand up and draw an invisible circle around you to show your private space!", tl: "PRIVATE ZONE: Tumayo at gumuhit ng invisible na bilog sa paligid mo para ipakita ang iyong private space!" }
+    },
+    {
+        question: { en: "What makes a password strong?", tl: "Ano ang nagpalalakas sa password?"},
+        options: [{en:"Using “password”",tl:"Paggamit ng “password”"}, {en:"Using your birthdate",tl:"Paggamit ng kaarawan"}, {en:"Mix of letters, numbers, symbols",tl:"Halo ng titik, numero, simbolo"}, {en:"Using your first name",tl:"Paggamit ng unang pangalan"}],
+        correct: 2,
+        explanation: { en: "A mix of characters makes it harder for hackers to guess.", tl: "Ang halo ng iba’t ibang karakter ay nagpahihirap hulaan ng hacker." },
+        challenge: { en: "MIX-IT-UP: Clap, stomp, and snap your fingers to show a 'mix' of actions!", tl: "MIX-IT-UP: Pumalakpak, pumadyak, at mag-snap ng daliri para ipakita ang 'halo' ng mga kilos!" }
+    },
+    {
+        question: { en: "What should you do after using a public computer?", tl: "Ano ang dapat mong gawin matapos gumamit ng pampublikong computer?" },
+        options: [{en:"Leave accounts open",tl:"Iwanang nakabukas ang account"}, {en:"Log out of all accounts",tl:"Mag-log out sa lahat ng account"}, {en:"Turn off monitor only",tl:"Patayin lang ang monitor"}, {en:"Give computer to next user",tl:"Ibigay ang computer sa susunod na gagamit"}],
+        correct: 1,
+        explanation: { en: "Logging out prevents others from accessing your data.", tl: "Ang pag-log out ay pumipigil sa iba na makuha ang iyong impormasyon." },
+        challenge: { en: "CLEAN SLATE: Pretend to wipe an invisible screen with your hands to 'clear' your info!", tl: "CLEAN SLATE: Magkunwaring pinupunasan ang isang invisible na screen para 'malinis' ang iyong impormasyon!" }
+    },
+    {
+        question: { en: "If a website asks for your phone number for a 'free prize,' what should you do?", tl: "Kung humihingi ng numero ang website para sa 'libreng premyo,' ano ang dapat mong gawin?" },
+        options: [{en:"Give number quickly",tl:"Ibigay agad ang numero"}, {en:"Ask parent/guardian first",tl:"Magtanong muna sa magulang/tagapag-alaga"}, {en:"Give friend’s number",tl:"Ibigay ang numero ng kaibigan"}, {en:"Call the website",tl:"Tawagan ang website"}],
+        correct: 1,
+        explanation: { en: "Many 'free prizes' are scams. Always ask an adult.", tl: "Kadalasan, panlilinlang ang mga 'libreng premyo.' Laging magtanong sa nakatatanda." },
+        challenge: { en: "SCAM DETECTIVE: Make a telescope with your hands and look around for 'clues' of a scam!", tl: "SCAM DETECTIVE: Gumawa ng teleskopyo gamit ang mga kamay at humanap ng 'clues' ng scam!" }
+    },
+    {
+        question: { en: "Why should you avoid clicking unknown links?", tl: "Bakit dapat mong iwasan ang pag-click ng hindi kilalang link?" },
+        options: [{en:"They cost money",tl:"Dahil may bayad"}, {en:"They may contain viruses",tl:"Dahil maaaring may virus"}, {en:"They turn off your computer",tl:"Dahil papatayin nila ang iyong computer"}, {en:"They are boring",tl:"Dahil nakaiinip"}],
+        correct: 1,
+        explanation: { en: "Unknown links can install harmful software.", tl: "Ang mga hindi kilalang link ay maaaring magdala ng mapaminsalang software." },
+        challenge: { en: "NO-CLICK ZONE: Put your hands behind your back and count to 5 to avoid clicking!", tl: "NO-CLICK ZONE: Ilagay ang mga kamay sa likod at magbilang hanggang 5 para hindi makapindot!" }
+    },
+    {
+        question: { en: "What is 'Netiquette'?", tl: "Ano ang 'Netiquette'?" },
+        options: [{en:"Internet browser",tl:"Internet browser"}, {en:"Proper online behavior",tl:"Wastong asal online"}, {en:"Computer virus",tl:"Computer virus"}, {en:"Social media app",tl:"Social media app"}],
+        correct: 1,
+        explanation: { en: "Netiquette means treating others with respect online.", tl: "Ang Netiquette ay tamang pag-uugali at respeto sa ibang tao online." },
+        challenge: { en: "KINDNESS WAVE: Wave at everyone and give a big friendly smile!", tl: "KINDNESS WAVE: Kumaway sa lahat at magbigay ng isang malaking palakaibigang ngiti!" }
+    },
+    {
+        question: { en: "What should you do if someone bullies you online?", tl: "Ano ang mong dapat gawin kung may nang-aapi sayo online?" },
+        options: [{en:"Reply with mean words",tl:"Sagutin ng masasamang salita"}, {en:"Delete your account",tl:"Burahin ang account"}, {en:"Keep silent",tl:"Manahimik"}, {en:"Block and tell an adult",tl:"I-block at magsabi sa nakatatanda"}],
+        correct: 3,
+        explanation: { en: "Blocking stops the bully, and adults can help.", tl: "Ang pag-block ay pumipigil sa bully, at ang nakatatanda ay makatutulong." },
+        challenge: { en: "STOP SIGN: Hold your hand out like a stop sign and say 'Stop!' loudly!", tl: "STOP SIGN: Iunat ang kamay na parang stop sign at sabihing 'Stop!' nang malakas!" }
+    },
+    {
+        question: { en: "What should you do if a stranger sends you a friend request?", tl: "Ano ang dapat gawin kung may estranghero na nagpadala sayo ng friend request?" },
+        options: [{en:"Accept immediately",tl:"Tanggapin agad"}, {en:"Ask them",tl:"Tanungin sila"}, {en:"Ignore or delete",tl:"Huwag pansinin o tanggalin"}, {en:"Share your location",tl:"Ibahagi ang lokasyon"}],
+        correct: 2,
+        explanation: { en: "Only connect with people you know in real life.", tl: "Makipag-ugnayan lamang sa mga kilala sa totoong buhay." },
+        challenge: { en: "STRANGER DANGER: Cross your arms and shake your head 'No' three times!", tl: "STRANGER DANGER: I-cross ang mga braso at umiling ng 'Hindi' nang tatlong beses!" }
+    },
+    {
+        question: { en: "Before downloading a game/app, what is safest?", tl: "Ano ang pinakaligtas bago mag-download ng laro/app?" },
+        options: [{en:"Download immediately",tl:"I-download agad"}, {en:"Turn off antivirus",tl:"Patayin ang antivirus"}, {en:"Ask parent/teacher",tl:"Magtanong sa magulang/guro"}, {en:"Guess if safe",tl:"Hulaan kung ligtas"}],
+        correct: 2,
+        explanation: { en: "Adults can check if apps are secure and appropriate.", tl: "Ang nakatatanda ay makatutulong suriin kung ligtas at angkop ang app." },
+        challenge: { en: "PERMISSION SLIP: Give a big 'Thumbs Up' and say 'I asked for permission!'", tl: "PERMISSION SLIP: Mag-thumbs up at sabihing 'Nagpaalam muna ako!'" }
+    }
+],       
+
+  computerhardwareandfunctions: [
+    {
+        question: { en: "Which part of the computer is called the 'brain'?", tl: "Alin sa bahagi ng computer ang tinatawag na 'utak'?" },
+        options: [{en:"Monitor",tl:"Monitor"}, {en:"CPU",tl:"CPU"}, {en:"Keyboard",tl:"Keyboard"}, {en:"Mouse",tl:"Mouse"}],
+        correct: 1,
+        explanation: { en: "The CPU processes all instructions, making it the brain of the computer.", tl: "Ang CPU ang nagpoproseso ng lahat ng utos, kaya ito ang utak ng computer." },
+        challenge: { en: "BRAIN POWER: Tap your head 5 times and say 'The CPU is the brain!'", tl: "BRAIN POWER: Tapikin ang ulo nang 5 beses at sabihing 'Ang CPU ang utak!'" }
+    },
+    {
+        question: { en: "What device shows images and text?", tl: "Anong device ang nagpapakita ng larawan at teksto?" },
+        options: [{en:"Printer",tl:"Printer"}, {en:"Monitor",tl:"Monitor"}, {en:"Mouse",tl:"Mouse"}, {en:"Speaker",tl:"Speaker"}],
+        correct: 1,
+        explanation: { en: "The monitor displays what the computer is doing.", tl: "Ang monitor ang nagpapakita ng ginagawa ng computer." },
+        challenge: { en: "PICTURE PERFECT: Frame your face with your hands like a monitor screen!", tl: "PICTURE PERFECT: I-frame ang iyong mukha gamit ang mga kamay na parang monitor screen!" }
+    },
+    {
+        question: { en: "Which device is used to type letters and numbers?", tl: "Aling device ang ginagamit sa pag-type ng letra at numero?" },
+        options: [{en:"Mouse",tl:"Mouse"}, {en:"Keyboard",tl:"Keyboard"}, {en:"Printer",tl:"Printer"}, {en:"Speaker",tl:"Speaker"}],
+        correct: 1,
+        explanation: { en: "The keyboard allows you to input text and commands.", tl: "Ang keyboard ay ginagamit sa pag-input ng teksto at mga utos." },
+        challenge: { en: "AIR TYPING: Pretend to type your name in the air as fast as you can!", tl: "AIR TYPING: Magkunwaring tina-type ang iyong pangalan sa hangin nang mabilis!" }
+    },
+    {
+        question: { en: "Which device is used to point and click?", tl: "Aling device ang ginagamit sa pagturo at pag-click?" },
+        options: [{en:"Keyboard",tl:"Keyboard"}, {en:"Mouse",tl:"Mouse"}, {en:"Monitor",tl:"Monitor"}, {en:"CPU",tl:"CPU"}],
+        correct: 1,
+        explanation: { en: "The mouse controls the pointer on the screen.", tl: "Ang mouse ang kumokontrol sa pointer sa screen." },
+        challenge: { en: "CLICK-CLACK: Make a clicking sound with your tongue 5 times!", tl: "CLICK-CLACK: Gumawa ng tunog na parang nag-ki-click gamit ang dila nang 5 beses!" }
+    },
+    {
+        question: { en: "What device produces sound?", tl: "Anong device ang lumilikha ng tunog?" },
+        options: [{en:"Monitor",tl:"Monitor"}, {en:"Speaker",tl:"Speaker"}, {en:"Keyboard",tl:"Keyboard"}, {en:"CPU",tl:"CPU"}],
+        correct: 1,
+        explanation: { en: "Speakers output audio from the computer.", tl: "Ang speaker ay naglalabas ng tunog mula sa computer." },
+        challenge: { en: "SPEAKER BLAST: Hum your favorite song for 5 seconds!", tl: "SPEAKER BLAST: I-hum ang iyong paboritong kanta sa loob ng 5 segundo!" }
+    },
+    {
+        question: { en: "Which device prints documents on paper?", tl: "Aling device ang nagpi-print ng dokumento sa papel?" },
+        options: [{en:"Monitor",tl:"Monitor"}, {en:"Printer",tl:"Printer"}, {en:"CPU",tl:"CPU"}, {en:"Mouse",tl:"Mouse"}],
+        correct: 1,
+        explanation: { en: "Printers transfer digital files into paper copies.", tl: "Ang printer ay naglilipat ng digital file sa papel." },
+        challenge: { en: "PAPER SLIDE: Slide your hands together slowly like paper coming out of a printer!", tl: "PAPER SLIDE: Ipagdikit ang mga palad at ikilos nang dahan-dahan na parang papel sa printer!" }
+    },
+    {
+        question: { en: "What is the main storage inside the computer?", tl: "Ano ang pangunahing imbakan sa loob ng computer?" },
+        options: [{en:"RAM",tl:"RAM"}, {en:"Hard drive",tl:"Hard drive"}, {en:"Keyboard",tl:"Keyboard"}, {en:"Monitor",tl:"Monitor"}],
+        correct: 1,
+        explanation: { en: "The hard drive stores files and programs permanently.", tl: "Ang hard drive ang nag-iimbak ng mga file at programa nang permanente." },
+        challenge: { en: "SAFE STORAGE: Give yourself a big hug to 'save' your energy!", tl: "SAFE STORAGE: Yakapin ang sarili para 'i-save' ang iyong lakas!" }
+    },
+    {
+        question: { en: "Which part temporarily stores data while working?", tl: "Aling bahagi ang pansamantalang nag-iimbak ng data habang ginagamit?" },
+        options: [{en:"Hard drive",tl:"Hard drive"}, {en:"RAM",tl:"RAM"}, {en:"CPU",tl:"CPU"}, {en:"Printer",tl:"Printer"}],
+        correct: 1,
+        explanation: { en: "RAM holds data temporarily for quick access.", tl: "Ang RAM ay pansamantalang nag-iimbak ng data para sa mabilis na paggamit." },
+        challenge: { en: "QUICK ACCESS: Run in place as fast as you can for 5 seconds!", tl: "QUICK ACCESS: Tumakbo sa pwesto nang mabilis sa loob ng 5 segundo!" }
+    },
+    {
+        question: { en: "Which device connects the computer to the internet?", tl: "Aling device ang nag-uugnay ng computer sa internet?" },
+        options: [{en:"Printer",tl:"Printer"}, {en:"Router/Modem",tl:"Router/Modem"}, {en:"Monitor",tl:"Monitor"}, {en:"CPU",tl:"CPU"}],
+        correct: 1,
+        explanation: { en: "Routers and modems provide internet access.", tl: "Ang router o modem ang nagbibigay ng koneksyon sa internet." },
+        challenge: { en: "WIFI SIGNAL: Raise your arms like antennas to get a better signal!", tl: "WIFI SIGNAL: Itaas ang mga kamay na parang antenna para makasagap ng signal!" }
+    },
+    {
+        question: { en: "What is the function of the UPS (Uninterruptible Power Supply)?", tl: "Ano ang gamit ng UPS (Uninterruptible Power Supply)?" },
+        options: [{en:"Provides backup power",tl:"Nagbibigay ng backup na kuryente"}, {en:"Displays images",tl:"Nagpapakita ng larawan"}, {en:"Stores files",tl:"Nag-iimbak ng file"}, {en:"Plays music",tl:"Nagpatutugtog ng musika"}],
+        correct: 0,
+        explanation: { en: "A UPS keeps the computer running during power interruptions.", tl: "Ang UPS ay nagpapatuloy ng kuryente kapag may brownout o pagkawala ng kuryente." },
+        challenge: { en: "POWER UP: Squat down slowly, then jump up like you got backup power!", tl: "POWER UP: Mag-squat nang dahan-dahan, tapos tumalon na parang nagkaroon ng kuryente!" }
+    }
+],      
+
+    basiccomputeroperation: [
+    {
+        question: { en: "What is the first step in turning on a computer?", tl: "Ano ang unang hakbang sa pag-on ng computer?" },
+        options: [{en:"Press the monitor button",tl:"Pindutin ang monitor button"}, {en:"Press the CPU power button",tl:"Pindutin ang CPU power button"}, {en:"Open a program",tl:"Magbukas ng programa"}, {en:"Plug in the printer",tl:"Isaksak ang printer"}],
+        correct: 1,
+        explanation: { en: "The CPU power button starts the computer system.", tl: "Ang CPU power button ang nagsisimula ng computer system." },
+        challenge: { en: "POWER UP: Stretch your arm and pretend to press a big power button high above you!", tl: "POWER UP: Iunat ang iyong braso at magkunwaring pinipindot ang isang malaking power button sa itaas!" }
+    },
+    {
+        question: { en: "What should you do before turning off the computer?", tl: "Ano ang dapat mong gawin bago i-off ang computer?" },
+        options: [{en:"Close all programs",tl:"Isara ang lahat ng programa"}, {en:"Unplug the CPU immediately",tl:"Hugutin agad ang saksak ng CPU"}, {en:"Press the monitor button only",tl:"Pindutin lang ang monitor button"}, {en:"Remove the keyboard",tl:"Alisin ang keyboard"}],
+        correct: 0,
+        explanation: { en: "Closing programs prevents data loss.", tl: "Ang pagsasara ng mga programa ay nakaiiwas sa pagkawala ng data." },
+        challenge: { en: "CLOSING TIME: Clap your hands 3 times to 'close' all your imaginary windows!", tl: "CLOSING TIME: Pumalakpak nang 3 beses para 'isara' ang lahat ng iyong imaginary windows!" }
+    },
+    {
+        question: { en: "Which icon do you click to open a program?", tl: "Aling icon ang dapat mong i-click para magbukas ng programa?" },
+        options: [{en:"Folder",tl:"Folder"}, {en:"Shortcut icon",tl:"Shortcut icon"}, {en:"Trash bin",tl:"Basurahan"}, {en:"Clock",tl:"Orasan"}],
+        correct: 1,
+        explanation: { en: "Shortcut icons quickly open programs.", tl: "Ang shortcut icon ay mabilis na nagbubukas ng programa." },
+        challenge: { en: "SHORTCUT JUMP: Jump 3 times to find a 'shortcut' to the finish line!", tl: "SHORTCUT JUMP: Tumalon nang 3 beses para humanap ng 'shortcut' patungo sa finish line!" }
+    },
+    {
+        question: { en: "Where should you save a school project file?", tl: "Saan mo dapat i-save ang file ng proyekto sa paaralan?" },
+        options: [{en:"In the Recycle Bin",tl:"Sa Recycle Bin"}, {en:"In a folder with a clear name",tl:"Sa folder na may malinaw na pangalan"}, {en:"On the desktop only",tl:"Sa desktop lang"}, {en:"In the printer",tl:"Sa printer"}],
+        correct: 1,
+        explanation: { en: "Organized folders make files easy to find.", tl: "Ang maayos na folder ay nagpapadali sa paghahanap ng file." },
+        challenge: { en: "FILE FILER: March in place for 10 seconds like an organized soldier!", tl: "FILE FILER: Mag-marcha sa pwesto nang 10 segundo na parang isang maayos na sundalo!" }
+    },
+    {
+        question: { en: "What is the function of the 'Save' command?", tl: "Ano ang gamit ng 'Save' command?" },
+        options: [{en:"Deletes the file",tl:"Binubura ang file"}, {en:"Stores changes permanently",tl:"Iniimbak ang pagbabago nang permanente"}, {en:"Prints the file",tl:"Nagpi-print ng file"}, {en:"Opens the file",tl:"Nagbubukas ng file"}],
+        correct: 1,
+        explanation: { en: "Save keeps your work stored in the computer.", tl: "Ang 'Save' ay nag-iimbak ng iyong trabaho sa computer." },
+        challenge: { en: "SAFE KEEPING: Make a box with your hands and pretend to lock your work inside!", tl: "SAFE KEEPING: Gumawa ng kahon gamit ang iyong mga kamay at magkunwaring ni-lo-lock ang iyong trabaho sa loob!" }
+    },
+    {
+        question: { en: "What should you do if you want to rename a file?", tl: "Ano ang dapat mong gawin kung gusto mong palitan ang pangalan ng file?" },
+        options: [{en:"Delete it",tl:"Burahin ito"}, {en:"Right-click and choose 'Rename'",tl:"I-right click at piliin ang 'Rename'"}, {en:"Print it",tl:"I-print ito"}, {en:"Move it to the Recycle Bin",tl:"Ilipat sa Recycle Bin"}],
+        correct: 1,
+        explanation: { en: "The rename option changes the file’s name.", tl: "Ang 'Rename' option ay nagpapalit ng pangalan ng file." },
+        challenge: { en: "NAME SPELL: Clap your hands while reciting 'Rename'!", tl: "NAME SPELL: Pumalakpak habang binibigkas ang 'Rename'!" }
+    },
+    {
+        question: { en: "What is the purpose of the Recycle Bin?", tl: "Ano ang gamit ng Recycle Bin?" },
+        options: [{en:"To store deleted files temporarily",tl:"Pansamantalang imbakan ng mga naburang file"}, {en:"To save projects",tl:"Para mag-save ng proyekto"}, {en:"To open programs",tl:"Para magbubukas ng programa"}, {en:"To connect to the internet",tl:"Para kumonekta sa internet"}],
+        correct: 0,
+        explanation: { en: "Deleted files go to the Recycle Bin until permanently removed.", tl: "Ang mga naburang file ay napupunta muna sa Recycle Bin bago tuluyang mawala." },
+        challenge: { en: "TOSS THE TRASH: Pretend to throw a crumpled paper into a bin 3 times!", tl: "TOSS THE TRASH: Magkunwaring nagtatapon ng nilamukos na papel sa basurahan nang 3 beses!" }
+    },
+    {
+        question: { en: "Which command prints a document?", tl: "Aling command ang nagpi-print ng dokumento?" },
+        options: [{en:"Save",tl:"Save"}, {en:"Open",tl:"Open"}, {en:"Print",tl:"Print"}, {en:"Delete",tl:"Delete"}],
+        correct: 2,
+        explanation: { en: "The print command sends the file to the printer.", tl: "Ang 'Print' command ay nagpapadala ng file sa printer." },
+        challenge: { en: "FEED THE PRINTER: Push your hands forward 5 times like a printer feeding paper!", tl: "FEED THE PRINTER: Itulak ang iyong mga kamay pasulong nang 5 beses na parang printer na kumukuha ng papel!" }
+    },
+    {
+        question: { en: "What should you do if the computer freezes?", tl: "Ano ang dapat mong gawin kung mag-freeze ang computer?" },
+        options: [{en:"Press random keys",tl:"Pindutin ang kung anu-anong keys"}, {en:"Restart the computer properly",tl:"I-restart nang maayos ang computer"}, {en:"Unplug immediately",tl:"Hugutin agad ang saksakan"}, {en:"Hit the monitor",tl:"Pukpukin ang monitor"}],
+        correct: 1,
+        explanation: { en: "Restarting safely helps fix the problem.", tl: "Ang maayos na pag-restart ay nakatutulong ayusin ang problema." },
+        challenge: { en: "FROZEN STATUE: Freeze like a statue for 5 seconds, then shake your body to 'restart'!", tl: "FROZEN STATUE: Mag-freeze na parang estatwa nang 5 segundo, saka igalaw ang buong katawan para mag-'restart'!" }
+    },
+    {
+        question: { en: "What is the importance of learning basic computer operations?", tl: "Ano ang kahalagahan ng pag-aaral ng basic computer operations?" },
+        options: [{en:"To play more games",tl:"Para makapaglaro nang mas marami"}, {en:"To use computers safely and effectively",tl:"Para ligtas at epektibong magamit ang computer"}, {en:"To waste time",tl:"Para mag-aksaya ng oras"}, {en:"To delete files faster",tl:"Para mas mabilis magbura ng file"}],
+        correct: 1,
+        explanation: { en: "Knowing operations helps students use computers for learning and productivity.", tl: "Ang kaalaman sa operations ay tumutulong sa mga estudyante na magamit ang computer sa pag-aaral at maging produktibo." },
+        challenge: { en: "SMART MOVE: Give yourself a big high-five for being a smart computer user!", tl: "SMART MOVE: Bigyan ang sarili ng isang malakas na high-five dahil magaling kang gumamit ng computer!" }
+    }
+],
+        };
+
+        async function initializeSDK() {
+            try {
+                if (window.elementSdk) {
+                    await window.elementSdk.init({
+                        defaultConfig: { game_title: "Board-band" },
+                        onConfigChange: async (config) => {
+                            document.getElementById('gameTitle').textContent = config.game_title || "Board-band";
+                        }
+                    });
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function startGame() {
+            AudioController.playClick();
+            const players = [];
+            for (let i = 1; i <= 5; i++) {
+                const name = document.getElementById(`player${i}Name`).value.trim();
+                if (name) {
+                  players.push({ id: i, name, color: playerColors[i-1], icon: playerIcons[i-1], position: 0, score: 0, correctAnswers: 0, chaosLevel: 0, isEliminated: false });
+                }
+            }
+            if (players.length === 0) { showToast(i18n[currentLanguage].toast_p1_req, 'warning'); return; }
+            gameState.players = players;
+            gameState.gameStarted = true;
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameBoard').classList.remove('hidden');
+            updateChaosDisplay();
+            updatePlayersDisplay();
+            updateCurrentTurn();
+            updateBoard();
+            updateLeaderboard();
+            AudioController.init();
+            AudioController.startBGM();
+            showToast(`${i18n[currentLanguage].toast_start} ${players.length}!`, 'success');
+        }
+
+        function updatePlayersDisplay() {
+            const container = document.getElementById('playersList');
+            container.innerHTML = '';
+            gameState.players.forEach((player, index) => {
+                const isCurrent = index === gameState.currentPlayerIndex;
+                const div = document.createElement('div');
+                
+                div.className = `flex items-center space-x-2 p-3 rounded-lg ${isCurrent ? 'bg-yellow-100 border-2 border-yellow-400 current-turn' : 'bg-gray-50'} ${player.isEliminated ? 'opacity-50 grayscale' : ''}`;
+                
+                div.innerHTML = `<div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-lg" style="background-color: ${player.isEliminated ? '#9ca3af' : player.color}">${player.isEliminated ? '❌' : player.icon}</div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm">${player.name} ${player.isEliminated ? '<span class="text-red-600 text-xs">(OUT)</span>' : ''}</div>
+                        <div class="text-xs text-gray-600">Pos: ${player.position}</div>
+                    </div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function updateCurrentTurn() {
+            const p = gameState.players[gameState.currentPlayerIndex];
+            const suffix = i18n[currentLanguage].turn_suffix;
+            document.getElementById('currentTurn').textContent = `${p.name}${suffix}`;
+            document.getElementById('rollDiceBtn').disabled = false;
+            document.getElementById('rollDiceBtn').textContent = `${p.name} - ${i18n[currentLanguage].roll_dice}`;
+            document.getElementById('currentPosition').textContent = p.position === 0 ? i18n[currentLanguage].start : p.position;
+            document.getElementById('currentScore').textContent = p.score;
+            document.getElementById('currentCorrect').textContent = p.correctAnswers;
+             updateChaosDisplay(); 
+        }
         
-         <div class="game-card p-12 text-center" onclick="loadGame(2)">
-           <div class="mb-6 flex justify-center">
-             <svg class="balloon-container" viewBox="0 0 100 150">
-                <path class="balloon-string" d="M50 80 Q 40 100 50 120 T 50 145" />
-                <ellipse class="balloon-red" cx="50" cy="45" rx="35" ry="42" />
-                <path class="pop-effect" d="M50 20 L55 10 M70 30 L80 25 M70 60 L80 65 M50 75 L55 85 M30 60 L20 65 M30 30 L20 25" stroke="white" stroke-width="3" stroke-linecap="round"/>
-             </svg>
-           </div>
-           <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Balloon Safety Pop</h3>
-           <div class="mt-8 bg-white text-green-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
-         </div>
 
-         <div class="game-card p-12 text-center" onclick="loadGame(3)">
-           <div class="text-8xl mb-6 icon-shield">🛡️</div>
-           <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Goblin Rush</h3>
-           <div class="mt-8 bg-white text-purple-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
-         </div>
+        function updateBoard() {
+            document.querySelectorAll('.player-piece').forEach(piece => piece.remove());
+            gameState.players.forEach(player => {
+                if (player.isEliminated) return; 
 
-         <div class="game-card p-12 text-center" onclick="loadGame(4)">
-           <div class="text-8xl mb-6 icon-wheel">🛞</div>
-           <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Screen Quest</h3>
-           <div class="mt-8 bg-white text-pink-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
-         </div>
+                const space = document.getElementById(`space-${player.position}`);
+                if (space) {
+                    const piece = document.createElement('div');
+                    piece.className = 'player-piece';
+                    piece.style.backgroundColor = player.color;
+                    piece.textContent = player.icon;
+                    space.appendChild(piece);
+                }
+            });
+        }
 
-         <div class="game-card p-12 text-center" onclick="loadGame(5)">
-           <div class="text-8xl mb-6 icon-eyes">👀</div>
-           <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Eye-dentify</h3>
-           <div class="mt-8 bg-white text-yellow-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
-         </div>
+       function updateChaosDisplay() {
+            const p = gameState.players[gameState.currentPlayerIndex];
+            if (!p) return;
 
-       </div>
-     </div>
-   </div>
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`chaos${i}`);
+            
+                if (i <= p.chaosLevel) {
+                    el.style.backgroundColor = '#ef4444';
+                    el.classList.add('animate-pulse');
+                } else {
+                    el.style.backgroundColor = 'transparent'; // LINISIN ANG METER
+                    el.classList.remove('animate-pulse');
+                }
+            }
+            
+            // Ipakita ang text effect kung 3 pataas na ang chaos
+            const effect = document.getElementById('chaosEffect');
+            if (p.chaosLevel >= 3) {
+                effect.classList.remove('hidden');
+                effect.textContent = `CHAOS LEVEL ${p.chaosLevel}!`;
+            } else {
+                effect.classList.add('hidden');
+            }
+        }
 
-   <div id="game-screen" class="hidden w-full h-full flex flex-col bg-white absolute top-0 left-0 z-50">
-     <div class="bg-gray-900 border-b-4 border-white/20 px-6 py-5 flex items-center justify-between">
-       <button onclick="backToMenu()" class="bg-red-600 text-white font-black py-2 px-10 rounded-full border-2 border-red-400 shadow-lg active:scale-95 hover:brightness-125 transition-all uppercase">Exit Mission</button>
-       <h2 id="current-game-title" class="text-white font-black text-2xl uppercase tracking-widest">Loading...</h2>
-       <div class="w-20"></div>
-     </div>
-     <div id="game-content" class="flex-1 w-full overflow-hidden bg-white"></div>
-   </div>
- </div>
+        function updateLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            [...gameState.players].sort((a,b) => b.position - a.position || b.score - a.score).forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-3 bg-gray-50 rounded-lg ${p.isEliminated ? 'opacity-40' : ''}`;
+                div.innerHTML = `<div class="flex items-center space-x-3">
+                    <span>${i+1}.</span>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white" style="background-color:${p.isEliminated ? '#9ca3af' : p.color}">${p.isEliminated ? '❌' : p.icon}</div>
+                    <span>${p.name} ${p.isEliminated ? '<span class="text-red-500 font-bold text-xs">DISQUALIFIED</span>' : ''}</span>
+                </div>
+                <div class="text-right text-sm">
+                    <div>Pos: ${p.position}</div>
+                    <div class="text-green-600">Score: ${p.score}</div>
+                </div>`;
+                container.appendChild(div);
+            });
+        }
 
- <script>
-   const translations = {
-       en: {
-           musicNote: "Click anywhere to start music",
-           aboutTitle: "Meet the Creators!",
-           aboutP1: "<b>Hello, Digital Hero!</b> We created this Game Hub to help you stay safe and smart in the online world.",
-           aboutP2: "We developed these games to make learning about digital citizenship and taking care of your health while using gadgets fun.",
-           aboutGoalTitle: "Our Goal:",
-           aboutGoalText: "To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀"
-       },
-       tl: {
-           musicNote: "I-click kahit saan para magsimula ang musika",
-           aboutTitle: "Kilalanin ang mga may likha!",
-           aboutP1: "<b>Kumusta, Digital Hero! </b> Kami ang mga gumawa ng Game Hub na ito para matulungan kang maging ligtas at matalino sa online world.",
-           aboutP2: "Binuo namin ang mga larong ito para maging masaya ang iyong pag-aaral tungkol sa digital citizenship at pangangalaga sa iyong kalusugan habang gumagamit ng gadgets.",
-           aboutGoalTitle: "Ang aming layunin:",
-           aboutGoalText: "Upang magbigay inspirasyon at turuan ang batang kagaya mo na gumamit ng teknolohiya sa wasto, ligtas, at may paggalang na paraan! 🚀"
-       }
-   };
+        function rollDice() {
+            if (!gameState.gameStarted) return;
+            AudioController.init();
+            const dice = document.getElementById('dice');
+            const rollBtn = document.getElementById('rollDiceBtn');
+            const p = gameState.players[gameState.currentPlayerIndex];
+            dice.classList.add('rolling');
+            rollBtn.disabled = true;
+            const rollIntervalId = setInterval(() => AudioController.playDice(), 150);
+            let count = 0;
+            const animInterval = setInterval(() => {
+                dice.textContent = Math.floor(Math.random() * 6) + 1;
+                if (++count >= 10) {
+                    clearInterval(animInterval);
+                    clearInterval(rollIntervalId);
+                    const val = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = val;
+                    dice.classList.remove('rolling');
+                    showToast(`${p.name} ${i18n[currentLanguage].toast_rolled} ${val}!`, 'info');
+                    setTimeout(() => movePlayer(val), 1000);
+                }
+            }, 100);
+        }
 
-   function setLanguage(lang) {
-       const t = translations[lang];
-       document.getElementById('music-instruction').innerText = t.musicNote;
-       document.getElementById('about-title').innerText = t.aboutTitle;
-       document.getElementById('about-p1').innerHTML = t.aboutP1;
-       document.getElementById('about-p2').innerText = t.aboutP2;
-       document.getElementById('about-goal-title').innerText = t.aboutGoalTitle;
-       document.getElementById('about-goal-text').innerText = t.aboutGoalText;
-       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-       document.getElementById('btn-tl').classList.toggle('active', lang === 'tl');
-       AudioController.playTone(800, 0.05, 0.1);
-   }
+  function movePlayer(steps) {
+    const p = gameState.players[gameState.currentPlayerIndex];
+    p.oldPosition = p.position; 
+    p.position = Math.min(21, p.position + steps);
+    updateBoard();
 
-   window.addEventListener('DOMContentLoaded', () => {
-     let progress = 0;
-     const bar = document.getElementById('loader-bar');
-     const interval = setInterval(() => {
-         progress += Math.random() * 15;
-         if (progress >= 100) {
-             progress = 100;
-             clearInterval(interval);
-             setTimeout(() => {
-                 const loader = document.getElementById('loading-screen');
-                 loader.style.opacity = '0';
-                 loader.style.transition = 'opacity 0.6s ease';
-                 setTimeout(() => loader.remove(), 600);
-             }, 600);
-         }
-         bar.style.width = progress + '%';
-     }, 120);
-   });
+    const spaceEl = document.getElementById(`space-${p.position}`);
+    let cat = 'posture'; // default
 
-   function toggleAbout() {
-     const sidebar = document.getElementById('about-sidebar');
-     const overlay = document.getElementById('sidebar-overlay');
-     if (sidebar.classList.contains('open')) {
-         sidebar.classList.remove('open');
-         overlay.style.display = 'none';
-     } else {
-         sidebar.classList.add('open');
-         overlay.style.display = 'block';
-         AudioController.playTone(600, 0.1, 0.2);
-     }
-   }
+    if (spaceEl.classList.contains('space-posture')) {
+        cat = 'posture';
+    } else if (spaceEl.classList.contains('space-screen-time')) {
+        cat = 'screentime';
+    } else if (spaceEl.classList.contains('space-safety')) {
+        cat = 'safety';
+    } else if (spaceEl.classList.contains('space-computer-hardware-and-function')) {
+        cat = 'computerhardwareandfunctions';
+    } else if (spaceEl.classList.contains('space-basic-computer-operation')) {
+        cat = 'basiccomputeroperation';
+    } else if (spaceEl.classList.contains('space-finish')) {
+        cat = 'basiccomputeroperation';
+    }
 
-   const AudioController = {
-     ctx: null, isMuted: false, isPlaying: false, step: 0, intervalId: null,
-     bass: [261, 0, 261, 329, 392, 0, 392, 349], 
-     lead: [523, 523, 659, 783, 1046, 783, 659, 698],
-     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-     playTone(freq, duration, vol, type='square') {
-       if (this.isMuted || !this.ctx || freq === 0) return;
-       this.ctx.resume();
-       const osc = this.ctx.createOscillator();
-       const gain = this.ctx.createGain();
-       osc.type = type; osc.frequency.value = freq;
-       osc.connect(gain); gain.connect(this.ctx.destination);
-       gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-       osc.start(); osc.stop(this.ctx.currentTime + duration);
-     },
-     startBGM() {
-       if (this.isPlaying || this.isMuted) return;
-       this.isPlaying = true;
-       this.intervalId = setInterval(() => {
-         const b = this.bass[this.step % this.bass.length];
-         const l = this.lead[this.step % this.lead.length];
-         this.playTone(b, 0.4, 0.1, 'triangle'); 
-         if (this.step % 2 === 0) this.playTone(l, 0.2, 0.05, 'square');
-         this.step++;
-       }, 165);
-     },
-     stopBGM() { this.isPlaying = false; clearInterval(this.intervalId); this.intervalId = null; },
-     toggle() {
-       this.init();
-       this.isMuted = !this.isMuted;
-       document.getElementById('soundIcon').innerText = this.isMuted ? '🔇' : '🔊';
-       this.isMuted ? this.stopBGM() : this.startBGM();
-     }
-   };
+    showQuestion(cat, p);
+}
 
-   window.addEventListener('click', () => {
-     AudioController.init();
-     if (!document.getElementById('main-menu').classList.contains('hidden')) {
-       AudioController.startBGM();
-     }
-   }, { once: true });
+  function showQuestion(cat, player) {
+    const categoryQuestions = questions[cat];
+    const randomIndex = Math.floor(Math.random() * categoryQuestions.length);
+    const q = categoryQuestions[randomIndex];
 
-   function loadGame(num) {
-     AudioController.stopBGM();
-     document.getElementById('soundToggle').classList.add('hidden-ui');
-     document.getElementById('aboutToggle').classList.add('hidden-ui');
-     document.getElementById('langToggle').classList.add('hidden-ui');
-     const titles = ["Board-band", "Balloon Safety Pop", "Goblin Rush", "Screen Quest", "Eye-dentify"];
-     document.getElementById('current-game-title').innerText = titles[num-1];
-     const content = document.getElementById('game-content');
-     content.innerHTML = '<div class="h-full flex flex-col items-center justify-center bg-gray-900"><div class="text-9xl icon-shield mb-8">🛡️</div><h2 class="text-white text-3xl font-black animate-pulse">CONNECTING TO MISSION...</h2></div>';
-     setTimeout(() => {
-         content.innerHTML = '';
-         const iframe = document.createElement('iframe');
-         iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
-         iframe.src = `game${num}.html`;
-         content.appendChild(iframe);
-     }, 1500);
-     document.getElementById('main-menu').classList.add('hidden');
-     document.getElementById('game-screen').classList.remove('hidden');
-   }
+    currentActiveQuestion = { ...q, categoryType: cat };
+    gameState.lastFeedback = null;
 
-   function backToMenu() {
-     if (!AudioController.isMuted) AudioController.startBGM();
-     document.getElementById('soundToggle').classList.remove('hidden-ui');
-     document.getElementById('aboutToggle').classList.remove('hidden-ui');
-     document.getElementById('langToggle').classList.remove('hidden-ui');
-     document.getElementById('game-screen').classList.add('hidden');
-     document.getElementById('main-menu').classList.remove('hidden');
-     document.getElementById('game-content').innerHTML = '';
-   }
+    const catMap = { 
+        posture: 'cat_pos', 
+        screentime: 'cat_screen', 
+        safety: 'cat_safety', 
+        computerhardwareandfunctions: 'cat_comp', 
+        basiccomputeroperation: 'cat_basic' 
+    };
+    
+    document.getElementById('questionCategory').textContent = i18n[currentLanguage][catMap[cat]];
+    document.getElementById('questionPlayer').textContent = player.name + i18n[currentLanguage].turn_suffix;
+    document.getElementById('questionText').textContent = q.question[currentLanguage];
+    
+    const container = document.getElementById('questionOptions'); 
+    container.innerHTML = '';
+    
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left p-3 border-2 rounded-lg hover:bg-blue-50 transition-colors';
+        btn.innerHTML = `<span class="font-bold">${String.fromCharCode(65 + idx)}:</span> ${opt[currentLanguage]}`;
+        btn.onclick = () => answerQuestion(idx, q.correct, q.explanation, player, q);
+        container.appendChild(btn);
+    });
 
-   document.getElementById('soundToggle').onclick = () => AudioController.toggle();
- </script>
-</body>
+    document.getElementById('questionModal').classList.remove('hidden');
+}
+
+        function answerQuestion(idx, correct, explanation, player, q) {
+            const isCorrect = idx === correct;
+            const correctLetter = String.fromCharCode(65 + correct);
+            if (isCorrect) {
+                AudioController.playCorrect(); player.score += 5; player.correctAnswers++;
+                gameState.lastFeedback = { isCorrect: true, explanation, correctLetter };
+            } else {
+                AudioController.playWrong();
+                player.position = player.oldPosition; // STAY IN PLACE LOGIC
+                player.chaosLevel = Math.min(maxChaos, player.chaosLevel + 1);
+                updateBoard(); 
+                updateChaosDisplay();
+
+                if (player.chaosLevel >= 5) {
+                    player.isEliminated = true;
+                    updateBoard(); // AGARANG TANGGALIN SA BOARD
+                    gameState.lastFeedback = { isEliminated: true };
+                } else {
+                    const consKeys = ["cons_move", "cons_jacks", "cons_points"];
+                    gameState.lastFeedback = { isCorrect: false, explanation, correctLetter, consKey: consKeys[Math.floor(Math.random()*3)] };
+                }
+            }
+            renderFeedback();
+            document.getElementById('nextQuestionBtn').classList.remove('hidden');
+            document.querySelectorAll('#questionOptions button').forEach(b => b.disabled = true);
+        }
+
+        function renderFeedback() {
+            const f = document.getElementById('questionFeedback'), state = gameState.lastFeedback, lang = currentLanguage;
+            f.classList.remove('hidden');
+            if (state.isEliminated) { f.className = 'bg-black text-white p-3 rounded font-bold'; f.innerHTML = i18n[lang].disqualified; }
+            else if (state.isCorrect) { f.className = 'bg-green-100 p-3 rounded text-green-700 font-bold'; f.innerHTML = i18n[lang].correct_text + " (" + state.correctLetter + ")<br><span class='text-xs font-normal'>" + state.explanation[lang] + "</span>"; }
+            else { f.className = 'bg-red-100 p-3 rounded text-red-700 font-bold'; f.innerHTML = i18n[lang].wrong_text + " " + state.correctLetter + "<br><span class='text-xs font-normal'>" + state.explanation[lang] + "</span><br><span class='text-xs'>" + i18n[lang].consequence + " " + i18n[lang][state.consKey] + "</span>"; }
+        }
+        function answerQuestion(idx, correct, explanation, player, q) {
+            const isCorrect = idx === correct;
+            const feedback = document.getElementById('questionFeedback');
+            const correctLetter = String.fromCharCode(65 + correct);
+            
+            if (isCorrect) {
+                AudioController.playCorrect();
+                player.score += 5; player.correctAnswers++;
+                gameState.lastFeedback = { isCorrect: true, explanation, correctLetter };
+            } else {
+                AudioController.playWrong();
+                player.position = player.oldPosition; 
+                updateBoard(); 
+
+                player.chaosLevel = Math.min(maxChaos, player.chaosLevel + 1);
+                updateChaosDisplay();
+                
+                if (player.chaosLevel >= 5) {
+                    player.isEliminated = true;
+                    gameState.lastFeedback = { isEliminated: true };
+                } else {
+                    const consKeys = ["cons_move", "cons_jacks", "cons_points"];
+                    gameState.lastFeedback = { isCorrect: false, explanation, correctLetter, consKey: consKeys[Math.floor(Math.random()*3)] };
+                }
+            }
+            
+            
+            renderFeedback();
+            feedback.classList.remove('hidden');
+            document.getElementById('nextQuestionBtn').classList.remove('hidden');
+            document.querySelectorAll('#questionOptions button').forEach(b => b.disabled = true);
+            updateLeaderboard(); 
+            updateCurrentTurn();
+        }
+
+        function closeQuestion() {
+            AudioController.playClick();
+            const p = gameState.players[gameState.currentPlayerIndex];
+
+            if (p.position >= 21 && gameState.lastFeedback && gameState.lastFeedback.isCorrect) {
+                showWinner(p);
+                return;
+            }
+
+            document.getElementById('questionModal').classList.add('hidden');
+            document.getElementById('questionFeedback').classList.add('hidden');
+            document.getElementById('nextQuestionBtn').classList.add('hidden');
+
+            let foundNextPlayer = false;
+            let nextIndex = gameState.currentPlayerIndex;
+
+            for (let i = 0; i < gameState.players.length; i++) {
+                nextIndex = (nextIndex + 1) % gameState.players.length;
+                if (!gameState.players[nextIndex].isEliminated) {
+                    gameState.currentPlayerIndex = nextIndex;
+                    foundNextPlayer = true;
+                    break;
+                }
+            }
+
+            if (!foundNextPlayer) {
+                alert("GAME OVER! All players have been eliminated.");
+                location.reload();
+                return;
+            }
+
+            updatePlayersDisplay(); 
+            updateCurrentTurn();
+            updateBoard();
+        }
+
+        function showWinner(p) {
+            AudioController.stopBGM(); AudioController.playWin();
+            document.getElementById('winnerText').textContent = `${p.name} is a Digital Citizenship Master!`;
+            document.getElementById('winnerScore').textContent = p.score;
+            document.getElementById('winnerCorrect').textContent = p.correctAnswers;
+            document.getElementById('winnerModal').classList.remove('hidden');
+        }
+
+        function startWelcomeSequence() {
+            const bar = document.getElementById('loadingBar');
+            const steps = [20, 40, 60, 80, 100];
+            let cur = 0;
+            const interval = setInterval(() => {
+                if (cur < steps.length) { bar.style.width = steps[cur] + '%'; cur++; }
+                else { 
+                    clearInterval(interval); 
+                    document.getElementById('loadingSection').classList.add('hidden');
+                    document.getElementById('mechanicsSection').classList.remove('hidden');
+                }
+            }, 500);
+        }
+
+        function goBack() {
+            if (!document.getElementById('questionModal').classList.contains('hidden')) return;
+            AudioController.playClick();
+            const board = document.getElementById('gameBoard');
+            const setup = document.getElementById('setupScreen');
+            if (!board.classList.contains('hidden')) { board.classList.add('hidden'); setup.classList.remove('hidden'); }
+            else if (!setup.classList.contains('hidden')) { setup.classList.add('hidden'); document.getElementById('welcomeScreen').classList.remove('hidden'); }
+            else { window.history.back(); }
+        }
+
+        function showToast(msg, type) {
+            const t = document.createElement('div');
+            const c = { success: 'bg-green-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
+            t.className = `fixed top-4 right-4 ${c[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            t.textContent = msg; t.style.transform = 'translateX(100%)';
+            document.body.appendChild(t);
+            setTimeout(() => t.style.transform = 'translateX(0)', 100);
+            setTimeout(() => { t.style.transform = 'translateX(100%)'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        document.getElementById('soundToggle').onclick = () => AudioController.toggleMute();
+        document.getElementById('startGameBtn').onclick = startGame;
+        document.getElementById('rollDiceBtn').onclick = rollDice;
+        document.getElementById('nextQuestionBtn').onclick = closeQuestion;
+        document.getElementById('newGameBtn').onclick = () => location.reload();
+        document.getElementById('proceedBtn').onclick = () => { AudioController.init(); document.getElementById('welcomeScreen').classList.add('hidden'); document.getElementById('setupScreen').classList.remove('hidden'); };
+        document.getElementById('agreeCheckbox').onchange = (e) => document.getElementById('proceedBtn').disabled = !e.target.checked;
+
+        document.addEventListener('DOMContentLoaded', () => { initializeSDK(); startWelcomeSequence(); setLanguage('en'); });
+        document.addEventListener('click', () => { AudioController.init(); AudioController.startBGM(); }, { once: true });
+    </script>
+ </body>
 </html>
