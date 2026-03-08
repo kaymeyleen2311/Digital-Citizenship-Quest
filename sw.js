@@ -10,14 +10,20 @@ const urlsToCache = [
   './game3.html', 
   './game4.html', 
   './game5.html',
+  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js',
+  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+  'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
+  'https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3',
+  'https://assets.mixkit.co/active_storage/sfx/2511/2511-preview.mp3',
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap'
-  'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap',
+  'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
+      console.log('Missions saved for offline use! 🚀');
       return cache.addAll(urlsToCache);
     })
   );
@@ -40,7 +46,6 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(response => {
       return response || fetch(event.request).then(fetchRes => {
         return caches.open(CACHE_NAME).then(cache => {
-          // Dynamic cache
           if (event.request.method === 'GET') {
             cache.put(event.request.url, fetchRes.clone());
           }
@@ -48,7 +53,7 @@ self.addEventListener('fetch', event => {
         });
       });
     }).catch(() => {
-      console.log("Offline or error");
+      console.log("Offline: Content not found.");
     })
   );
 });
