@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Screen Quest: Digital Master</title>
+     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root { 
             --primary: #6c5ce7; --primary-light: #a29bfe; --secondary: #fd79a8; 
@@ -131,10 +132,11 @@
 </div>
 
 <script>
-    const AudioEngine = {
+   const AudioEngine = {
         ctx: null, musicInt: null, isMusicPlaying: false,
         init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-        playTone(f, t, d, v=0.1) {
+        
+        playTone(f, t, d, v=1.0) {
             if(!this.ctx || this.ctx.state === 'suspended') this.init();
             if(!this.ctx) return;
             const o = this.ctx.createOscillator(), g = this.ctx.createGain();
@@ -150,12 +152,12 @@
             if(this.isMusicPlaying) {
                 this.musicInt = setInterval(() => {
                     const notes = [261.63, 329.63, 392.00, 523.25];
-                    this.playTone(notes[Math.floor(Math.random()*notes.length)], 'triangle', 0.6, 0.03);
+                    // Tinaasan ang music volume mula 0.03 patungong 0.15 (para hindi rin sobrang ingay)
+                    this.playTone(notes[Math.floor(Math.random()*notes.length)], 'triangle', 0.6, 0.15);
                 }, 800);
             } else { clearInterval(this.musicInt); }
         }
     };
-
     function startLoadingProcess() {
         let p = 0; const fill = document.getElementById('load-fill');
         const i = setInterval(() => {
@@ -302,7 +304,7 @@
         } else {
             set2Score = score;
             let grandTotal = set1Score + set2Score;
-            document.getElementById('congrats-title').innerText = "CONGRATUALATIONS!";
+            document.getElementById('congrats-title').innerText = "CONGRATULATIONS!";
             document.getElementById('final-msg').innerHTML = 
                 `Set 1: ${set1Score}/50<br>` +
                 `Set 2: ${set2Score}/50<br><br>` +
@@ -318,5 +320,3 @@
 </script>
 </body>
 </html>
-
-
