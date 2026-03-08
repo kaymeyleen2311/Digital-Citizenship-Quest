@@ -12,6 +12,7 @@ const urlsToCache = [
   './game5.html',
   'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap',
 ];
 
 self.addEventListener('install', event => {
