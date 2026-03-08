@@ -424,6 +424,15 @@
    }
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
+     // SERVICE WORKER REGISTRATION
+   if ('serviceWorker' in navigator) {
+     window.addEventListener('load', () => {
+       navigator.serviceWorker.register('sw.js') 
+         .then(reg => console.log('Service Worker Active! 🚀'))
+         .catch(err => console.log('Service Worker Error ❌', err));
+     });
+   }
  </script>
 </body>
 </html>
+
