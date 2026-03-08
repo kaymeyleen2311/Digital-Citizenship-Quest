@@ -477,6 +477,8 @@
      let moves = 0;
      let timeLeft = 60;
      let timerInterval = null;
+     let countdownInterval = null; 
+     let startTimeout = null;     
      let isProcessing = false;
      let playerName = '';
      let selectedDifficulty = 'easy';
@@ -610,19 +612,72 @@
          }
      };
 
-     const allPairs = [
-       { good: { icon: "👁️", text: { en: "20-20-20 Rule", tl: "Panuntunang 20-20-20" } }, bad: { icon: "😑", text: { en: "No Breaks", tl: "Walang Pahinga" } }, fact: { en: "Follow the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds.", tl: "Sundin ang panuntunang 20-20-20: Bawat 20 minuto, tumingin sa malayo (20 feet) sa loob ng 20 segundo." } },
-       { good: { icon: "📏", text: { en: "Arm's Length", tl: "Isang Bisig" } }, bad: { icon: "😵", text: { en: "Too Close", tl: "Masyadong Malapit" } }, fact: { en: "Keep your screen 20-26 inches (arm's length) away from your eyes to prevent vision strain!", tl: "Panatilihin ang screen sa layong 20-26 pulgada (isang bisig) mula sa iyong mga mata." } },
-       { good: { icon: "💡", text: { en: "Good Lighting", tl: "Tamang Ilaw" } }, bad: { icon: "🌙", text: { en: "Dark Room", tl: "Madilim na Silid" } }, fact: { en: "Never use a computer in a completely dark room! Your eyes work too hard without ambient light.", tl: "Huwag gumamit ng kompyuter sa madilim na silid! Mahihirapan ang iyong mga mata." } },
-       { good: { icon: "😊", text: { en: "Regular Blinking", tl: "Pagkurap" } }, bad: { icon: "👀", text: { en: "Staring", tl: "Pagtitig" } }, fact: { en: "Regular blinking keeps eyes moist and prevents dry eye syndrome, especially on screens.", tl: "Ang regular na pagkurap ay nagpapanatili ng halumigmig ng mata at pumipigil sa panunuyo nito." } },
-       { good: { icon: "🚶", text: { en: "Break Time", tl: "Oras ng Break" } }, bad: { icon: "⏰", text: { en: "3hrs Straight", tl: "3 Oras na Tuloy" } }, fact: { en: "Take a break every hour! Stand up, walk around, look outside to relieve tension.", tl: "Mag-break bawat oras! Tumayo at maglakad-lakad para mabawasan ang tensyon sa mata." } },
-       { good: { icon: "👓", text: { en: "Blue Light Filter", tl: "Blue Light Filter" } }, bad: { icon: "📱", text: { en: "Harsh Glare", tl: "Matinding Silaw" } }, fact: { en: "Blue light glasses or screen filters can reduce eye fatigue from digital screens.", tl: "Ang blue light glasses ay nakakatulong bawasan ang pagkapagod ng mata mula sa mga screen." } },
-       { good: { icon: "💧", text: { en: "Eye Drops", tl: "Patak sa Mata" } }, bad: { icon: "✊", text: { en: "Rubbing Eyes", tl: "Pagkusot ng Mata" } }, fact: { en: "Use lubricating eye drops if your eyes feel dry. Never rub them, as it can damage the cornea!", tl: "Gumamit ng eye drops kung tuyo ang mata. Huwag itong kusutin dahil baka masugatan ang cornea." } },
-       { good: { icon: "🌳", text: { en: "Outdoors", tl: "Sa Labas" } }, bad: { icon: "🏠", text: { en: "Always Indoors", tl: "Laging sa Loob" } }, fact: { en: "Spending time outdoors can reduce the risk of myopia (nearsightedness) in children and adults.", tl: "Ang paglabas ng bahay ay nakakabawas sa panganib ng pagiging malabo ng mata o myopia." } },
-       { good: { icon: "☀️", text: { en: "UV Protection", tl: "Proteksyon sa UV" } }, bad: { icon: "😎", text: { en: "No Sunglasses", tl: "Walang Sunglasses" } }, fact: { en: "Always wear UV-blocking sunglasses outside to protect your eyes from harmful ultraviolet rays.", tl: "Laging magsuot ng UV-blocking sunglasses sa labas para maprotektahan ang mata sa araw." } },
-       { good: { icon: "🥦", text: { en: "Healthy Diet", tl: "Masustansyang Pagkain" } }, bad: { icon: "🍬", text: { en: "Junk Food", tl: "Junk Food" } }, fact: { en: "Foods rich in Omega-3, Lutein, and Vitamin C promote long-term eye health.", tl: "Ang mga pagkaing may Omega-3, Lutein, at Vitamin C ay mabuti para sa kalusugan ng mata." } },
-       { good: { icon: "😴", text: { en: "Proper Sleep", tl: "Sapat na Tulog" } }, bad: { icon: "🥱", text: { en: "Sleep Deprived", tl: "Kulang sa Tulog" } }, fact: { en: "Your eyes need at least 7 hours of sleep to fully recover from the day's strain.", tl: "Kailangan ng mata ng hindi bababa sa 7 oras na tulog para makabawi sa pagkapagod." } },
-       { good: { icon: "🩺", text: { en: "Eye Exam", tl: "Eye Exam" } }, bad: { icon: "🤷", text: { en: "Ignore Blur", tl: "Hayaan ang Labo" } }, fact: { en: "Get a comprehensive eye exam every 1-2 years to catch vision problems early.", tl: "Magpa-eye exam bawat 1-2 taon para maagapan ang anumang problema sa paningin." } }
+    const allPairs = [
+       // --- EASY (3 Pairs: 0, 1, 2) ---
+       { 
+         good: { icon: "📏", text: { en: "Safe Distance", tl: "Tamang Distansya" } }, 
+         bad: { icon: "👓", text: { en: "Too Close", tl: "Masyadong Malapit" } }, 
+         fact: { en: "Keep your screen at least 18-24 inches away to avoid eye strain.", tl: "Panatilihin ang iyong screen sa layong 18-24 pulgada upang hindi mapagod ang mga mata." } 
+       },
+       { 
+         good: { icon: "👀", text: { en: "Blink Often", tl: "Madalas Kumurap" } }, 
+         bad: { icon: "😶", text: { en: "Not Blinking", tl: "Hindi Kumukurap" } }, 
+         fact: { en: "Blinking spreads moisture across your eyes, preventing them from getting dry.", tl: "Ang pagkurap ay nagkakalat ng halumigmig sa mata para hindi ito matuyo." } 
+       },
+       { 
+         good: { icon: "💡", text: { en: "Proper Lighting", tl: "Tamang Ilaw" } }, 
+         bad: { icon: "🌑", text: { en: "Dim Light", tl: "Mahinang Ilaw" } }, 
+         fact: { en: "Proper room lighting reduces the contrast between the screen and surroundings.", tl: "Ang tamang ilaw sa silid ay nagpapababa ng pagkapagod ng mata mula sa liwanag ng screen." } 
+       },
+
+       // --- MODERATE (4 Pairs: 3, 4, 5, 6) ---
+       { 
+         good: { icon: "🕰️", text: { en: "20-20-20 Rule", tl: "Rule na 20-20-20" } }, 
+         bad: { icon: "⏳", text: { en: "Long Screen Time", tl: "Matagal na Screen Time" } }, 
+         fact: { en: "Every 20 minutes, look at something 20 feet away for 20 seconds to rest your eyes.", tl: "Tuwing 20 minuto, tumingin sa malayo (20 feet) sa loob ng 20 segundo para makapahinga ang mata." } 
+       },
+       { 
+         good: { icon: "🧍", text: { en: "Sit Upright", tl: "Umupo nang Tuwid" } }, 
+         bad: { icon: "🪑", text: { en: "Slouching", tl: "Nakayukod" } }, 
+         fact: { en: "Sitting upright with the screen at eye level prevents neck and eye fatigue.", tl: "Ang pag-upo nang tuwid habang pantay sa mata ang screen ay nakaiiwas sa sakit ng leeg at mata." } 
+       },
+       { 
+         good: { icon: "😌", text: { en: "Rest Eyes", tl: "Ipahinga ang mga Mata" } }, 
+         bad: { icon: "😵", text: { en: "Ignoring Strain", tl: "Tinitiis ang Pagod" } }, 
+         fact: { en: "If your eyes feel itchy or tired, close them for a few minutes to recover.", tl: "Kung makati o pagod na ang mga mata, ipikit muna ito nang ilang minuto para makabawi." } 
+       },
+       { 
+         good: { icon: "🌙", text: { en: "Limit Bedtime Use", tl: "Limitahan sa Gabi" } }, 
+         bad: { icon: "📱", text: { en: "Gadgets in Bed", tl: "Gadgets sa Kama" } }, 
+         fact: { en: "Avoiding gadgets before sleep helps your brain produce melatonin for better rest.", tl: "Ang pag-iwas sa gadgets bago matulog ay tumutulong sa utak na makapagpahinga nang maayos." } 
+       },
+
+       // --- HARD (5 Pairs: 7, 8, 9, 10, 11) ---
+       { 
+         good: { icon: "🌳", text: { en: "Outdoor Balance", tl: "Oras sa Labas" } }, 
+         bad: { icon: "📺", text: { en: "Excessive Screen Time", tl: "Sobra sa Screen Time" } }, 
+         fact: { en: "Outdoor light and distance viewing help prevent nearsightedness in kids.", tl: "Ang liwanag sa labas at pagtingin sa malayo ay nakatutulong para hindi lumabo ang mata." } 
+       },
+       { 
+         good: { icon: "🧼", text: { en: "Wash Hands", tl: "Maghugas ng Kamay" } }, 
+         bad: { icon: "🤲", text: { en: "Rubbing Eyes", tl: "Pagkuskos ng Mata" } }, 
+         fact: { en: "Hands carry germs; washing them and avoiding eye-rubbing prevents infections.", tl: "Ang kamay ay may mikrobyo; ang paghuhugas at hindi pagkuskos ay iwas-impeksyon." } 
+       },
+       { 
+         good: { icon: "🏠", text: { en: "Adjust Brightness", tl: "Iayon ang Liwanag" } }, 
+         bad: { icon: "🔆", text: { en: "Glare Mismatch", tl: "Maling Liwanag" } }, 
+         fact: { en: "Match your screen brightness to your room's light level to reduce glare.", tl: "Ibagay ang liwanag ng iyong screen sa liwanag ng kwarto para hindi masilaw ang mga mata." } 
+       },
+       { 
+         good: { icon: "🏥", text: { en: "Visit Eye Doctor", tl: "Patingin sa Doktor" } }, 
+         bad: { icon: "🚫", text: { en: "Skipping Exams", tl: "Walang Check-up" } }, 
+         fact: { en: "Regular check-ups can detect vision problems early before they get worse.", tl: "Ang regular na check-up ay nakaaagap sa mga problema sa mata bago ito lumala." } 
+       },
+       { 
+         good: { icon: "🪑", text: { en: "Use When Still", tl: "Gamitin nang Nakatigil" } }, 
+         bad: { icon: "🚶", text: { en: "Gadgets While Moving", tl: "Habang Naglalakad" } }, 
+         fact: { en: "Focusing on a screen while walking causes dizziness and extreme eye fatigue.", tl: "Ang pagtutok sa screen habang naglalakad ay nakahihilo at nakapapagod sa focus ng mata." } 
+       }
      ];
 
      function showScreen(screenId) {
@@ -649,12 +704,11 @@
        document.getElementById(`diff-${diff}`).classList.add('border-white/50');
      }
 
-     function startGame() {
+   function startGame() {
         AudioController.playClick();
         playerName = document.getElementById('player-name-input').value.trim();
         if (!playerName) { document.getElementById('name-error').classList.remove('hidden'); return; }
         
-        // RESET STATE COMPLETELY
         isProcessing = false;
         flippedCards = [];
         matchedPairs = 0;
@@ -662,6 +716,10 @@
         activeFact = null;
         document.getElementById('info-panel').classList.add('hidden');
         clearInterval(timerInterval);
+
+        // I-STOP ANG COUNTDOWN KUNG MERON MAN
+        if (countdownInterval) clearInterval(countdownInterval);
+        if (startTimeout) clearTimeout(startTimeout);
 
         currentDifficulty = selectedDifficulty;
         const settings = difficulties[currentDifficulty];
@@ -683,15 +741,23 @@
         countdownText.textContent = count;
         countdownOverlay.classList.remove('hidden');
 
-        setTimeout(() => {
+        startTimeout = setTimeout(() => {
             AudioController.playFlip();
             document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
-            const countdownInterval = setInterval(() => {
+            
+            countdownInterval = setInterval(() => {
                 count--;
-                if (count > 0) { countdownText.textContent = count; AudioController.playClick(); }
-                else if (count === 0) { countdownText.textContent = "GO!"; AudioController.playTone(800, 'sine', 0.2); }
+                if (count > 0) { 
+                    countdownText.textContent = count; 
+                    AudioController.playClick(); 
+                }
+                else if (count === 0) { 
+                    countdownText.textContent = "GO!"; 
+                    AudioController.playTone(800, 'sine', 0.2); 
+                }
                 else {
                     clearInterval(countdownInterval);
+                    countdownInterval = null;
                     countdownOverlay.classList.add('hidden');
                     document.querySelectorAll('.card').forEach(card => card.classList.remove('flipped'));
                     startTimer();
@@ -766,7 +832,6 @@
      }
 
     function showFact(fact, icon1, icon2) {
-  // STOP the timer when the fact shows up
   clearInterval(timerInterval); 
   
   document.getElementById('info-icon').textContent = `${icon1} ↔️ ${icon2}`;
@@ -810,9 +875,24 @@
 
      function gameOver() { AudioController.playGameOver(); showScreen('gameover-screen'); document.getElementById('gameover-player-name').textContent = playerName; document.getElementById('gameover-matches').textContent = matchedPairs; document.getElementById('gameover-total').textContent = totalPairs; }
 
-     function goBack() {
+    function goBack() {
          AudioController.playClick();
-         if (!document.getElementById('game-screen').classList.contains('hidden')) { clearInterval(timerInterval); showScreen('name-screen'); }
+         
+         // STOP ALL TIMERS & COUNTDOWNS
+         if (countdownInterval) {
+             clearInterval(countdownInterval);
+             countdownInterval = null;
+         }
+         if (startTimeout) {
+             clearTimeout(startTimeout);
+             startTimeout = null;
+         }
+         document.getElementById('countdown-overlay').classList.add('hidden');
+
+         if (!document.getElementById('game-screen').classList.contains('hidden')) { 
+             clearInterval(timerInterval); 
+             showScreen('name-screen'); 
+         }
          else if (!document.getElementById('name-screen').classList.contains('hidden')) showScreen('rules-screen');
          else if (!document.getElementById('rules-screen').classList.contains('hidden')) window.history.back();
          else showScreen('name-screen');
@@ -841,4 +921,3 @@
   </script>
  </body>
 </html>
-
