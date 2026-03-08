@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Goblin Rush</title>
+    <title>Spine-Guard: Posture Quest</title>
     <style>
         :root {
             --primary: #1abc9c;
@@ -49,13 +49,18 @@
 
         @media (min-width: 768px) { #game-container { border-radius: 30px; height: 95vh; } }
 
-        .top-left-controls { position: absolute; top: 15px; left: 15px; z-index: 2000; display: flex; gap: 10px; }
+        .top-left-controls { position: absolute; top: 15px; left: 15px; z-index: 2000; display: flex; gap: 8px; flex-wrap: wrap; }
         .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 2000; }
         
         .back-btn-fixed { 
             background: #c0392b !important; border: 3px solid white !important;
-            box-shadow: 0 4px 0 #8e1e14; color: white; padding: 12px 20px; border-radius: 12px; 
-            cursor: pointer; font-size: 16px; font-weight: bold;
+            box-shadow: 0 4px 0 #8e1e14; color: white; padding: 12px 15px; border-radius: 12px; 
+            cursor: pointer; font-size: 14px; font-weight: bold;
+        }
+
+        .lang-btn {
+            background: #2980b9; border: 3px solid white; color: white; padding: 12px 15px; border-radius: 12px;
+            cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 4px 0 #1c5982;
         }
 
         .nav-btn { background: rgba(0,0,0,0.7); border: 2px solid white; color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: bold; }
@@ -81,15 +86,26 @@
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
         th { color: var(--gold); border-bottom: 1px solid white; }
 
-        /* How to Play Overlay */
-        #how-to-play-btn { background: var(--primary); margin-bottom: 10px; width: auto; padding: 8px 20px; }
+        #review-container { 
+            margin-top: 15px; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            background: rgba(0,0,0,0.4); 
+            border-radius: 10px; 
+            padding: 10px; 
+            text-align: left;
+            font-size: 12px;
+        }
+        .review-item { margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 4px; }
+        .rev-correct { color: #2ecc71; }
+        .rev-wrong { color: #e74c3c; }
     </style>
 </head>
 <body>
 
     <div id="loader-screen">
         <div class="loading-box">
-            <h2 style="margin: 0; letter-spacing: 2px;">GOBLIN RUSH</h2>
+            <h2 id="load-title" style="margin: 0; letter-spacing: 2px;">S脊NE-GUARD</h2>
             <div class="loading-bar"><div id="loading-fill" class="loading-fill animate-fill"></div></div>
             <p id="loading-text" style="font-size: 12px; color: var(--primary);">Synchronizing Audio Loops...</p>
         </div>
@@ -97,6 +113,7 @@
 
     <div class="top-left-controls">
         <button id="back-btn" class="back-btn-fixed" onclick="handleBackNavigation()">⬅ BACK</button>
+        <button id="lang-btn" class="lang-btn" onclick="toggleLanguage()">🌐 ENGLISH/TAGALOG</button>
         <button id="hint-btn" class="hint-btn hidden" onclick="useHint()">💡 HINT</button>
     </div>
 
@@ -106,27 +123,27 @@
 
     <div id="game-container" onclick="initAudio()">
         <div id="start-screen">
-            <h1 style="margin: 0; font-size: 2.5em;">🛡️GOBLIN RUSH</h1>
-            <p style="color: var(--gold); font-weight: bold; margin-bottom: 20px;">Protect Your Spine from the Slouch Goblin!</p>
+            <h1 id="main-title" style="margin: 0; font-size: 2.2em;">🛡️SPINE-GUARD</h1>
+            <p id="sub-title" style="color: var(--gold); font-weight: bold; margin-bottom: 20px;">Protect Your Spine from the Slouch Goblin!</p>
             
             <div class="instruction-card">
-                <h3 style="margin-top:0; color: var(--gold);">📜 HOW TO PLAY:</h3>
-                <ul style="padding-left: 20px; line-height: 1.6;">
+                <h3 id="how-to-title" style="margin-top:0; color: var(--gold);">📜 HOW TO PLAY:</h3>
+                <ul id="instructions-list" style="padding-left: 20px; line-height: 1.6;">
                     <li><b>Objective:</b> Answer questions to push the 👹 Goblin back!</li>
-                    <li><b>Speed:</b> You only have <b>5 Seconds</b> per question.</li>
+                    <li><b>Speed:</b> You only have <b>15 Seconds</b> per question.</li>
                     <li><b>Movement:</b> Correct ✅ = Goblin moves back. Wrong/Timeout ❌ = Goblin moves closer.</li>
                     <li><b>Game Over:</b> If the Goblin reaches you, the mission fails!</li>
                 </ul>
             </div>
 
             <input type="text" id="player-name" placeholder="Enter Your Name..." maxlength="10">
-            <button class="option-btn" onclick="startGame()">START GAME⚔️</button>
+            <button id="start-btn" class="option-btn" onclick="startGame()">START GAME⚔️</button>
         </div>
 
         <div id="quiz-screen" class="hidden">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="display-name" style="color: var(--gold); font-weight: bold;"></span>
-                <span id="q-clock" style="font-weight: bold; color: #f1c40f;">⏳ 5s</span>
+                <span id="q-clock" style="font-weight: bold; color: #f1c40f;">⏳ 15s</span>
                 <span id="display-score" style="background: var(--danger); padding: 5px 15px; border-radius: 20px; font-size: 14px;">0</span>
             </div>
             <div id="q-timer-container"><div id="q-timer-fill"></div></div>
@@ -138,31 +155,185 @@
         <div id="result-screen" class="hidden">
             <h1 id="result-title">GAME CLEAR!</h1>
             <div id="round-stats" style="font-size: 18px; font-weight: bold;"></div>
+            
+            <div id="review-container"></div>
+
             <table>
-                <thead><tr><th>Hero</th><th>G1</th><th>G2</th><th>Total</th></tr></thead>
+                <thead><tr><th id="th-hero">Hero</th><th>G1</th><th>G2</th><th id="th-total">Total</th></tr></thead>
                 <tbody id="end-leaderboard-body"></tbody>
             </table>
-            <button id="btn-replay" class="option-btn" style="margin-top:20px" onclick="triggerNextRound()">TRY AGAIN🚀</button>
-            <button class="option-btn" style="background:#95a5a6; border-color:#7f8c8d;" onclick="location.reload()">MAIN MENU 🏠</button>
+            <button id="btn-replay" class="option-btn" style="margin-top:10px" onclick="triggerNextRound()">TRY AGAIN🚀</button>
+            <button id="btn-menu" class="option-btn" style="background:#95a5a6; border-color:#7f8c8d;" onclick="location.reload()">MAIN MENU 🏠</button>
         </div>
     </div>
 
 <script>
+    const i18n = {
+        en: {
+            back: "⬅ BACK", load: "Synchronizing Audio Loops...", soundOn: "🔊 SOUND: ON", soundOff: "🔇 SOUND: OFF",
+            sub: "Protect Your Spine from the Slouch Goblin!", how: "📜 HOW TO PLAY:", 
+            instr: `<li><b>Objective:</b> Answer questions to push the 👹 Goblin back!</li><li><b>Speed:</b> You only have <b>15 Seconds</b> per question.</li><li><b>Movement:</b> Correct ✅ = Goblin moves back. Wrong/Timeout ❌ = Goblin moves closer.</li><li><b>Game Over:</b> If the Goblin reaches you, the mission fails!</li>`,
+            namePh: "Enter Your Name...", start: "START GAME⚔️", clear: "GAME CLEAR! 🎉", fail: "GOBLIN CAUGHT YOU! 💀", replay: "TRY AGAIN🚀", menu: "MAIN MENU 🏠", hero: "Hero", total: "Total", hint: "💡 HINT", scoreTxt: "Final Score: ",
+            revTitle: "QUEST LOG (REVIEW):", alertName: "Please enter your Name!",
+            q: {
+                r1: [
+                    { q: "At what level should your tablet or phone screen be positioned for safety?", a: ["Resting on your lap", "Directly at eye level", "Flat on the floor"], c: 1 },
+                    { q: "What is the medical term for neck pain caused by looking down at gadgets?", a: ["Digital Dance", "Text Neck Syndrome", "Mobile Phone Case"], c: 1 },
+                    { q: "What is the healthiest position for your back while sitting in a chair?", a: ["Curved like a banana", "Straight and supported", "Slouching forward"], c: 1 },
+                    { q: "How should your feet be positioned when sitting at a desk or table?", a: ["Dangling in the air", "Flat on the floor", "Tucked under the chair"], c: 1 },
+                    { q: "How often should you take a physical break from using your devices?", a: ["Every hour", "Every 20 minutes", "Once a day"], c: 1 },
+                    { q: "What shape should your elbows form while typing or holding a device?", a: ["An L-shape (90 degrees)", "Completely straight", "A V-shape (tightly bent)"], c: 0 },
+                    { q: "What should you do if your eyes start feeling tired from the screen?", a: ["Stare harder at the screen", "Look at something far away", "Brighten the screen light"], c: 1 },
+                    { q: "Where is the best place to put a tablet stand for better posture?", a: ["On a stable table", "On a soft pillow", "On your legs"], c: 0 },
+                    { q: "What is the main reason why we need to take frequent stretching breaks?", a: ["To stretch the body", "To catch digital bugs", "To avoid boredom"], c: 0 },
+                    { q: "Which part of your body does a good chair specifically need to support?", a: ["Your lower legs", "Your lower back", "Only your elbows"], c: 1 }
+                ],
+                r2: [
+                    { q: "The 20-20-20 rule (looking 20 feet away) specifically helps which body part?", a: ["Your hair", "Your eyes", "Your toes"], c: 1 },
+                    { q: "What does the term 'Turtle Back' refer to in digital ergonomics?", a: ["A turtle shell", "Slouching your spine forward", "Swimming in a pool"], c: 1 },
+                    { q: "What is the recommended distance between your eyes and the screen?", a: ["Touching your nose", "About an arm's length away", "At least 10 feet away"], c: 1 },
+                    { q: "What should you do with your gadgets before going to sleep at night?", a: ["Leave them turned on", "Put them away early", "Hide them under the pillow"], c: 1 },
+                    { q: "What is the best thing to do if you start feeling pain in your wrists?", a: ["Stop and stretch them", "Keep going until finished", "Ignore the pain"], c: 0 },
+                    { q: "How should your shoulders be positioned while using a computer?", a: ["Pulled up to your ears", "Relaxed and down", "Bent forward"], c: 1 },
+                    { q: "Why is frequent blinking important when using a digital screen?", a: ["To avoid dry eyes", "To save battery life", "To scare the goblins"], c: 0 },
+                    { q: "What does the word 'Ergonomics' mean in the context of study or work?", a: ["A type of game study", "Working comfortably and safely", "A new mobile app"], c: 1 },
+                    { q: "Why is using a very bright screen in a dark room considered unhealthy?", a: ["It looks great", "It is bad for your sleep", "It makes you healthy"], c: 1 },
+                    { q: "What is a positive benefit of maintaining a good posture every day?", a: ["It makes you energetic", "It makes you sleepy", "It makes you angry"], c: 0 }
+                ]
+            }
+        },
+        ph: {
+            back: "⬅ BALIK", load: "Inihahanda ang mga Tunog...", soundOn: "🔊 TUNOG: BUKAS", soundOff: "🔇 TUNOG: SARADO",
+            sub: "Protektahan ang iyong likod laban sa Slouch Goblin!", how: "📜 PAANO MAGLARO:", 
+            instr: `<li><b>Layunin:</b> Sagutin ang mga tanong para itaboy ang 👹 Goblin!</li><li><b>Bilis:</b> Mayroon kang <b>15 Segundo</b> bawat tanong.</li><li><b>Galaw:</b> Tama ✅ = Lalayo ang Goblin. Mali ❌ = Lalapit ang Goblin.</li><li><b>Talo:</b> Kapag naabutan ka ng Goblin, tapos na ang misyon!</li>`,
+            namePh: "Ipasok ang iyong Pangalan...", start: "SIMULAN ANG LARO⚔️", clear: "PANALO KA! 🎉", fail: "NAHULI KA NG GOBLIN! 💀", replay: "SUBUKAN MULI🚀", menu: "HOME 🏠", hero: "Bida", total: "Kabuuan", hint: "💡 TIP", scoreTxt: "Kabuuang Puntos: ",
+            revTitle: "ULAT NG PAGSUSULIT (REVIEW):", alertName: "Pakilagay ang iyong pangalan!",
+            q: {
+                r1: [
+                   { q: "Sa anong taas dapat ilagay ang screen ng iyong tablet o phone para sa kaligtasan?", 
+  a: ["Nasa iyong kandungan", "Kapantay ng iyong mga mata", "Nakalapag sa sahig"], 
+  c: 1 },
+
+{ q: "Ano ang tawag sa pananakit ng leeg na dulot ng madalas na pagyuko habang gumagamit ng gadgets?", 
+  a: ["Digital Dance", "Text Neck Syndrome", "Mobile Phone Case"], 
+  c: 1 },
+
+{ q: "Ano ang pinakaangkop na posisyon ng iyong likod habang nakaupo sa upuan?", 
+  a: ["Kurbada na parang saging", "Tuwid at may suporta", "Nakayuko pasulong"], 
+  c: 1 },
+
+{ q: "Paano dapat nakaposisyon ang iyong mga paa kapag nakaupo sa harap ng mesa?", 
+  a: ["Nakalawit sa hangin", "Nakalapat nang maayos sa sahig", "Nakatago sa ilalim ng upuan"], 
+  c: 1 },
+
+{ q: "Gaano kadalas dapat magpahinga mula sa paggamit ng gadgets?", 
+  a: ["Tuwing isang oras", "Tuwing ika-20 minuto", "Isang beses sa isang araw"], 
+  c: 1 },
+
+{ q: "Anong hugis ang dapat mabuo ng iyong mga siko habang nagta-type o gumagamit ng device?", 
+  a: ["Hugis L (90 degrees)", "Diretsong tuwid", "Hugis V (sobrang tiklop)"], 
+  c: 0 },
+
+{ q: "Ano ang dapat mong gawin kapag napapagod ang iyong mga mata sa screen?", 
+  a: ["Titigan pa lalo ang screen", "Tumingin sa malayong bagay", "Lakasan ang liwanag ng screen"], 
+  c: 1 },
+
+{ q: "Saan pinakamainam ilagay ang tablet stand para sa tamang postura?", 
+  a: ["Sa matatag na mesa", "Sa malambot na unan", "Sa ibabaw ng iyong mga binti"], 
+  c: 0 },
+
+{ q: "Bakit mahalagang mag-unat o mag-break nang madalas habang gumagamit ng gadgets?", 
+  a: ["Para maiunat ang katawan", "Para makahuli ng digital bugs", "Para hindi mabagot"], 
+  c: 0 },
+
+{ q: "Anong bahagi ng katawan ang dapat suportahan ng isang magandang upuan?", 
+  a: ["Mga binti", "Ibabang bahagi ng likod", "Mga siko lamang"], 
+  c: 1 }
+],
+
+r2: [
+{ q: "Ang 20-20-20 rule (pagtingin sa 20 talampakan ang layo) ay tumutulong sa anong bahagi ng katawan?", 
+  a: ["Buhok", "Mga mata", "Mga daliri sa paa"], 
+  c: 1 },
+
+{ q: "Ano ang ibig sabihin ng 'Turtle Back' sa paggamit ng gadgets?", 
+  a: ["Bahay ng pagong", "Pagkakuba ng likod pasulong", "Paglangoy sa pool"], 
+  c: 1 },
+
+{ q: "Ano ang inirerekomendang layo ng iyong mga mata mula sa screen?", 
+  a: ["Dikit sa ilong", "Halos isang braso ang layo", "Hindi bababa sa 10 talampakan"], 
+  c: 1 },
+
+{ q: "Ano ang dapat gawin sa gadgets bago matulog sa gabi?", 
+  a: ["Iwanang naka-on", "Itabi o tigilan muna ang paggamit", "Itago sa ilalim ng unan"], 
+  c: 1 },
+
+{ q: "Ano ang dapat gawin kung nakakaramdam ng sakit sa pulso?", 
+  a: ["Huminto at iunat ang pulso", "Ipagpatuloy hanggang matapos", "Huwag pansinin"], 
+  c: 0 },
+
+{ q: "Paano dapat ang posisyon ng balikat habang gumagamit ng computer?", 
+  a: ["Nakaangat hanggang tenga", "Relaxed at nakababa", "Nakayuko pasulong"], 
+  c: 1 },
+
+{ q: "Bakit mahalaga ang madalas na pagkurap habang nakatingin sa screen?", 
+  a: ["Para maiwasan ang panunuyo ng mata", "Para makatipid ng baterya", "Para takutin ang goblin"], 
+  c: 0 },
+
+{ q: "Ano ang ibig sabihin ng salitang 'Ergonomics'?", 
+  a: ["Pag-aaral tungkol sa laro", "Pagtatrabaho o pag-aaral nang komportable at ligtas", "Isang mobile app"], 
+  c: 1 },
+
+{ q: "Bakit hindi healthy ang paggamit ng napakaliwanag na screen sa madilim na kwarto?", 
+  a: ["Maganda itong tingnan", "Nakakasama ito sa pagtulog", "Nagpapalusog ito"], 
+  c: 1 },
+
+{ q: "Ano ang mabuting epekto ng pagpapanatili ng tamang postura araw-araw?", 
+  a: ["Nagbibigay ito ng lakas o enerhiya", "Nakakaantok", "Nagpapagalit"], 
+  c: 0 }
+]
+            }
+        }
+    };
+
     let state = { 
         name: "", round: 1, score1: 0, score2: 0, totalScore: 0, 
-        qIndex: 0, goblinPos: 0, gameActive: false, muted: false, qTimeLeft: 5 
+        qIndex: 0, goblinPos: 0, gameActive: false, muted: false, qTimeLeft: 15, lang: 'en',
+        reviewData: [] 
     };
     
     let audioCtx, musicInterval, qTimer;
     let audioInitialized = false;
 
-    // --- SOUND TRACKS ---
     const melodies = [
-        [{f: 261, d: 0.2}, {f: 329, d: 0.2}, {f: 392, d: 0.2}, {f: 523, d: 0.4}], // C Major
-        [{f: 349, d: 0.2}, {f: 440, d: 0.2}, {f: 523, d: 0.2}, {f: 698, d: 0.4}], // F Major
-        [{f: 392, d: 0.2}, {f: 493, d: 0.2}, {f: 587, d: 0.2}, {f: 783, d: 0.4}]  // G Major
+        [{f: 261, d: 0.2}, {f: 329, d: 0.2}, {f: 392, d: 0.2}, {f: 523, d: 0.4}],
+        [{f: 349, d: 0.2}, {f: 440, d: 0.2}, {f: 523, d: 0.2}, {f: 698, d: 0.4}],
+        [{f: 392, d: 0.2}, {f: 493, d: 0.2}, {f: 587, d: 0.2}, {f: 783, d: 0.4}] 
     ];
     let currentMelodyIndex = 0;
+
+    function toggleLanguage() {
+        state.lang = state.lang === 'en' ? 'ph' : 'en';
+        updateUILanguage();
+    }
+
+    function updateUILanguage() {
+        const l = i18n[state.lang];
+        document.getElementById('back-btn').innerText = l.back;
+        document.getElementById('loading-text').innerText = l.load;
+        document.getElementById('sub-title').innerText = l.sub;
+        document.getElementById('how-to-title').innerText = l.how;
+        document.getElementById('instructions-list').innerHTML = l.instr;
+        document.getElementById('player-name').placeholder = l.namePh;
+        document.getElementById('start-btn').innerText = l.start;
+        document.getElementById('th-hero').innerText = l.hero;
+        document.getElementById('th-total').innerText = l.total;
+        document.getElementById('btn-replay').innerText = l.replay;
+        document.getElementById('btn-menu').innerText = l.menu;
+        document.getElementById('hint-btn').innerText = l.hint;
+        document.getElementById('mute-btn').innerText = state.muted ? l.soundOff : l.soundOn;
+        if(state.gameActive) loadQuestion();
+    }
 
     function handleBackNavigation() {
         if (!document.getElementById('quiz-screen').classList.contains('hidden') || 
@@ -173,33 +344,6 @@
             else window.location.href = "about:blank"; 
         }
     }
-
-    const questions = {
-        r1: [
-            { q: "Where should the tablet screen be?", a: ["In your lap", "At eye level", "On the floor"], c: 1 },
-            { q: "What is 'Text Neck'?", a: ["A dance", "Neck pain from gadgets", "A phone case"], c: 1 },
-            { q: "Back position while sitting?", a: ["Curved", "Straight", "Slouching"], c: 1 },
-            { q: "Your feet should be...?", a: ["Dangling", "Flat on floor", "Tucked"], c: 1 },
-            { q: "Take a break every...?", a: ["Hour", "20 minutes", "Once a day"], c: 1 },
-            { q: "Elbow shape?", a: ["L-shape", "Straight", "V-shape"], c: 0 },
-            { q: "Eyes feeling tired?", a: ["Stare harder", "Look far away", "Brighten screen"], c: 1 },
-            { q: "Tablet stand goes on...?", a: ["A table", "Soft pillow", "Your lap"], c: 0 },
-            { q: "Why take breaks?", a: ["Body stretching", "Catching bugs", "Boredom"], c: 0 },
-            { q: "Good chair supports...?", a: ["Legs", "Lower back", "Elbows"], c: 1 }
-        ],
-        r2: [
-            { q: "The 20-20-20 rule helps your...?", a: ["Hair", "Eyes", "Toes"], c: 1 },
-            { q: "What is 'Turtle Back'?", a: ["A shell", "Slouching forward", "Swimming"], c: 1 },
-            { q: "Screen distance?", a: ["Touching nose", "Arm's length", "10 feet"], c: 1 },
-            { q: "Before bed, gadgets should...?", a: ["Stay on", "Be put away", "Hide under pillow"], c: 1 },
-            { q: "Wrist pain?", a: ["Stop and stretch", "Keep going", "Ignore it"], c: 0 },
-            { q: "Shoulders should be...?", a: ["Up at ears", "Relaxed", "Bent"], c: 1 },
-            { q: "Blinking avoids...?", a: ["Dry eyes", "Battery loss", "Goblins"], c: 0 },
-            { q: "Ergonomics means...?", a: ["Game study", "Working comfortably", "New app"], c: 1 },
-            { q: "Bright screen in dark is...?", a: ["Great", "Bad for sleep", "Healthy"], c: 1 },
-            { q: "Good posture makes you...?", a: ["Energetic", "Sleepy", "Angry"], c: 0 }
-        ]
-    };
 
     function initAudio() {
         if (audioInitialized) return;
@@ -214,9 +358,8 @@
             if (!state.muted && state.gameActive && audioCtx) {
                 let melody = melodies[currentMelodyIndex];
                 let note = melody[step % melody.length];
-                playNote(note.f, 'sine', note.d, 1.0);
+                playNote(note.f, 'sine', note.d, 0.05);
                 step++;
-                // Change melody every 8 notes
                 if (step % 8 === 0) currentMelodyIndex = (currentMelodyIndex + 1) % melodies.length;
             }
         }, 300);
@@ -233,7 +376,6 @@
         osc.start(); osc.stop(audioCtx.currentTime + dur);
     }
 
-    // CONFETTI SOUND (High pitched rapid notes)
     function playWinSound() {
         const notes = [523, 659, 783, 1046, 1318];
         notes.forEach((f, i) => {
@@ -241,7 +383,6 @@
         });
     }
 
-    // FAILED SOUND (Deep sliding down tone)
     function playFailSound() {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -269,7 +410,8 @@
 
     function startGame() {
         const val = document.getElementById('player-name').value;
-        if (!val) { alert("Please enter a Hero Name!"); return; }
+        const l = i18n[state.lang];
+        if (!val) { alert(l.alertName); return; }
         state.name = val;
         initAudio();
         document.getElementById('start-screen').classList.add('hidden');
@@ -283,15 +425,16 @@
 
     function gameLoop() {
         if (!state.gameActive) return;
-        state.goblinPos += (state.round === 1 ? 0.07 : 0.1);
+        state.goblinPos += (state.round === 1 ? 0.04 : 0.06); 
         document.getElementById('goblin').style.left = state.goblinPos + "%";
         if (state.goblinPos >= 82) endRound(false);
         else requestAnimationFrame(gameLoop);
     }
 
     function loadQuestion() {
-        const pool = state.round === 1 ? questions.r1 : questions.r2;
-        const q = pool[state.qIndex];
+        const pool = state.lang === 'en' ? i18n.en.q : i18n.ph.q;
+        const currentPool = state.round === 1 ? pool.r1 : pool.r2;
+        const q = currentPool[state.qIndex];
         document.getElementById('question-text').innerText = q.q;
         document.getElementById('hint-btn').disabled = false;
         
@@ -302,7 +445,10 @@
                 const allBtns = document.querySelectorAll('#options .option-btn');
                 allBtns.forEach(btn => btn.disabled = true); 
 
-                if(i === q.c) {
+                let isCorrect = (i === q.c);
+                state.reviewData.push({ q: q.q, ans: q.a[q.c], correct: isCorrect, round: state.round });
+
+                if(isCorrect) {
                     playNote(880, 'sine', 0.2);
                     if(state.round === 1) state.score1 += 10; else state.score2 += 10;
                     state.goblinPos = Math.max(0, state.goblinPos - 15);
@@ -326,16 +472,22 @@
 
     function startQuestionTimer() {
         clearInterval(qTimer);
-        state.qTimeLeft = 5;
+        state.qTimeLeft = 15;
         qTimer = setInterval(() => {
             if (!state.gameActive) return;
             state.qTimeLeft -= 0.1;
-            document.getElementById('q-timer-fill').style.width = (state.qTimeLeft * 20) + "%";
+            document.getElementById('q-timer-fill').style.width = (state.qTimeLeft * 6.66) + "%";
             document.getElementById('q-clock').innerText = `⏳ ${Math.ceil(state.qTimeLeft)}s`;
             
             if (state.qTimeLeft <= 0) {
                 clearInterval(qTimer);
+                const pool = state.lang === 'en' ? i18n.en.q : i18n.ph.q;
+                const currentPool = state.round === 1 ? pool.r1 : pool.r2;
+                const q = currentPool[state.qIndex];
+                
+                state.reviewData.push({ q: q.q, ans: q.a[q.c], correct: false, round: state.round });
                 state.goblinPos += 15;
+
                 if (state.goblinPos >= 82) endRound(false);
                 else {
                     state.qIndex++;
@@ -345,9 +497,25 @@
         }, 100);
     }
 
+    function generateReviewHTML() {
+        const l = i18n[state.lang];
+        let html = `<h4 style="margin:0 0 10px 0; color:var(--gold);">${l.revTitle}</h4>`;
+        state.reviewData.forEach((item, idx) => {
+            const statusClass = item.correct ? 'rev-correct' : 'rev-wrong';
+            const icon = item.correct ? '✅' : '❌';
+            html += `<div class="review-item">
+                <div class="${statusClass}"><b>R${item.round}-Q${(idx % 10) + 1}: ${icon}</b></div>
+                <div>${item.q}</div>
+                <div style="color:#ddd">${state.lang === 'en' ? 'Correct' : 'Tama'}: ${item.ans}</div>
+            </div>`;
+        });
+        return html;
+    }
+
     function endRound(win) {
         state.gameActive = false; clearInterval(qTimer);
         clearInterval(musicInterval);
+        const l = i18n[state.lang];
 
         if(win) playWinSound(); else playFailSound();
 
@@ -355,13 +523,17 @@
         document.getElementById('hint-btn').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         
-        document.getElementById('result-title').innerText = win ? "GAME CLEAR! 🎉" : "GOBLIN CAUGHT YOU! 💀";
+        document.getElementById('result-title').innerText = win ? l.clear : l.fail;
         document.getElementById('result-title').style.color = win ? "var(--success)" : "var(--danger)";
         
-        document.getElementById('round-stats').innerText = `Final Score: ${state.totalScore}`;
+        document.getElementById('review-container').innerHTML = generateReviewHTML();
+        document.getElementById('round-stats').innerText = `${l.scoreTxt} ${state.totalScore}`;
+        
         if (state.round === 2 || !win) {
             document.getElementById('btn-replay').classList.add('hidden');
             saveScore();
+        } else {
+            document.getElementById('btn-replay').classList.remove('hidden');
         }
         renderLeaderboard();
     }
@@ -383,9 +555,11 @@
         state.totalScore -= 5;
         if (state.round === 1) state.score1 -= 5; else state.score2 -= 5;
         document.getElementById('display-score').innerText = state.totalScore;
-        const pool = state.round === 1 ? questions.r1 : questions.r2;
+        
+        const pool = state.lang === 'en' ? i18n.en.q : i18n.ph.q;
+        const currentPool = state.round === 1 ? pool.r1 : pool.r2;
         const btns = document.querySelectorAll('#options .option-btn');
-        btns[pool[state.qIndex].c].style.background = "#2ecc71";
+        btns[currentPool[state.qIndex].c].style.background = "#2ecc71";
         document.getElementById('hint-btn').disabled = true;
     }
 
@@ -403,9 +577,11 @@
 
     function toggleMute() {
         state.muted = !state.muted;
-        document.getElementById('mute-btn').innerText = state.muted ? "🔇 OFF" : "🔊 ON";
+        const l = i18n[state.lang];
+        document.getElementById('mute-btn').innerText = state.muted ? l.soundOff : l.soundOn;
     }
 </script>
 </body>
 </html>
+
 
