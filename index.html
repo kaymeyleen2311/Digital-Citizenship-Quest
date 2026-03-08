@@ -401,7 +401,7 @@
      document.getElementById('game-screen').classList.remove('hidden');
    }
 
-   function backToMenu() {
+ function backToMenu() {
      if (!AudioController.isMuted) AudioController.startBGM();
      document.getElementById('soundToggle').classList.remove('hidden-ui');
      document.getElementById('aboutToggle').classList.remove('hidden-ui');
@@ -412,7 +412,9 @@
    }
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
-    if ('serviceWorker' in navigator) {
+
+   // SERVICE WORKER REGISTRATION HUHU PLS GUMANA KA NA 
+   if ('serviceWorker' in navigator) {
      window.addEventListener('load', () => {
        navigator.serviceWorker.register('./sw.js')
          .then(reg => console.log('Service Worker Active! 🚀'))
@@ -422,4 +424,5 @@
  </script>
 </body>
 </html>
+
 
