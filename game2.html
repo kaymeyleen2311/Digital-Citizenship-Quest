@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internet Safety Quest</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --pastel-blue: #b2e2f2; --pastel-pink: #ffb7b2;
@@ -22,71 +23,51 @@
         #loading-screen {
             position: fixed; inset: 0; background: white;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 4000; transition: opacity 0.5s;
+            z-index: 4000;
         }
         .progress-container {
             width: 300px; height: 20px; background: #eee;
             border-radius: 10px; overflow: hidden; margin-top: 20px;
             border: 2px solid var(--pastel-blue);
         }
-        #progress-bar {
-            width: 0%; height: 100%; background: var(--pastel-pink);
-            transition: width 0.1s linear;
-        }
+        #progress-bar { width: 0%; height: 100%; background: var(--pastel-pink); transition: width 0.1s linear; }
+        #tap-to-start { display: none; margin-top: 20px; cursor: pointer; background: var(--pastel-pink); color: white; padding: 10px 25px; border-radius: 20px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
         /* --- UI CONTROLS --- */
         .ui-btn {
             position: fixed; top: 20px; width: 45px; height: 45px;
             border-radius: 50%; background: rgba(255,255,255,0.9); border: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer;
-            z-index: 1500; font-size: 16px; display: flex; align-items: center; justify-content: center;
+            z-index: 3500; font-size: 16px; display: none; align-items: center; justify-content: center;
             transition: 0.2s; backdrop-filter: blur(5px); font-weight: bold;
         }
-        .ui-btn:hover { transform: scale(1.1); background: white; }
-        #back-btn { left: 20px; display: none; }
-        #music-btn { right: 20px; display: none; }
+        #back-btn { left: 20px; }
+        #music-btn { right: 20px; }
 
+        /* TINAASAN ANG Z-INDEX PARA NASA IBABAW NG TANONG */
         .lang-switcher {
-    position: fixed;
-    top: 20px;
-    left: 80px; /* places it beside the back button */
-    display: none;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 25px;
-    padding: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    z-index: 1500;
-    backdrop-filter: blur(5px);
-    border: 2px solid white;
-    flex-direction: row;
-}
-.lang-opt {
-    padding: 6px 14px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 20px;
-    transition: all 0.25s ease;
-    color: #777;
+            position: fixed; top: 20px; left: 80px; 
+            display: none; background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px; padding: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 3500;
+            backdrop-filter: blur(5px); border: 2px solid white;
+            flex-direction: row;
         }
-       
-        .lang-opt.active {
-            background: var(--pastel-pink); color: white;
-            box-shadow: 0 2px 8px rgba(224, 122, 130, 0.3);
-        }
+        .lang-opt { padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; border-radius: 20px; transition: 0.2s; color: #777; }
+        .lang-opt.active { background: var(--pastel-pink); color: white; box-shadow: 0 2px 8px rgba(224, 122, 130, 0.3); }
 
         /* --- SCREENS --- */
-        #audio-unlocker, #lobby, #winner-screen {
+        #rules-screen, #lobby, #winner-screen {
             position: fixed; inset: 0; 
             background: linear-gradient(135deg, var(--pastel-blue), #ffffff);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
             z-index: 1000; text-align: center;
         }
-        #lobby, #winner-screen { display: none; }
         
         .card {
             background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 30px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; width: 350px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; width: 400px;
             border: 1px solid white; backdrop-filter: blur(10px);
         }
         input { padding: 12px; border-radius: 10px; border: 2px solid var(--pastel-pink); margin: 8px; width: 80%; outline: none; }
@@ -96,20 +77,17 @@
             border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px;
             box-shadow: 0 4px 0 #e07a82; transition: 0.2s; color: white; text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e07a82; }
 
-        /* --- GAME AREA --- */
         #game-info { 
             display: none; width: 90%; max-width: 600px; padding: 10px 20px; 
             justify-content: space-around; position: absolute; top: 75px;
             background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
             border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
-            border: 2px solid white;
         }
         
         #game-field { 
             display: none; position: relative; width: 100%; height: 100vh;
-            background-image: url('https://r2.erweima.ai/i/9YqG8366QvOCYJ2-vSSTUA.png');
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 70%, #98FB98 100%);
             background-size: cover; background-position: center; overflow: hidden; 
         }
 
@@ -118,91 +96,76 @@
             cursor: pointer; position: absolute;
             box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2), 0 10px 20px rgba(0,0,0,0.1);
             animation: float 5s ease-in-out infinite alternate;
-            transition: transform 0.1s;
         }
         .balloon::after { content: ''; position: absolute; bottom: -18px; width: 1.5px; height: 30px; background: rgba(255,255,255,0.6); left: 50%; }
 
-        @keyframes float {
-            0% { transform: translate(0, 0) rotate(-2deg); }
-            100% { transform: translate(10px, -40px) rotate(2deg); }
-        }
+        @keyframes float { 0% { transform: translate(0, 0) rotate(-2deg); } 100% { transform: translate(10px, -40px) rotate(2deg); } }
 
         #quiz-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
             backdrop-filter: blur(8px); z-index: 2000; justify-content: center; align-items: center;
         }
-        .quiz-card { background: white; padding: 30px; border-radius: 30px; width: 450px; text-align: center; border: 8px solid var(--pastel-blue); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        .ans-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; background: #f9f9f9; font-size: 16px; transition: 0.2s; font-weight: 500; }
-        .ans-btn:hover { background: var(--pastel-blue); border-color: var(--pastel-blue); }
-        #timer-box { font-size: 24px; font-weight: bold; color: #ff6961; margin-bottom: 10px; background: #fff1f1; padding: 5px 15px; border-radius: 20px; display: inline-block; }
-        #feedback { font-weight: bold; margin: 15px 0; min-height: 1.2em; line-height: 1.4; font-size: 0.95em; }
-        .explanation-text { font-weight: normal; font-size: 0.85em; color: #666; font-style: italic; margin-top: 10px; display: block; border-top: 1px solid #eee; padding-top: 10px;}
+        .quiz-card { background: white; padding: 30px; border-radius: 30px; width: 450px; text-align: center; border: 8px solid var(--pastel-blue); }
+        .ans-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; font-size: 16px; transition: 0.2s; font-weight: bold; }
+        .ans-btn:hover { background: var(--pastel-blue); }
+        #timer-box { font-size: 24px; font-weight: bold; color: #ff6961; margin-bottom: 10px; }
+        .explanation-text { font-size: 0.85em; color: #666; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display: block; font-style: italic; }
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
         <h2 id="load-title" style="color: var(--pastel-pink); margin: 0;">🎈 BALLOON SAFETY POP</h2>
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <p id="loading-text" style="margin-top: 10px; font-size: 14px; color: #888;">Preparing the Game...</p>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <div id="tap-to-start" onclick="startApp()">CLICK TO START QUEST</div>
     </div>
 
     <button id="back-btn" class="ui-btn" onclick="goBack()">⬅</button>
+    <button id="music-btn" class="ui-btn" onclick="toggleMusic()">🎵</button>
     
-    <div id="lang-btn" class="lang-switcher">
-        <div id="opt-en" class="lang-opt active" onclick="setLang('en')">ENLISH</div>
+    <div id="lang-switcher" class="lang-switcher">
+        <div id="opt-en" class="lang-opt active" onclick="setLang('en')">ENGLISH</div>
         <div id="opt-ph" class="lang-opt" onclick="setLang('ph')">TAGALOG</div>
     </div>
 
-    <button id="music-btn" class="ui-btn" onclick="toggleMusic()">🎵</button>
-
-    <div id="audio-unlocker" onclick="initLobby()">
-    <div class="card">
-        <h1 id="start-title" style="color: #ff9aa2;">🎈 Online Safety Balloon Pop</h1>
-        <p id="start-subtitle" style="color:#888;">The fun way to stay safe online!</p>
-
-        <div style="text-align:left; font-size:14px; margin-top:15px; line-height:1.5;">
-            <strong>Quick Start</strong><br>
-            <b></b> Pop balloons to answer safety questions and earn the highest score before the game ends.
-            
-            <br><br><strong>The Rules</strong><br>
-            🎈 <b>Pop & Answer:</b> Click any balloon to reveal a question. You have <b>15 seconds</b> to answer.<br><br>
-
-            ⏱ <b>Auto-Reveal:</b> If time runs out, the correct answer will appear but you earn <b>0 points</b>.<br><br>
-
-            ⭐ <b>Scoring:</b><br>
-            ✔ Correct Answer = <b>+10 points</b><br>
-            🌟 Bonus Balloon = <b>+5 points</b><br>
-            💥 Oops Balloon = <b>-5 points</b>
+    <div id="rules-screen">
+        <div class="card">
+            <h1 id="start-title" style="color: #ff9aa2;">🎈 Balloon Safety Pop</h1>
+            <div id="rules-box" style="text-align:left; font-size:14px; margin-top:15px; line-height:1.5;">
+                <strong id="txt-qs">Quick Start</strong><br>
+                <span id="txt-qd">Pop balloons to answer safety questions and earn points!</span>
+                <br><br><strong id="txt-rt">The Rules</strong><br>
+                <ul>
+                    <li id="txt-r1">🎈 <b>Pop & Answer:</b> Click any balloon to reveal a question.</li>
+                    <li id="txt-r2">⏱ <b>Time Limit:</b> You have 15 seconds to answer.</li>
+                    <li id="txt-r3">⭐ <b>Scoring:</b> Correct +10, Bonus +5, Oops -5.</li>
+                </ul>
+            </div>
+            <button id="start-btn-ui" class="btn" onclick="goToLobby()">ENTER LOBBY</button>
         </div>
-
-        <button id="start-btn" class="btn">START THE GAME</button>
     </div>
-</div>
 
     <div id="lobby">
         <div class="card">
             <h1 id="lobby-title" style="color: #ff9aa2;">Who's Playing?</h1>
             <input type="text" id="p1-name" placeholder="Player 1 Name">
             <input type="text" id="p2-name" placeholder="Player 2 (Optional)">
-            <button id="lobby-go" class="btn" onclick="startGame()">Start to Play</button>
+            <button id="lobby-go" class="btn" onclick="startGame()">Start Quest</button>
         </div>
     </div>
 
     <div id="winner-screen">
         <div class="card">
-            <div style="font-size: 60px; margin-bottom: 10px;">👑</div>
-            <h2 id="winner-title" style="margin: 0; color: #ff9aa2;">Winner!</h2>
-            <p id="winner-score" style="font-size: 1.5em; font-weight: bold; color: #555;"></p>
+            <div style="font-size: 60px;">👑</div>
+            <h2 id="winner-title">Winner!</h2>
+            <p id="winner-score" style="font-weight: bold; font-size: 1.5em;"></p>
             <button id="play-again-btn" class="btn" onclick="location.reload()">Play Again</button>
         </div>
     </div>
 
     <div id="game-info">
         <div id="score-p1" style="color: #e07a82; font-weight: bold;">P1: 0</div>
-        <div id="turn-display" style="font-weight: 800; color: #4a4a4a; font-size: 1.1em;">Loading...</div>
+        <div id="turn-display" style="font-weight: 800; font-size: 1.1em;">Turn</div>
         <div id="score-p2" style="color: #4facfe; font-weight: bold;"></div>
     </div>
 
@@ -211,316 +174,231 @@
     <div id="quiz-overlay">
         <div class="quiz-card">
             <div id="timer-box">Time: 15s</div>
-            <h3 id="q-text" style="color: #4a4a4a; font-size: 1.3em;">Question</h3>
+            <h3 id="q-text" style="color:#4a4a4a;">Question</h3>
             <div id="q-options"></div>
             <div id="feedback"></div>
             <button id="next-btn" class="btn" style="display:none" onclick="closeQuiz()">Continue</button>
         </div>
     </div>
 
-    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
-    <audio id="pop-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
-    <audio id="correct-sound" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
-    <audio id="fail-sound" src="https://assets.mixkit.co/active_storage/sfx/2511/2511-preview.mp3"></audio>
-
 <script>
+   // --- OFFLINE AUDIO ENGINE (BOOSTED VOLUME) ---
+    const AudioSystem = {
+        ctx: null, musicInt: null,
+        init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if(this.ctx.state==='suspended') this.ctx.resume(); },
+        playTone(f, t, d, v=1.0) { 
+            this.init();
+            const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
+            g.gain.setValueAtTime(v, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + d);
+            o.connect(g); g.connect(this.ctx.destination);
+            o.start(); o.stop(this.ctx.currentTime + d);
+        },
+        playPop() { this.playTone(600, 'sine', 0.1, 0.6); },       // Pop sound (Malakas)
+        playCorrect() { this.playTone(880, 'sine', 0.4, 0.6); setTimeout(()=>this.playTone(1100, 'sine', 0.4, 0.6), 100); }, // Tama sound
+        playFail() { this.playTone(200, 'sawtooth', 0.5, 0.6); },    // Mali sound
+        startBGM() {
+            if(this.musicInt) return;
+            let step = 0; const melody = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23, 392.00, 523.25];
+            this.musicInt = setInterval(() => {
+                if(isMusicPlaying) {
+                    // Eto yung hinahanap mo, pinalakas ko na (0.15 at 0.10):
+                    this.playTone(melody[step % melody.length], 'triangle', 0.3, 0.15); 
+                    if(step % 4 === 0) this.playTone(melody[step % melody.length] / 2, 'sine', 0.5, 0.10);
+                    step++;
+                }
+            }, 300);
+        },
+        stopBGM() { clearInterval(this.musicInt); this.musicInt = null; }
+    };
     const i18n = {
         en: {
-            loading: "Preparing the Meadow...", startSubtitle: "The fun way to stay safe online!",
-            startBtn: "START GAME", lobbyTitle: "Who's Playing?", p1Place: "Player 1 Name",
-            p2Place: "Player 2 (Optional)", lobbyGo: "Start to Play", turn: "Turn",
-            time: "Time", continue: "Continue", playAgain: "Play Again",
-            bonus: "🌟 BONUS! +5 Points!", oops: "💀 OOPS! -5 Points!",
-            correct: "✅ Correct! +10 Pts",
-            balloonEvent: "Balloon Event!", gameOver: "Game Over!",
-            win: "Wins!", draw: "Draw!", quitMsg: "Quit game? Progress will be lost.",
-            expLabel: "Explanation:"
+            loading: "Preparing...", enter: "ENTER LOBBY", lobbyT: "Who's Playing?", p1: "Player 1 Name", p2: "Player 2 (Optional)", 
+            go: "Start Quest", turn: "Turn", time: "Time", cont: "Continue", again: "Play Again",
+            bonus: "🌟 BONUS! +5 Points!", oops: "💀 OOPS! -5 Points!", correct: "✅ Correct! +10 Pts",
+            wrong: "❌ Wrong! Answer:", event: "Balloon Event!", gameOver: "Game Over!", win: "Wins!", draw: "Draw!",
+            qs: "Quick Start", qd: "Pop balloons to answer safety questions and earn points!",
+            rt: "The Rules", r1: "🎈 Pop & Answer: Click any balloon to reveal a question.",
+            r2: "⏱ Time Limit: You have 15 seconds to answer.", r3: "⭐ Scoring: Correct +10, Bonus +5, Oops -5.",
+            tap: "CLICK TO START QUEST", quit: "Quit game?"
         },
         ph: {
-            loading: "Inihahanda ang Bukid...", startSubtitle: "Ang masayang paraan para maging ligtas online!",
-            startBtn: "SIMULAN ANG LARO", lobbyTitle: "Sino ang Maglalaro?", p1Place: "Unang manlalaro",
-            p2Place: "Pangalawang Manlalaro (Opsyonal)", lobbyGo: "Simulan ang laro", turn: "Taya ni",
-            time: "Oras", continue: "Ituloy", playAgain: "Laro Muli",
-            bonus: "🌟 BONUS! +5 Puntos!", oops: "💀 OOPS! -5 Puntos!",
-            correct: "✅ Tama! +10 Pts",
-            balloonEvent: "Kaganapan sa Lobo!", gameOver: "Tapos na ang Laro!",
-            win: "ay Panalo!", draw: "Tabla!", quitMsg: "Aalis ka ba? Mawawala ang score mo.",
-            expLabel: "Paliwanag:"
+            loading: "Inihahanda...", enter: "PUMUNTA SA LOBBY", lobbyT: "Sino ang Maglalaro?", p1: "Pangalan ng Player 1", p2: "Player 2 (Opsyonal)", 
+            go: "Simulan ang Quest", turn: "Taya ni", time: "Oras", cont: "Ituloy", again: "Laro Muli",
+            bonus: "🌟 BONUS! +5 Puntos!", oops: "💀 OOPS! -5 Puntos!", correct: "✅ Tama! +10 Puntos",
+            wrong: "❌ Mali! Ang Sagot:", event: "Kaganapan!", gameOver: "Tapos na ang Laro!", win: "ay Panalo!", draw: "Tabla!",
+            qs: "Mabilisang Gabay", qd: "Pumutok ng mga lobo para sagutin ang mga safety questions at kumuha ng puntos!",
+            rt: "Ang mga Panuntunan", r1: "🎈 Pumutok at Sumagot: I-click ang lobo para sa tanong.",
+            r2: "⏱ Oras: May 15 segundo ka para sumagot.", r3: "⭐ Puntos: Tama +10, Bonus +5, Oops -5.",
+            tap: "I-CLICK PARA MAGSIMULA", quit: "Aalis ka ba?"
         }
     };
 
-    const allQuestions = {
-        en: [
-            { q: "You receive a message from a stranger asking for your home address. What should you do?", c: ["Give it to them so you can be friends.", "Do not reply and tell a trusted adult immediately."], r: 1, e: "Protecting personal information is the first step in digital safety." },
-            { q: "Which of the following is considered 'Personal Information' that should stay private?", c: ["Your full name and school name.", "Your favorite color and favorite food."], r: 0, e: "Information that can be used to identify or locate you should never be shared with strangers online." },
-            { q: "You see a mean comment about your classmate on a social media post. What is the right thing to do?", c: ["Join in and write another mean comment.", "Do not join and report the post if possible."], r: 1, e: "This relates to Digital Citizenship and Netiquette, teaching learners to be 'buddies, not bullies.'" },
-            { q: "What is a 'strong' password?", c: ["Your nickname and birth year (e.g., 'Juan2016').", "A mix of letters, numbers, and symbols (e.g., 'Blue!Sky99')."], r: 1, e: "Strong passwords protect your accounts from being hacked or accessed by others." },
-            { q: "An ad pops up saying you won a free iPhone. What should you do?", c: ["Close the window immediately.", "Click it to claim your prize."], r: 0, e: "This is often a 'phishing' attempt or malware. Grade 4 learners are taught to recognize and avoid suspicious links." },
-            { q: "Who is the best person to talk to if you feel uncomfortable about something you saw online?", c: ["A parent, teacher, or guardian.", "Your online 'friend' who you haven't met in person."], r: 0, e: "Trusted adults are the primary safety net for children navigating digital spaces." },
-            { q: "Before downloading a game from a website you don't know, what should you do?", c: ["Download it quickly before it disappears.", "Ask permission from an adult first."], r: 1, e: "Unknown downloads can contain malware (viruses) that can break your computer or steal data." },
-            { q: "Is it okay to share your password with your best friend?", c: ["Yes, because we share everything.", "No, passwords should only be shared with parents/guardians."], r: 1, e: "Even friends can accidentally leak passwords; keeping them private ensures your account stays secure." },
-            { q: "If you want to post a photo of your friend online, what is the first step?", c: ["Ask for your friend's permission first.", "Just post it; they will see it anyway."], r: 0, e: "This teaches 'Digital Etiquette' and respect for others' privacy." },
-            { q: "What is 'Cyberbullying'?", c: ["Helping a friend fix their computer.", "Using the internet to meanly target or hurt someone."], r: 1, e: "Recognizing cyberbullying is a key competency in the Grade 4 ICT curriculum." },
-            { q: "When searching for information for a school project, you should:", c: ["Use kid-safe search engines or sites recommended by your teacher.", "Click on any link that has a bright, colorful picture."], r: 0, e: "Using curated resources helps avoid inappropriate content and unreliable information." },
-            { q: "What should you do if a stranger sends you a 'Friend Request'?", c: ["Accept it so you can have more followers.", "Ignore or Delete it."], r: 1, e: "Only 'Add Friends, Not Strangers' is a core safety rule for young learners." },
-            { q: "Why should we limit our 'Screen Time' (time spent on gadgets)?", c: ["To stay healthy and spend time with family.", "Because gadgets will explode if used too long."], r: 0, e: "Relates to 'Digital Health and Wellness,' emphasizing a balance between online and offline activities." },
-            { q: "What does 'T.O.S.' usually stand for in apps?", c: ["Terms of Service (rules you must follow).", "Time of Safety (when the app is safe)."], r: 0, e: "Understanding that every platform has rules is part of being a responsible digital citizen." },
-            { q: "You found a cool picture online for your poster. Can you say you drew it?", c: ["Yes, because it’s on the internet.", "No, that is called plagiarism; you must say where you got it."], r: 1, e: "This introduces the concept of Intellectual Property and honesty in the digital world." },
-            { q: "What is an 'Email'?", c: ["A digital message sent through the internet.", "A physical letter delivered by a postman."], r: 0, e: "Basic ICT literacy involves identifying common digital communication tools." },
-            { q: "If someone sends you a message that makes you scared, what should you do?", c: ["Delete it and pretend it never happened.", "Save/Screenshot it and show it to an adult."], r: 1, e: "Keeping evidence is important for adults to help stop the person bothering you." },
-            { q: "A website asks for your birthday to play a game. What should you do?", c: ["Ask an adult if it’s okay to enter it.", "Make up a fake birthday so you can play."], r: 0, e: "Protecting even 'small' data points like birthdays is part of managing one's digital footprint." },
-            { q: "What is a 'Virus' in computers?", c: ["A cold that makes the keyboard sneeze.", "A harmful program that can damage your files."], r: 1, e: "Learners need to understand that 'malware' is a technical threat to their devices." },
-            { q: "Being a 'Good Digital Citizen' means:", c: ["Being kind, safe, and honest online.", "Being the fastest typer in class."], r: 0, e: "This summarizes the goal of the entire Grade 4 ICT safety module." }
-        ],
-        ph: [
-            { q: "May natanggap kang mensahe mula sa hindi kakilala na humihingi ng tirahan mo. Anong gagawin?", c: ["Ibigay ito para maging magkaibigan kayo.", "Huwag sumagot at sabihin agad sa magulang o guro."], r: 1, e: "Ang pagprotekta sa personal na impormasyon ang unang hakbang sa digital safety." },
-            { q: "Alin sa mga sumusunod ang 'Personal na Impormasyon' na dapat manatiling pribado?", c: ["Buong pangalan at pangalan ng paaralan.", "Paboritong kulay at pagkain."], r: 0, e: "Ang impormasyong maaaring gamitin para matukoy ang iyong lokasyon ay hindi dapat ibinibigay sa strangers." },
-            { q: "May nakita kang masamang komento tungkol sa kaklase mo. Ano ang tamang gawin?", c: ["Sumali at magsulat din ng masamang komento.", "Huwag sumali at i-report ang post kung maaari."], r: 1, e: "Ito ay bahagi ng Digital Citizenship at Netiquette—maging 'buddy, hindi bully.'" },
-            { q: "Ano ang 'matibay' na password?", c: ["Palayaw at taon ng kapanganakan (hal. 'Juan2016').", "Kombinasyon ng letters, numbers, at symbols (hal. 'Asul!Langit99')."], r: 1, e: "Pinoprotektahan ng matibay na password ang iyong account mula sa mga hacker." },
-            { q: "May lumabas na ad na nagsasabing nanalo ka ng libreng iPhone. Anong gagawin?", c: ["Isara agad ang window.", "I-click para makuha ang premyo."], r: 0, e: "Ito ay madalas na 'phishing' o malware. Tinuturuan ang mga bata na iwasan ang mga kahina-hinalang links." },
-            { q: "Sino ang pinakamagandang kausapin kung may nakita kang hindi maganda online?", c: ["Magulang, guro, o tagapangalaga.", "Online friend na hindi mo pa nakikita sa personal."], r: 0, e: "Ang mga pinagkakatiwalaang matanda ang pangunahing safety net ng mga bata online." },
-            { q: "Bago mag-download ng laro mula sa website na hindi mo alam, dapat ay:", c: ["I-download agad bago mawala.", "Magpaalam muna sa magulang."], r: 1, e: "Ang mga unknown downloads ay maaaring may virus na makakasira sa computer o nagnanakaw ng data." },
-            { q: "Ayos lang bang ibigay ang password sa matalik na kaibigan?", c: ["Oo, dahil nagbabahagi kami ng lahat.", "Hindi, sa magulang o guardian lang dapat ibigay."], r: 1, e: "Kahit kaibigan ay maaaring aksidenteng maipamigay ang password; mas ligtas kung pribado ito." },
-            { q: "Kung gusto mong mag-post ng litrato ng kaibigan mo, ano ang unang hakbang?", c: ["Magpaalam muna sa kaibigan.", "I-post na agad; makikita rin naman nila."], r: 0, e: "Nagtuturo ito ng 'Digital Etiquette' at respeto sa privacy ng ibang tao." },
-            { q: "Ano ang 'Cyberbullying'?", c: ["Pagtulong sa kaibigan na ayusin ang computer.", "Paggamit ng internet para mang-api o manakit ng kapwa."], r: 1, e: "Ang pagkilala sa cyberbullying ay isang mahalagang kasanayan sa Grade 4 ICT." },
-            { q: "Kapag naghahanap ng impormasyon para sa school project, dapat ay:", c: ["Gumamit ng kid-safe search engines o sites na turo ng guro.", "I-click ang kahit anong link na may makulay na picture."], r: 0, e: "Nakakatulong ang tamang resources para maiwasan ang maling impormasyon." },
-            { q: "Ano ang dapat gawin kung may stranger na nag-send ng 'Friend Request'?", c: ["I-accept para dumami ang followers.", "I-ignore o i-delete ito."], r: 1, e: "'Add Friends, Not Strangers' ang isa sa mga pangunahing panuntunan sa safety." },
-            { q: "Bakit dapat limitahan ang 'Screen Time' (oras sa paggamit ng gadgets)?", c: ["Para manatiling malusog at may oras sa pamilya.", "Dahil sasabog ang gadgets kapag matagal ginamit."], r: 0, e: "Bahagi ito ng 'Digital Health and Wellness' para sa tamang balanse ng buhay." },
-            { q: "Ano ang karaniwang ibig sabihin ng 'T.O.S.' sa mga apps?", c: ["Terms of Service (mga tuntunin na dapat sundin).", "Time of Safety (oras kung kailan ligtas)."], r: 0, e: "Ang bawat platform ay may batas na dapat intindihin ng responsableng digital citizen." },
-            { q: "May nahanap kang magandang picture online. Maaari mo bang sabihing ikaw ang gumuhit?", c: ["Oo, dahil nasa internet naman ito.", "Hindi, plagiarism iyon; dapat sabihin kung saan kinuha."], r: 1, e: "Ipinapakilala nito ang konsepto ng Intellectual Property at katapatan." },
-            { q: "Ano ang isang 'Email'?", c: ["Digital na mensahe na ipinapadala sa internet.", "Pisikal na sulat na dala ng kartero."], r: 0, e: "Ang literasya sa ICT ay kasama ang pagtukoy sa mga digital na kagamitan sa komunikasyon." },
-            { q: "Kung may nag-send ng mensahe na nakakatakot sa iyo, anong gagawin?", c: ["I-delete at magkunwaring walang nangyari.", "I-save/Screenshot at ipakita sa nakatatanda."], r: 1, e: "Mahalaga ang ebidensya para matulungan ka ng mga matatanda na matigil ang nanggugulo." },
-            { q: "Hinihingi ng website ang birthday mo para makalaro. Anong gagawin?", c: ["Magtanong sa magulang kung ayos lang ilagay ito.", "Gumawa ng pekeng birthday para makalaro agad."], r: 0, e: "Bahagi ng digital footprint ang pagprotekta kahit sa maliliit na detalye tulad ng birthday." },
-            { q: "Ano ang 'Virus' sa computer?", c: ["Sipon na nagpapabahing sa keyboard.", "Masamang programa na nakakasira ng files."], r: 1, e: "Dapat maintindihan ng mga bata na ang 'malware' ay banta sa kanilang mga device." },
-            { q: "Ang pagiging 'Mabuting Digital Citizen' ay nangangahulugang:", c: ["Pagiging mabait, ligtas, at tapat online.", "Pagiging pinakamabilis mag-type sa klase."], r: 0, e: "Ito ang kabuuan ng layunin ng Grade 4 ICT safety module." }
-        ]
-    };
+    const allQuestionsData = [
+        { id: 0, en: { q: "Is it okay to share your password with a best friend?", c: ["Yes", "No"], r: 1, e: "Passwords should only be shared with parents." }, ph: { q: "Ayos lang bang ibigay ang password sa matalik na kaibigan?", c: ["Oo", "Hindi"], r: 1, e: "Sa magulang lang dapat ibinibigay ang password." } },
+        { id: 1, en: { q: "A stranger sends a link to a 'free game'. Do you click it?", c: ["Yes!", "No, it's unsafe"], r: 1, e: "Unknown links can contain viruses." }, ph: { q: "May stranger na nag-send ng link ng 'libreng laro'. I-click mo ba?", c: ["Oo!", "Hindi, delikado ito"], r: 1, e: "Maaaring may virus ang mga link." } },
+        { id: 2, en: { q: "What should you do if someone is mean to you online?", c: ["Be mean back", "Tell a trusted adult"], r: 1, e: "Always report bullies to a trusted adult." }, ph: { q: "Anong gagawin kung may nang-aapi sa iyo online?", c: ["Gumanti", "Magsabi sa magulang/guro"], r: 1, e: "I-report ang bully sa mga nakatatanda." } },
+        { id: 3, en: { q: "Which of these is a strong password?", c: ["123456", "P@ssw0rd2026!"], r: 1, e: "Use a mix of symbols and numbers." }, ph: { q: "Alin dito ang matibay na password?", c: ["123456", "P@ssw()rd2026!"], r: 1, e: "Gumamit ng simbolo at numero." } },
+        { id: 4, en: { q: "Is it safe to share your home address in a game chat?", c: ["Only with 'friends'", "Never"], r: 1, e: "Never share your location with strangers." }, ph: { q: "Ligtas bang ibigay ang tirahan mo sa game chat?", c: ["Sa 'friends' lang", "Hindi kailanman"], r: 1, e: "Huwag ipamigay ang iyong lokasyon." } },
+        { id: 5, en: { q: "Before downloading a new app, you should...", c: ["Ask a parent", "Just hit install"], r: 0, e: "Ask permission first." }, ph: { q: "Bago mag-download ng bagong app, dapat ikaw ay...", c: ["Magpaalam sa magulang", "I-install agad"], r: 0, e: "Magtanong muna sa nakatatanda." } },
+        { id: 6, en: { q: "If a pop-up says 'You Won an iPhone!', it is usually...", c: ["Real luck", "A scam/virus"], r: 1, e: "Avoid too-good-to-be-true ads." }, ph: { q: "Kung may lumabas na 'Nanalo ka ng iPhone!', ito ay...", c: ["Swerte", "Scam o virus"], r: 1, e: "Kadalasan ay panlilinlang lang ito." } },
+        { id: 7, en: { q: "Can people lie about who they are on the internet?", c: ["No, it's illegal", "Yes, easily"], r: 1, e: "People can fake identities online." }, ph: { q: "Maaari bang magsinungaling ang tao tungkol sa sarili nila online?", c: ["Hindi, bawal yun", "Oo, madali lang"], r: 1, e: "Maraming nagpapanggap sa internet." } },
+        { id: 8, en: { q: "What is cyberbullying?", c: ["Playing pro games", "Using the web to be mean"], r: 1, e: "It means hurting people online." }, ph: { q: "Ano ang cyberbullying?", c: ["Paglalaro ng pro games", "Paggamit ng web para mang-api"], r: 1, e: "Panunukso o panunupil online." } },
+        { id: 9, en: { q: "A game asks for your location. What do you do?", c: ["Always say yes", "Deny and ask an adult"], r: 1, e: "Protect your privacy." }, ph: { q: "Hinihingi ng game ang iyong lokasyon. Anong gagawin?", c: ["Pumayag lagi", "Tumanggi at magtanong sa magulang"], r: 1, e: "Ingatan ang iyong privacy." } },
+        { id: 10, en: { q: "Is a photo you post online gone forever if you delete it?", c: ["Yes, it's gone", "No, someone may have saved it"], r: 1, e: "Content online can stay forever." }, ph: { q: "Mawawala ba habambuhay ang picture mo pag binura mo ito?", c: ["Oo, wala na", "Hindi, baka may nag-save na"], r: 1, e: "Ang nasa internet ay mahirap nang mabura." } },
+        { id: 11, en: { q: "Should you meet an 'online friend' in person by yourself?", c: ["Yes, if they seem nice", "No, never!"], r: 1, e: "Never meet strangers alone." }, ph: { q: "Dapat ka bang makipagkita sa 'online friend' nang mag-isa?", c: ["Oo, kung mukhang mabait", "Hindi, kailanman!"], r: 1, e: "Huwag makipagkita sa hindi kakilala." } },
+        { id: 12, en: { q: "What info is safe to share with strangers?", c: ["Your school name", "Your favorite food"], r: 1, e: "Share only safe, general info." }, ph: { q: "Anong info ang ligtas ibahagi sa strangers?", c: ["Pangalan ng school", "Paboritong pagkain"], r: 1, e: "Ibahagi lang ang mga general na bagay." } },
+        { id: 13, en: { q: "If you feel uncomfortable online, you should...", c: ["Keep playing", "Leave and tell an adult"], r: 1, e: "Safety first!" }, ph: { q: "Kung hindi ka na komportable online, dapat kang...", c: ["Magpatuloy lang", "Umalis at magsabi sa magulang"], r: 1, e: "Kaligtasan ang unahin!" } },
+        { id: 14, en: { q: "Why shouldn't you use your full name as a username?", c: ["It's too long", "To protect your identity"], r: 1, e: "Stay anonymous to be safe." }, ph: { q: "Bakit hindi dapat buong pangalan ang gamit na username?", c: ["Masyadong mahaba", "Para protektahan ang identity"], r: 1, e: "Mas ligtas kung hindi ka makikila agad." } }
+    ];
 
-    let currentLang = 'en';
-    let gameQuestions = [];
-    let players = [];
-    let currentPlayer = 0;
-    let scores = [0, 0];
-    let balloonsLeft = 12;
-    let timerInterval;
-    let isMusicPlaying = true;
+    let currentLang = 'en', gameQuestionsIndices = [], activeQuestionData = null, players = [], currentPlayer = 0, scores = [0, 0], balloonsLeft = 12, timerInterval, isMusicPlaying = true;
 
-    function setLang(langCode) {
-        if (currentLang === langCode && players.length === 0) return;
-        currentLang = langCode;
-
-        document.getElementById('opt-en').classList.toggle('active', langCode === 'en');
-        document.getElementById('opt-ph').classList.toggle('active', langCode === 'ph');
-
-        const lang = i18n[currentLang];
-        document.getElementById('loading-text').innerText = lang.loading;
-        document.getElementById('start-subtitle').innerText = lang.startSubtitle;
-        document.getElementById('start-btn').innerText = lang.startBtn;
-        document.getElementById('lobby-title').innerText = lang.lobbyTitle;
-        document.getElementById('p1-name').placeholder = lang.p1Place;
-        document.getElementById('p2-name').placeholder = lang.p2Place;
-        document.getElementById('lobby-go').innerText = lang.lobbyGo;
-        document.getElementById('next-btn').innerText = lang.continue;
-        document.getElementById('play-again-btn').innerText = lang.playAgain;
+    function setLang(l) {
+        currentLang = l;
+        document.getElementById('opt-en').className = `lang-opt ${l==='en'?'active':''}`;
+        document.getElementById('opt-ph').className = `lang-opt ${l==='ph'?'active':''}`;
+        const t = i18n[l];
+        document.getElementById('start-btn-ui').innerText = t.enter;
+        document.getElementById('lobby-title').innerText = t.lobbyT;
+        document.getElementById('p1-name').placeholder = t.p1;
+        document.getElementById('p2-name').placeholder = t.p2;
+        document.getElementById('lobby-go').innerText = t.go;
+        document.getElementById('next-btn').innerText = t.cont;
+        document.getElementById('play-again-btn').innerText = t.again;
+        document.getElementById('txt-qs').innerText = t.qs;
+        document.getElementById('txt-qd').innerText = t.qd;
+        document.getElementById('txt-rt').innerText = t.rt;
+        document.getElementById('txt-r1').innerHTML = t.r1;
+        document.getElementById('txt-r2').innerHTML = t.r2;
+        document.getElementById('txt-r3').innerHTML = t.r3;
+        document.getElementById('tap-to-start').innerText = t.tap;
         
-        gameQuestions = [...allQuestions[currentLang]].sort(() => Math.random() - 0.5);
+        // LIVE TRANSLATION IF QUIZ IS OPEN
+        if (activeQuestionData) {
+            const quiz = activeQuestionData[currentLang];
+            document.getElementById('q-text').innerText = quiz.q;
+            const btns = document.querySelectorAll('.ans-btn');
+            if(btns.length > 0) btns.forEach((b, i) => b.innerText = quiz.c[i]);
+            
+            // Re-render feedback if visible
+            const fb = document.getElementById('feedback');
+            if(!fb.classList.contains('hidden') && fb.innerText !== "") {
+               const isCorrect = fb.style.color === "green";
+               if(isCorrect) fb.innerHTML = `${i18n[currentLang].correct}<br><span class="explanation-text">${quiz.e}</span>`;
+               else fb.innerHTML = `${i18n[currentLang].wrong} ${quiz.c[activeQuestionData[currentLang].r]}<br><span class="explanation-text">${quiz.e}</span>`;
+            }
+        }
         if (players.length > 0) updateUI();
     }
 
-    window.addEventListener('load', () => {
-        let progress = 0;
-        const bar = document.getElementById('progress-bar');
-        const loadInterval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(loadInterval);
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.opacity = '0';
-                    setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
-                }, 500);
-            }
-            bar.style.width = progress + '%';
-        }, 120);
-    });
-
-    function initLobby() {
-        gameQuestions = [...allQuestions[currentLang]].sort(() => Math.random() - 0.5);
-        document.getElementById('audio-unlocker').style.display = 'none';
-        document.getElementById('lobby').style.display = 'flex';
-        document.getElementById('back-btn').style.display = 'flex';
+    function startApp() {
+        AudioSystem.init(); AudioSystem.startBGM();
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('rules-screen').style.display = 'flex';
+        document.getElementById('lang-switcher').style.display = 'flex';
         document.getElementById('music-btn').style.display = 'flex';
-        document.getElementById('lang-btn').style.display = 'flex';
-        
-        const music = document.getElementById('bg-music');
-        music.volume = 0.2;
-        music.play();
+        document.getElementById('back-btn').style.display = 'flex';
     }
 
-    function toggleMusic() {
-        const music = document.getElementById('bg-music');
-        isMusicPlaying ? music.pause() : music.play();
-        document.getElementById('music-btn').innerText = isMusicPlaying ? "🔇" : "🎵";
-        isMusicPlaying = !isMusicPlaying;
-    }
-
-    function goBack() {
-        if (document.getElementById('game-field').style.display === 'block') {
-            if(confirm(i18n[currentLang].quitMsg)) location.reload();
-        } else {
-            location.reload();
-        }
-    }
+    function goToLobby() { document.getElementById('rules-screen').style.display = 'none'; document.getElementById('lobby').style.display = 'flex'; }
 
     function startGame() {
-        const name1 = document.getElementById('p1-name').value;
-        const name2 = document.getElementById('p2-name').value;
-        if (!name1) { alert("Enter Player 1's name!"); return; }
-        players = [name1];
-        if (name2) players.push(name2);
+        const n1 = document.getElementById('p1-name').value;
+        if (!n1) return alert("Enter Player 1 name!");
+        players = [n1]; const n2 = document.getElementById('p2-name').value;
+        if (n2) players.push(n2);
+        gameQuestionsIndices = Array.from(allQuestionsData.keys()).sort(() => Math.random() - 0.5);
         document.getElementById('lobby').style.display = 'none';
         document.getElementById('game-info').style.display = 'flex';
         document.getElementById('game-field').style.display = 'block';
-        updateUI();
-        createBalloons();
+        updateUI(); createBalloons();
     }
 
-    function createBalloons() {
-        const field = document.getElementById('game-field');
-        field.innerHTML = '';
+ function createBalloons() {
+        const field = document.getElementById('game-field'); field.innerHTML = '';
         balloonsLeft = 12;
-        const fieldWidth = field.offsetWidth - 100;
-        const fieldHeight = field.offsetHeight - 250;
-        let types = ['bonus', 'oops', ...Array(10).fill('normal')];
-        types = types.sort(() => Math.random() - 0.5);
-        types.forEach((type) => {
-            const b = document.createElement('div');
-            b.className = 'balloon';
-            b.style.backgroundColor = hsl(${Math.random() * 360}, 75%, 85%);
-            b.style.left = (Math.random() * fieldWidth + 50) + 'px';
-            b.style.top = (Math.random() * fieldHeight + 120) + 'px';
-            b.style.animationDuration = (4 + Math.random() * 4) + 's';
-            b.onclick = () => popBalloon(b, type);
+        const types = ['bonus', 'oops', ...Array(10).fill('normal')].sort(() => Math.random() - 0.5);
+        types.forEach(type => {
+            const b = document.createElement('div'); b.className = 'balloon';
+            // FIXED: Nilagyan ng backticks
+            b.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 80%)`;
+            b.style.left = Math.random()*80 + 10 + '%'; b.style.top = Math.random()*60 + 20 + '%';
+            b.onclick = () => { AudioSystem.playPop(); b.style.display='none';
+                if(type==='normal') handleQuiz(); else showFeedback(i18n[currentLang][type], type==='bonus');
+            };
             field.appendChild(b);
         });
     }
 
-    function popBalloon(b, type) {
-        document.getElementById('pop-sound').currentTime = 0;
-        document.getElementById('pop-sound').play();
-        b.style.display = 'none';
-        if (type === 'bonus') {
-            scores[currentPlayer] += 5;
-            showFeedback(i18n[currentLang].bonus, true);
-        } else if (type === 'oops') {
-            scores[currentPlayer] -= 5;
-            showFeedback(i18n[currentLang].oops, false);
-        } else {
-            handleQuiz();
-        }
-    }
-
     function handleQuiz() {
-        if (gameQuestions.length === 0) {
-            gameQuestions = [...allQuestions[currentLang]].sort(() => Math.random() - 0.5);
-        }
-        const qData = gameQuestions.shift();
-        const lang = i18n[currentLang];
-        document.getElementById('q-text').innerText = qData.q;
-        const optCont = document.getElementById('q-options');
-        optCont.innerHTML = '';
-        document.getElementById('feedback').innerText = '';
+        if (gameQuestionsIndices.length === 0) gameQuestionsIndices = Array.from(allQuestionsData.keys()).sort(() => Math.random() - 0.5);
+        const idx = gameQuestionsIndices.shift();
+        activeQuestionData = allQuestionsData[idx];
+        const quiz = activeQuestionData[currentLang];
+        document.getElementById('q-text').innerText = quiz.q;
+        const optCont = document.getElementById('q-options'); optCont.innerHTML = '';
+        document.getElementById('feedback').classList.add('hidden');
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('quiz-overlay').style.display = 'flex';
-        let timeLeft = 15;
-        document.getElementById('timer-box').innerText = ${lang.time}: ${timeLeft}s;
+        let t = 15;
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer-box').innerText = ${lang.time}: ${timeLeft}s;
-            if (timeLeft <= 0) { clearInterval(timerInterval); finishQuiz(false, qData.c[qData.r], qData.e); }
+            t--; 
+            // FIXED: Nilagyan ng backticks
+            document.getElementById('timer-box').innerText = `${i18n[currentLang].time}: ${t}s`;
+            if (t <= 0) { clearInterval(timerInterval); finishQuiz(false); }
         }, 1000);
-        qData.c.forEach((choice, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'ans-btn';
-            btn.innerText = choice;
-            btn.onclick = () => { clearInterval(timerInterval); finishQuiz(idx === qData.r, qData.c[qData.r], qData.e); };
+        quiz.c.forEach((choice, i) => {
+            const btn = document.createElement('button'); btn.className = 'ans-btn';
+            btn.innerText = choice; btn.onclick = () => { clearInterval(timerInterval); finishQuiz(i === quiz.r); };
             optCont.appendChild(btn);
         });
     }
 
-    function finishQuiz(isCorrect, correctAns, explanation) {
-        const btns = document.querySelectorAll('.ans-btn');
-        btns.forEach(b => b.disabled = true);
-        const lang = i18n[currentLang];
-        const fb = document.getElementById('feedback');
-        const timerBox = document.getElementById('timer-box');
-
-        if (isCorrect) {
-            scores[currentPlayer] += 10;
-            document.getElementById('correct-sound').play();
-            confetti({ particleCount: 60 });
-            fb.innerHTML = ${lang.correct} <span class="explanation-text"><strong>${lang.expLabel}</strong> ${explanation}</span>;
-            fb.style.color = "green";
-        } else {
-            document.getElementById('fail-sound').play();
-            const statusText = timerBox.innerText.includes("0s") ? 
-                (currentLang === 'en' ? "⏰ Time's Up!" : "⏰ Ubos na ang Oras!") : "";
-            
-            fb.innerHTML = ${statusText} <br> ${currentLang === 'en' ? 'The correct answer is:' : 'Ang tamang sagot ay:'} <br> <strong>${correctAns}</strong> <span class="explanation-text"><strong>${lang.expLabel}</strong> ${explanation}</span>;
-            fb.style.color = "#555";
-        }
+    function finishQuiz(isCorrect) {
+        document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+        const fb = document.getElementById('feedback'); fb.classList.remove('hidden');
+        const quiz = activeQuestionData[currentLang];
+        if (isCorrect) { AudioSystem.playCorrect(); scores[currentPlayer]+=10; confetti({particleCount:50}); fb.innerHTML = `${i18n[currentLang].correct}<br><span class="explanation-text">${quiz.e}</span>`; fb.style.color="green"; }
+        else { AudioSystem.playFail(); fb.innerHTML = `${i18n[currentLang].wrong} ${quiz.c[quiz.r]}<br><span class="explanation-text">${quiz.e}</span>`; fb.style.color="red"; }
         document.getElementById('next-btn').style.display = 'inline-block';
-    }
-
-    function showFeedback(text, isGood) {
-        document.getElementById('q-text').innerText = i18n[currentLang].balloonEvent;
-        document.getElementById('q-options').innerHTML = "";
-        document.getElementById('timer-box').innerText = "";
-        const fb = document.getElementById('feedback');
-        fb.innerText = text;
-        fb.style.color = isGood ? "green" : "red";
-        document.getElementById('quiz-overlay').style.display = 'flex';
-        document.getElementById('next-btn').style.display = 'inline-block';
-    }
-
-    function closeQuiz() {
-        document.getElementById('quiz-overlay').style.display = 'none';
-        balloonsLeft--;
-        if (balloonsLeft <= 0) endGame();
-        else {
-            if (players.length > 1) currentPlayer = (currentPlayer + 1) % 2;
-            updateUI();
-        }
     }
 
     function updateUI() {
         const lang = i18n[currentLang];
-        document.getElementById('turn-display').innerText =🎈 ${lang.turn}: ${players[currentPlayer]}`;
-        document.getElementById('score-p1').innerText = ${players[0]}: ${scores[0]};
-        if (players[1]) document.getElementById('score-p2').innerText = ${players[1]}: ${scores[1]};
+        const nameToShow = players[currentPlayer] || "Player";
+        // FIXED: Nilagyan ng backticks
+        document.getElementById('turn-display').innerText = `🎈 ${lang.turn}: ${nameToShow}`;
+        document.getElementById('score-p1').innerText = `${players[0]}: ${scores[0]}`;
+        if(players[1]) document.getElementById('score-p2').innerText = `${players[1]}: ${scores[1]}`;
     }
 
     function endGame() {
-        const lang = i18n[currentLang];
-        document.getElementById('winner-screen').style.display = 'flex';
-        document.getElementById('back-btn').style.display = 'none';
-        document.getElementById('lang-btn').style.display = 'none';
+        const lang = i18n[currentLang]; document.getElementById('winner-screen').style.display = 'flex';
         let title = lang.gameOver;
-        let scoreText = "";
-        if (players.length === 1) {
-            title = ${players[0]}!;
-            scoreText = Score: ${scores[0]};
-        } else {
-            if (scores[0] > scores[1]) title = ${players[0]} ${lang.win};
-            else if (scores[1] > scores[0]) title = ${players[1]} ${lang.win};
+        if (players.length > 1) {
+            if (scores[0] > scores[1]) title = `${players[0]} ${lang.win}`;
+            else if (scores[1] > scores[0]) title = `${players[1]} ${lang.win}`;
             else title = lang.draw;
-            scoreText = ${scores[0]} - ${scores[1]};
         }
         document.getElementById('winner-title').innerText = title;
-        document.getElementById('winner-score').innerText = scoreText;
-        confetti({ particleCount: 300, spread: 150 });
+        // FIXED: Nilagyan ng backticks
+        document.getElementById('winner-score').innerText = `${scores[0]} - ${scores[1]}`;
+        confetti({ particleCount: 200, spread: 100 });
     }
+    function goBack() { window.history.back(); }
+    function toggleMusic() { isMusicPlaying = !isMusicPlaying; document.getElementById('music-btn').innerText = isMusicPlaying ? "🎵" : "🔇"; }
+
+    window.addEventListener('load', () => {
+        let p = 0; const bar = document.getElementById('progress-bar');
+        const loadInt = setInterval(() => {
+            p += 5; bar.style.width = p + '%';
+            if (p >= 100) { clearInterval(loadInt); document.getElementById('tap-to-start').style.display = 'block'; }
+        }, 50);
+        setLang('en');
+    });
 </script>
 </body>
 </html>
