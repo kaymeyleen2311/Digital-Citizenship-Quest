@@ -255,7 +255,7 @@
 
     let currentLang = 'en', gameQuestionsIndices = [], activeQuestionData = null, players = [], currentPlayer = 0, scores = [0, 0], balloonsLeft = 12, timerInterval, isMusicPlaying = true;
 
-    function setLang(l) {
+  function setLang(l) {
         currentLang = l;
         document.getElementById('opt-en').className = `lang-opt ${l==='en'?'active':''}`;
         document.getElementById('opt-ph').className = `lang-opt ${l==='ph'?'active':''}`;
@@ -282,17 +282,19 @@
             const btns = document.querySelectorAll('.ans-btn');
             if(btns.length > 0) btns.forEach((b, i) => b.innerText = quiz.c[i]);
             
-            // Re-render feedback if visible
+            // Re-render feedback ONLY if it's currently showing an answer
             const fb = document.getElementById('feedback');
-            if(!fb.classList.contains('hidden') && fb.innerText !== "") {
-               const isCorrect = fb.style.color === "green";
-               if(isCorrect) fb.innerHTML = `${i18n[currentLang].correct}<br><span class="explanation-text">${quiz.e}</span>`;
-               else fb.innerHTML = `${i18n[currentLang].wrong} ${quiz.c[activeQuestionData[currentLang].r]}<br><span class="explanation-text">${quiz.e}</span>`;
+            if(!fb.classList.contains('hidden') && fb.innerHTML !== "") {
+               const isCorrect = (fb.style.color === "green");
+               if(isCorrect) {
+                   fb.innerHTML = `${i18n[currentLang].correct}<br><span class="explanation-text">${quiz.e}</span>`;
+               } else {
+                   fb.innerHTML = `${i18n[currentLang].wrong} ${quiz.c[activeQuestionData[currentLang].r]}<br><span class="explanation-text">${quiz.e}</span>`;
+               }
             }
-        }
+        } // <--- THIS BRACKET WAS MISSING
         if (players.length > 0) updateUI();
     }
-
     function startApp() {
         AudioSystem.init(); AudioSystem.startBGM();
         document.getElementById('loading-screen').style.display = 'none';
@@ -339,7 +341,9 @@
         const quiz = activeQuestionData[currentLang];
         document.getElementById('q-text').innerText = quiz.q;
         const optCont = document.getElementById('q-options'); optCont.innerHTML = '';
-        document.getElementById('feedback').classList.add('hidden');
+       const fb = document.getElementById('feedback');
+        fb.classList.add('hidden');
+        fb.innerHTML = ''; // THIS CLEARS THE OLD FEEDBACK
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('quiz-overlay').style.display = 'flex';
         let t = 15;
@@ -359,13 +363,59 @@
 
     function finishQuiz(isCorrect) {
         document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
-        const fb = document.getElementById('feedback'); fb.classList.remove('hidden');
+       const fb = document.getElementById('feedback');
+        fb.classList.remove('hidden');
+        fb.style.display = 'block'; // ENSURES IT SHOWS UP AFTER ANSWERING
         const quiz = activeQuestionData[currentLang];
         if (isCorrect) { AudioSystem.playCorrect(); scores[currentPlayer]+=10; confetti({particleCount:50}); fb.innerHTML = `${i18n[currentLang].correct}<br><span class="explanation-text">${quiz.e}</span>`; fb.style.color="green"; }
         else { AudioSystem.playFail(); fb.innerHTML = `${i18n[currentLang].wrong} ${quiz.c[quiz.r]}<br><span class="explanation-text">${quiz.e}</span>`; fb.style.color="red"; }
         document.getElementById('next-btn').style.display = 'inline-block';
     }
+// FIX: This function runs when you click "Continue"
+    function closeQuiz() {
+        // Hide the quiz card
+        document.getElementById('quiz-overlay').style.display = 'none';
+        activeQuestionData = null;
+        
+        // Remove one balloon from the count
+        balloonsLeft--;
 
+        if (balloonsLeft <= 0) {
+            endGame();
+        } else {
+            // Switch turns if playing with 2 people
+            if (players.length > 1) {
+                currentPlayer = (currentPlayer === 0) ? 1 : 0;
+            }
+            updateUI();
+        }
+    }
+
+    // FIX: This function handles the Bonus (+5) and Oops (-5) balloons
+    function showFeedback(msg, isBonus) {
+        if (isBonus) {
+            AudioSystem.playCorrect();
+            scores[currentPlayer] += 5;
+            confetti({ particleCount: 30, colors: ['#ffb7b2', '#baffc9'] });
+        } else {
+            AudioSystem.playFail();
+            scores[currentPlayer] -= 5;
+            if (scores[currentPlayer] < 0) scores[currentPlayer] = 0;
+        }
+        
+        // Show the message (Bonus/Oops)
+        alert(msg);
+
+        balloonsLeft--;
+        if (balloonsLeft <= 0) {
+            endGame();
+        } else {
+            if (players.length > 1) {
+                currentPlayer = (currentPlayer === 0) ? 1 : 0;
+            }
+            updateUI();
+        }
+    }
     function updateUI() {
         const lang = i18n[currentLang];
         const nameToShow = players[currentPlayer] || "Player";
