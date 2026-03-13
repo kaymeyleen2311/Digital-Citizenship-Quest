@@ -438,7 +438,42 @@
         document.getElementById('winner-score').innerText = `${scores[0]} - ${scores[1]}`;
         confetti({ particleCount: 200, spread: 100 });
     }
-    function goBack() { window.history.back(); }
+  function goBack() {
+        AudioSystem.playTone(440, 'sine', 0.1, 0.2); // Play a click sound
+
+        const rules = document.getElementById('rules-screen');
+        const lobby = document.getElementById('lobby');
+        const gameField = document.getElementById('game-field');
+        const gameInfo = document.getElementById('game-info');
+        const winner = document.getElementById('winner-screen');
+        const quizOverlay = document.getElementById('quiz-overlay');
+
+        // 1. If we are in the middle of a live game
+        if (gameField.style.display === 'block') {
+            const msg = currentLang === 'en' ? "Quit current game?" : "Ihinto ang laro?";
+            if (confirm(msg)) {
+                clearInterval(timerInterval); // Stop timer
+                quizOverlay.style.display = 'none';
+                gameField.style.display = 'none';
+                gameInfo.style.display = 'none';
+                lobby.style.display = 'flex';
+            }
+        } 
+        // 2. If we are in the Lobby (Name entry)
+        else if (lobby.style.display === 'flex') {
+            lobby.style.display = 'none';
+            rules.style.display = 'flex';
+        } 
+        // 3. If we are in the Winner screen
+        else if (winner.style.display === 'flex') {
+            winner.style.display = 'none';
+            lobby.style.display = 'flex';
+        } 
+        // 4. If we are on the Rules screen, go back to the browser's previous page
+        else {
+            window.history.back();
+        }
+    }
     function toggleMusic() { isMusicPlaying = !isMusicPlaying; document.getElementById('music-btn').innerText = isMusicPlaying ? "🎵" : "🔇"; }
 
     window.addEventListener('load', () => {
