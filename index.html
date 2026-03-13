@@ -14,7 +14,7 @@
   <style>
     body { box-sizing: border-box; user-select: none; margin: 0; font-family: 'Fredoka', sans-serif; background: #0f172a; overflow-x: hidden; }
 
-    /* --- FLOATING DIGITAL ICONSCH --- */
+    /* --- FLOATING DIGITAL ICONS --- */
     .decor { position: fixed; pointer-events: none; z-index: -1; opacity: 0.3; color: white; filter: drop-shadow(0 0 10px white); animation: drift 10s infinite ease-in-out; font-size: 2.5rem; }
     @keyframes drift {
         0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -22,7 +22,7 @@
         66% { transform: translate(-30px, 50px) rotate(-15deg); }
     }
 
-    /* --- EMOJI ANIMATIONS YARN --- */
+    /* --- EMOJI ANIMATIONS --- */
     @keyframes dice-roll {
       0% { transform: rotate(0deg) scale(1); }
       25% { transform: rotate(90deg) scale(1.2); }
@@ -32,9 +32,7 @@
     }
     .icon-dice { display: inline-block; animation: dice-roll 3s infinite ease-in-out; }
 
-    
     .balloon-container { display: inline-block; width: 100px; height: 120px; position: relative; }
-    
     .balloon-red { 
         fill: #ef4444; 
         transform-origin: 50% 50%;
@@ -54,9 +52,9 @@
     @keyframes balloon-burst {
         0%, 70% { transform: scale(1); opacity: 1; }
         75% { transform: scale(1.2); opacity: 1; }
-        77% { transform: scale(0); opacity: 0; } /* Popping i2 */
+        77% { transform: scale(0); opacity: 0; }
         95% { opacity: 0; transform: scale(0); }
-        100% { transform: scale(1); opacity: 1; } /* Reset i2 */
+        100% { transform: scale(1); opacity: 1; }
     }
     @keyframes pop-flash {
         0%, 76% { opacity: 0; transform: scale(0.5); }
@@ -66,7 +64,7 @@
     @keyframes string-sway {
         0%, 100% { transform: rotate(-5deg) translateY(0); }
         50% { transform: rotate(5deg) translateY(-5px); }
-        77% { transform: rotate(0deg) translateY(5px); } /* String nya i2 */
+        77% { transform: rotate(0deg) translateY(5px); }
     }
 
     @keyframes shield-pulse {
@@ -111,7 +109,6 @@
     #soundToggle { top:1rem; right:1rem; width:60px; height:60px; }
     #aboutToggle { top:1rem; left:1rem; width:60px; height:60px; font-weight: bold; color: white; font-size: 1.5rem; }
     
-    /* LANGUAGE TOGGLE */
     .lang-container { 
         position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); 
         z-index: 100; display: flex; 
@@ -130,16 +127,14 @@
         letter-spacing: 0.05em;
         background: transparent;
     }
-    .lang-btn.active { background: white; color: #7e22ce; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    #langToggle .lang-btn.active { background: white !important; color: #7e22ce !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     
     .hidden-ui { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    /* Loading Screen */
     #loading-screen { position: fixed; inset: 0; background: #0f172a; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .power-icon { font-size: 5rem; animation: pulse 1s infinite alternate; }
     @keyframes pulse { from { opacity: 0.5; transform: scale(1); } to { opacity: 1; transform: scale(1.2); } }
 
-    /* --- ABOUT SIDEBAR --- */
     #about-sidebar { 
         position: fixed; top: 0; left: 0; height: 100%; 
         width: 480px; max-width: 90%;
@@ -176,8 +171,8 @@
  <button id="aboutToggle" class="ui-btn" onclick="toggleAbout()">i</button>
  
  <div id="langToggle" class="lang-container">
-    <button onclick="setLanguage('en')" id="btn-en" class="lang-btn">ENGLISH</button>
-    <button onclick="setLanguage('tl')" id="btn-tl" class="lang-btn active">TAGALOG</button>
+  <button onclick="setLanguage('en')" id="btn-en" class="lang-btn">ENGLISH</button>
+  <button onclick="setLanguage('tl')" id="btn-tl" class="lang-btn">TAGALOG</button>
  </div>
 
  <button id="soundToggle" class="ui-btn" title="Toggle Music">
@@ -188,25 +183,37 @@
  <div id="about-sidebar" class="flex flex-col shadow-2xl">
     <div class="w-full relative">
         <button onclick="toggleAbout()" class="absolute top-4 right-4 z-10 bg-red-600 text-white font-bold w-10 h-10 rounded-full shadow-lg">✕</button>
-        
         <div class="p-8 pb-4">
             <h2 id="about-title" class="text-4xl font-black text-purple-800 uppercase" style="font-family:'Space Grotesk'">Meet the Creators!</h2>
         </div>
-
         <div class="w-full bg-gray-200">                 
             <img src="TheTeam.png" alt="The Creators" class="w-full h-auto block border-b-8 border-purple-600 border-t-8">
         </div>
     </div>
 
-    <div class="p-8 space-y-6">
+    <div class="p-8 space-y-6 flex-1">
         <div class="text-gray-700 space-y-4 text-lg font-medium leading-relaxed">
-            <p id="about-p1" class="bg-yellow-100 p-5 rounded-3xl border-l-8 border-yellow-500">
-                <b>Kumusta, Digital Hero! </b> Kami ang mga gumawa ng Game Hub na ito para matulungan kang maging ligtas at matalino sa online world.
-            </p>
-            <p id="about-p2">Ginawa namin ang mga larong ito para maging masaya ang iyong pag-aaral tungkol sa digital citizenship at pangangalaga sa iyong kalusugan habang gumagamit ng gadgets.</p>
-            <div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-[2.5rem] shadow-xl">
-                <h4 id="about-goal-title" class="font-bold text-xl mb-2">Our Goal:</h4>
-                <p id="about-goal-text" class="text-sm opacity-90">To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀</p>
+          <p id="about-p1" class="bg-yellow-100 p-5 rounded-3xl border-l-8 border-yellow-500">
+            <b>Hello, Digital Hero!</b> We created this Game Hub to help you stay safe and smart in the online world.
+          </p>
+          <p id="about-p2">We developed these games to make learning about digital citizenship and taking care of your health while using gadgets fun.</p>
+          
+          <div class="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-[2.5rem] shadow-xl">
+              <h4 id="about-goal-title" class="font-bold text-xl mb-2">Our Goal:</h4>
+              <p id="about-goal-text" class="text-sm opacity-90">To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀</p>
+          </div>
+        </div>
+
+        <!-- MENTOR CARD SECTION AT THE BOTTOM OF CONTENT -->
+        <div class="mt-8 border-t-4 border-dashed border-gray-100 pt-8">
+            <div class="bg-white border-4 border-purple-600 rounded-[2rem] p-6 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 grayscale rotate-12">🎓</div>
+                <h5 id="about-adviser-label" class="text-purple-600 font-bold tracking-widest text-[10px] uppercase mb-1">MENTORED BY</h5>
+                <p class="text-2xl font-black text-gray-800 leading-tight">DR. MARIA ERLEEN R. LUCIANO</p>
+                <div class="flex gap-1 mt-3">
+                    <div class="h-1.5 w-12 bg-purple-600 rounded-full"></div>
+                    <div class="h-1.5 w-4 bg-yellow-400 rounded-full"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -221,14 +228,11 @@
 
      <div class="flex-1 flex items-center justify-center pb-24">
        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl w-full px-4">
-         
          <div class="game-card p-12 text-center" onclick="loadGame(1)">
            <div class="text-8xl mb-6 icon-dice">🎲</div>
            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Board-band</h3>
            <div class="mt-8 bg-white text-blue-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
          </div>
-
-        
          <div class="game-card p-12 text-center" onclick="loadGame(2)">
            <div class="mb-6 flex justify-center">
              <svg class="balloon-container" viewBox="0 0 100 150">
@@ -240,25 +244,21 @@
            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Balloon Safety Pop</h3>
            <div class="mt-8 bg-white text-green-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
          </div>
-
          <div class="game-card p-12 text-center" onclick="loadGame(3)">
            <div class="text-8xl mb-6 icon-shield">🛡️</div>
            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Spine-Guard</h3>
            <div class="mt-8 bg-white text-purple-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
          </div>
-
          <div class="game-card p-12 text-center" onclick="loadGame(4)">
            <div class="text-8xl mb-6 icon-wheel">🛞</div>
            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Screen Quest</h3>
            <div class="mt-8 bg-white text-pink-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
          </div>
-
          <div class="game-card p-12 text-center" onclick="loadGame(5)">
            <div class="text-8xl mb-6 icon-eyes">👀</div>
            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Eye-dentify</h3>
            <div class="mt-8 bg-white text-yellow-900 rounded-full py-4 font-black text-xl shadow-lg">ENTER</div>
          </div>
-
        </div>
      </div>
    </div>
@@ -280,6 +280,7 @@
            aboutTitle: "Meet the Creators!",
            aboutP1: "<b>Hello, Digital Hero!</b> We created this Game Hub to help you stay safe and smart in the online world.",
            aboutP2: "We developed these games to make learning about digital citizenship and taking care of your health while using gadgets fun.",
+           aboutAdviser: "MENTORED BY",
            aboutGoalTitle: "Our Goal:",
            aboutGoalText: "To inspire and teach kids like you to use technology in a healthy, safe, and respectful way! 🚀"
        },
@@ -288,6 +289,7 @@
            aboutTitle: "Kilalanin ang mga may likha!",
            aboutP1: "<b>Kumusta, Digital Hero! </b> Kami ang mga gumawa ng Game Hub na ito para matulungan kang maging ligtas at matalino sa online world.",
            aboutP2: "Binuo namin ang mga larong ito para maging masaya ang iyong pag-aaral tungkol sa digital citizenship at pangangalaga sa iyong kalusugan habang gumagamit ng gadgets.",
+           aboutAdviser: "GINABAYAN NI",
            aboutGoalTitle: "Ang aming layunin:",
            aboutGoalText: "Upang magbigay inspirasyon at turuan ang batang kagaya mo na gumamit ng teknolohiya sa wasto, ligtas, at may paggalang na paraan! 🚀"
        }
@@ -299,10 +301,14 @@
        document.getElementById('about-title').innerText = t.aboutTitle;
        document.getElementById('about-p1').innerHTML = t.aboutP1;
        document.getElementById('about-p2').innerText = t.aboutP2;
+       document.getElementById('about-adviser-label').innerText = t.aboutAdviser;
        document.getElementById('about-goal-title').innerText = t.aboutGoalTitle;
        document.getElementById('about-goal-text').innerText = t.aboutGoalText;
-       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-       document.getElementById('btn-tl').classList.toggle('active', lang === 'tl');
+
+       // Shade transfer fix
+       document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+       document.getElementById('btn-' + lang).classList.add('active');
+
        AudioController.playTone(800, 0.05, 0.1);
    }
 
@@ -386,22 +392,16 @@
      document.getElementById('soundToggle').classList.add('hidden-ui');
      document.getElementById('aboutToggle').classList.add('hidden-ui');
      document.getElementById('langToggle').classList.add('hidden-ui');
-
-     // LISTAHAN NG MGA TITLES, EMOJIS, AT ANIMATION CLASSES
      const titles = ["Board-band", "Balloon Safety Pop", "Spine Guard", "Screen Quest", "Eye-dentify"];
      const icons = ["🎲", "🎈", "🛡️", "🛞", "👀"];
      const animClasses = ["icon-dice", "icon-balloon", "icon-shield", "icon-wheel", "icon-eyes"];
-
      document.getElementById('current-game-title').innerText = titles[num-1];
      const content = document.getElementById('game-content');
-
-     // DYNAMIC LOADING SCREEN BASE SA GAME NUMBER
      content.innerHTML = `
         <div class="h-full flex flex-col items-center justify-center bg-gray-900">
             <div class="text-9xl ${animClasses[num-1]} mb-8">${icons[num-1]}</div>
             <h2 class="text-white text-3xl font-black animate-pulse uppercase">CONNECTING TO MISSION...</h2>
         </div>`;
-
      setTimeout(() => {
          content.innerHTML = '';
          const iframe = document.createElement('iframe');
@@ -409,10 +409,10 @@
          iframe.src = `game${num}.html`;
          content.appendChild(iframe);
      }, 1500);
-
      document.getElementById('main-menu').classList.add('hidden');
      document.getElementById('game-screen').classList.remove('hidden');
    }
+   
    function backToMenu() {
      if (!AudioController.isMuted) AudioController.startBGM();
      document.getElementById('soundToggle').classList.remove('hidden-ui');
@@ -424,17 +424,7 @@
    }
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
-     // SERVICE WORKER REGISTRATION
-   if ('serviceWorker' in navigator) {
-     window.addEventListener('load', () => {
-       navigator.serviceWorker.register('sw.js') 
-         .then(reg => console.log('Service Worker Active! 🚀'))
-         .catch(err => console.log('Service Worker Error ❌', err));
-     });
-   }
+   setLanguage('en');
  </script>
 </body>
 </html>
-
-
-
