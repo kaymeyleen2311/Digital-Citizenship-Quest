@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screen Quest: Digital Master</title>
-     <script src="https://cdn.tailwindcss.com"></script>
+    <title>Screen Quest: Digital Master (Offline Edition)</title>
+    <!-- NO EXTERNAL SCRIPTS NEEDED - 100% OFFLINE FRIENDLY -->
     <style>
         :root { 
             --primary: #6c5ce7; --primary-light: #a29bfe; --secondary: #fd79a8; 
             --success: #00b894; --error: #ff7675; --glass: rgba(255, 255, 255, 0.95);
         }
         * { touch-action: manipulation; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Comic Sans MS', sans-serif; background: linear-gradient(-45deg, #6c5ce7, #a29bfe, #fd79a8, #00b894); background-size: 400% 400%; animation: gradientBG 15s ease infinite; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; }
+        
+        body { 
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif; 
+            background: linear-gradient(-45deg, #6c5ce7, #a29bfe, #fd79a8, #00b894); 
+            background-size: 400% 400%; 
+            animation: gradientBG 15s ease infinite; 
+            display: flex; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; overflow: hidden; 
+        }
+
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
         /* Loader */
@@ -22,7 +31,7 @@
 
         /* Navigation */
         .top-left-ui, .top-right-ui { position: absolute; top: 15px; z-index: 10001; display: flex; align-items: center; }
-        .top-left-ui { left: 15px; gap: 15px; } .top-right-ui { right: 15px; }
+        .top-left-ui { left: 15px; gap: 10px; } .top-right-ui { right: 15px; }
         .btn-nav { background: var(--glass); border: 2px solid var(--primary); padding: 8px 15px; font-weight: bold; cursor: pointer; color: var(--primary); box-shadow: 0 4px 0 var(--primary-light); transition: 0.2s; font-size: 14px; border-radius: 12px; }
         .lang-group { display: flex; }
         #lang-en { border-radius: 12px 0 0 12px; border-right: 1px solid var(--primary); }
@@ -32,8 +41,10 @@
         .app-container { background: var(--glass); border-radius: 40px; width: 95%; max-width: 850px; height: 620px; position: relative; border: 6px solid rgba(255,255,255,0.5); overflow: hidden; display: flex; box-shadow: 0 25px 50px rgba(0,0,0,0.2); z-index: 1000; }
         .page { display: none; flex-direction: column; width: 100%; height: 100%; padding: 20px; align-items: center; justify-content: center; text-align: center; }
         .active { display: flex; }
-        .btn-main { padding: 15px 40px; background: linear-gradient(to bottom, var(--success), #009470); color: white; border: none; border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #006b52; margin: 10px; transition: 0.1s; }
         
+        .btn-main { padding: 15px 40px; background: linear-gradient(to bottom, var(--success), #009470); color: white; border: none; border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #006b52; margin: 10px; transition: 0.1s; }
+        .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #006b52; }
+
         /* Directions */
         .dir-card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); max-width: 450px; border: 3px solid var(--primary-light); margin-bottom: 20px; }
         .dir-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; text-align: left; font-size: 18px; color: #444; }
@@ -58,7 +69,7 @@
 <div id="flash-overlay"></div>
 
 <div id="loader">
-    <h1>🎮 SCREEN QUEST</h1>
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎮 SCREEN QUEST</h1>
     <p id="load-status">PREPARING QUEST...</p>
     <div class="load-bar-container"><div id="load-fill"></div></div>
     <h2 id="tap-msg">TAP TO START</h2>
@@ -94,7 +105,7 @@
 
     <div id="page-profile" class="page">
         <h1 id="txt-profile">👤 PLAYER</h1>
-        <input type="text" id="user-name" placeholder="Enter name..." style="padding:15px; border-radius:15px; border:2px solid var(--primary-light); width:280px; font-size:20px; text-align:center;">
+        <input type="text" id="user-name" placeholder="Enter name..." style="padding:15px; border-radius:15px; border:2px solid var(--primary-light); width:280px; font-size:20px; text-align:center; outline: none; margin-bottom: 10px;">
         <div id="login-error" style="color:var(--error); font-weight:bold; visibility:hidden;">Required!</div>
         <div style="display:flex; gap:15px; margin-top:20px;">
             <button class="btn-main" onclick="startGame(1)">SET 1 🍎</button>
@@ -103,19 +114,19 @@
     </div>
 
     <div id="page-game" class="page">
-        <div style="display:flex; justify-content:space-between; width:90%; color:var(--primary); font-weight:bold;">
+        <div style="display:flex; justify-content:space-between; width:90%; color:var(--primary); font-weight:bold; margin-bottom: 10px;">
             <span id="display-name">---</span>
             <span id="txt-score_label">SCORE: <span id="current-score">0</span></span>
         </div>
         <div class="battery-bar"><div id="battery-fill"></div></div>
-        <div id="hint" style="background:white; padding:15px; border-radius:20px; min-height:65px; margin:10px; font-weight:bold; display: flex; align-items: center; justify-content: center;"></div>
-        <div id="slots"></div>
+        <div id="hint" style="background:white; padding:15px; border-radius:20px; min-height:65px; margin:10px; font-weight:bold; display: flex; align-items: center; justify-content: center; width: 90%;"></div>
+        <div id="slots" style="margin-bottom: 15px;"></div>
         <div class="wheel-container"><div class="wheel-bg"></div><div id="wheel-letters-layer"></div></div>
-        <button id="txt-clear" class="btn-main" style="background:var(--error);" onclick="clearSlots()">CLEAR ❌</button>
+        <button id="txt-clear" class="btn-main" style="background:var(--error); box-shadow: 0 6px 0 #b33939;" onclick="clearSlots()">CLEAR ❌</button>
 
         <div class="status-overlay" id="win-modal">
-            <h1 id="txt-correct" style="color:var(--success)">EXCELLENT! 🌟</h1>
-            <p id="trivia-text" style="font-size:18px;"></p>
+            <h1 id="txt-correct" style="color:var(--success); font-size: 2.5rem;">EXCELLENT! 🌟</h1>
+            <p id="trivia-text" style="font-size:18px; margin: 20px 0;"></p>
             <button id="txt-next" class="btn-main" onclick="handleNextLevel()">NEXT ➡️</button>
         </div>
 
@@ -125,7 +136,7 @@
             <div id="next-set-section">
                 <p id="txt-proceed" style="font-weight:bold;">Do you want to continue to Set 2?</p>
                 <button class="btn-main" onclick="startNextSet()">YES, LET'S GO! 💻</button>
-                <button class="btn-main" style="background:#636e72;" onclick="goBack()">HOME 🏠</button>
+                <button class="btn-main" style="background:#636e72; box-shadow: 0 6px 0 #2d3436;" onclick="goBack()">HOME 🏠</button>
             </div>
         </div>
     </div>
@@ -152,12 +163,12 @@
             if(this.isMusicPlaying) {
                 this.musicInt = setInterval(() => {
                     const notes = [261.63, 329.63, 392.00, 523.25];
-                    // Tinaasan ang music volume mula 0.03 patungong 0.15 (para hindi rin sobrang ingay)
                     this.playTone(notes[Math.floor(Math.random()*notes.length)], 'triangle', 0.6, 0.15);
                 }, 800);
             } else { clearInterval(this.musicInt); }
         }
     };
+
     function startLoadingProcess() {
         let p = 0; const fill = document.getElementById('load-fill');
         const i = setInterval(() => {
@@ -272,7 +283,7 @@
     function checkAns() {
         const data = wordsData[activeSet][currentIdx][curLang];
         if(selected.toUpperCase() === data.w.toUpperCase()) {
-            clearInterval(timer); score += 5; // 5 points bawat tanong
+            clearInterval(timer); score += 5;
             document.getElementById('current-score').innerText = score;
             document.getElementById('trivia-text').innerText = data.t;
             document.getElementById('win-modal').style.display = 'flex';
