@@ -55,6 +55,16 @@
             border-radius: 10px; 
             white-space: nowrap;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Square Icon Button */
+        #music-btn {
+            font-size: 16px;
+            width: 38px;
+            height: 38px;
         }
 
         .lang-group { display: flex; flex-shrink: 0; }
@@ -96,7 +106,7 @@
         <button id="lang-en" class="btn-nav lang-active" onclick="changeLang('en')">ENGLISH</button>
         <button id="lang-tl" class="btn-nav" onclick="changeLang('tl')">TAGALOG</button>
     </div>
-    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">🎵 OFF</button>
+    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">🔇</button>
 </div>
 
 <div id="loader">
@@ -178,7 +188,8 @@
         },
         toggleMusic() {
             this.init(); this.isMusicPlaying = !this.isMusicPlaying;
-            document.getElementById('music-btn').innerText = (this.isMusicPlaying ? "🎵 ON" : "🎵 OFF");
+            // Update button icon only
+            document.getElementById('music-btn').innerText = (this.isMusicPlaying ? "🔊" : "🔇");
             if(this.isMusicPlaying) {
                 this.musicInt = setInterval(() => {
                     const notes = [261.63, 329.63, 392.00, 523.25];
@@ -218,13 +229,13 @@
             { en:{w:"POSTURE", h:"Proper ______ prevents body pain.", t:"Sit up straight."}, tl:{w:"POSTURA", h:"Ang tamang ______ ay mahalaga para makaiwas sa sakit ng katawan.", t:"Ayusin ang upo habang nag-aaral."} }
         ],
         set2: [
-            { en:{w:"SCREEN", h:"Limit ______ time to protect eyes.", t:"Too much screen time may harm our body."}, tl:{w:"SCREEN", h:"Limitahan ang ______ time para ma protektahan ang mata.", t:"Ang sobrang gadget ay masama sa katawan."} },
+            { en:{w:"BREAK", h:"Regular ______ help prevent eye strain.", t:"Breaks relax the eyes."}, tl:{w:"PAHINGA", h:"Ang regular na ______ ay iwas-sakit sa mata.", t:"Mag-break para makapag-relax."} },
             { en:{w:"LENGTH", h:"Sit an arm's ______ away from screens.", t:"Proper distance protects eyes."}, tl:{w:"BRASO", h:"Umupo nang kasing haba ng isang ______ mula sa screen.", t:"Tamang distansya para sa mata."} },
             { en:{w:"DIGITAL", h:"______ wellness means safe tech use.", t:"Digital health is important."}, tl:{w:"DIGITAL", h:"Ang ______ health ay ligtas na paggamit ng teknolohiya.", t:"Mahalaga ang digital health."} },
             { en:{w:"REST", h:"If eyes are tired, you should ______ them.", t:"Resting eyes prevents strain."}, tl:{w:"IPAHINGA", h:"Kapag napagod ang mata, dapat itong ______.", t:"Ang pagpapahinga ay mahalaga."} },
             { en:{w:"EATING", h:"Do not use gadgets while ______.", t:"Gadgets distract us from eating."}, tl:{w:"KUMAKAIN", h:"Bawal ang gadget habang ______.", t:"Huwag mag-gadget habang kumakain."} },
             { en:{w:"RESPONSIBLE", h:"Limits show ______ use of tech.", t:"Responsible users follow rules."}, tl:{w:"RESPONSABLE", h:"Ito ay ______ na paggamit ng teknolohiya.", t:"Maging responsable sa paggamit."} },
-            { en:{w:"BREAK", h:"Regular ______ help prevent eye strain.", t:"Breaks relax the eyes."}, tl:{w:"PAHINGA", h:"Ang regular na ______ ay iwas-sakit sa mata.", t:"Mag-break para makapag-relax."} },
+            { en:{w:"SCREEN", h:"Limit ______ time to protect eyes.", t:"Too much screen time may harm our body."}, tl:{w:"SCREEN", h:"Limitahan ang ______ time para ma protektahan ang mata.", t:"Ang sobrang gadget ay masama sa katawan."} },
             { en:{w:"CITIZEN", h:"Proper use shows good digital ______.", t:"Be a good digital citizen."}, tl:{w:"CITIZEN", h:"Nagpapakita ito ng mabuting ______.", t:"Maging mabuting digital citizen."} },
             { en:{w:"HEALTHY", h:"Playing keeps the body ______.", t:"Physical activities are important."}, tl:{w:"MALUSOG", h:"Ang paglalaro ay para sa ______ na katawan.", t:"Mahalaga ang ehersisyo."} },
             { en:{w:"PARENTS", h:"Follow limits set by ______.", t:"Adults guide us."}, tl:{w:"MAGULANG", h:"Sundin ang utos ng ______.", t:"Makinig sa mga nakatatanda."} }
@@ -350,3 +361,4 @@
 </script>
 </body>
 </html>
+            
