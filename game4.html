@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Screen Quest: Digital Master (Offline Edition)</title>
-    <!-- NO EXTERNAL SCRIPTS NEEDED - 100% OFFLINE FRIENDLY -->
     <style>
         :root { 
             --primary: #6c5ce7; --primary-light: #a29bfe; --secondary: #fd79a8; 
@@ -29,28 +28,51 @@
         #load-fill { width: 0%; height: 100%; background: white; transition: width 0.1s linear; }
         #tap-msg { visibility: hidden; cursor: pointer; background: white; color: var(--primary); padding: 12px 25px; border-radius: 30px; font-weight: bold; }
 
-        /* Navigation */
-        .top-left-ui, .top-right-ui { position: absolute; top: 15px; z-index: 10001; display: flex; align-items: center; }
-        .top-left-ui { left: 15px; gap: 10px; } .top-right-ui { right: 15px; }
-        .btn-nav { background: var(--glass); border: 2px solid var(--primary); padding: 8px 15px; font-weight: bold; cursor: pointer; color: var(--primary); box-shadow: 0 4px 0 var(--primary-light); transition: 0.2s; font-size: 14px; border-radius: 12px; }
-        .lang-group { display: flex; }
-        #lang-en { border-radius: 12px 0 0 12px; border-right: 1px solid var(--primary); }
-        #lang-tl { border-radius: 0 12px 12px 0; border-left: 1px solid var(--primary); }
+        /* Unified Navigation Bar */
+        .top-nav-bar { 
+            position: absolute; 
+            top: 10px; 
+            left: 0; 
+            right: 0; 
+            padding: 0 10px; 
+            z-index: 10001; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 4px;
+        }
+
+        .btn-nav { 
+            background: var(--glass); 
+            border: 2px solid var(--primary); 
+            padding: 6px 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: var(--primary); 
+            box-shadow: 0 3px 0 var(--primary-light); 
+            transition: 0.2s; 
+            font-size: 11px; 
+            border-radius: 10px; 
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .lang-group { display: flex; flex-shrink: 0; }
+        #lang-en { border-radius: 10px 0 0 10px; border-right: 1px solid var(--primary); }
+        #lang-tl { border-radius: 0 10px 10px 0; border-left: 1px solid var(--primary); }
         .lang-active { background: var(--primary) !important; color: white !important; }
         
-        .app-container { background: var(--glass); border-radius: 40px; width: 95%; max-width: 850px; height: 620px; position: relative; border: 6px solid rgba(255,255,255,0.5); overflow: hidden; display: flex; box-shadow: 0 25px 50px rgba(0,0,0,0.2); z-index: 1000; }
+        .app-container { background: var(--glass); border-radius: 40px; width: 95%; max-width: 850px; height: 600px; position: relative; border: 6px solid rgba(255,255,255,0.5); overflow: hidden; display: flex; box-shadow: 0 25px 50px rgba(0,0,0,0.2); z-index: 1000; margin-top: 35px; }
         .page { display: none; flex-direction: column; width: 100%; height: 100%; padding: 20px; align-items: center; justify-content: center; text-align: center; }
         .active { display: flex; }
         
         .btn-main { padding: 15px 40px; background: linear-gradient(to bottom, var(--success), #009470); color: white; border: none; border-radius: 50px; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #006b52; margin: 10px; transition: 0.1s; }
         .btn-main:active { transform: translateY(3px); box-shadow: 0 2px 0 #006b52; }
 
-        /* Directions */
         .dir-card { background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); max-width: 450px; border: 3px solid var(--primary-light); margin-bottom: 20px; }
         .dir-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; text-align: left; font-size: 18px; color: #444; }
         .dir-num { background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; }
         
-        /* Game Elements */
         .battery-bar { width: 80%; height: 20px; background: #eee; border-radius: 10px; margin: 10px 0; overflow: hidden; border: 2px solid #ddd; }
         #battery-fill { width: 100%; height: 100%; background: var(--success); transition: width 0.1s linear; }
         .slot { width: 38px; height: 48px; border-radius: 8px; background: white; border: 2px solid var(--primary-light); font-size: 18px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; color: var(--primary); text-transform: uppercase; }
@@ -68,23 +90,20 @@
 
 <div id="flash-overlay"></div>
 
-<div id="loader">
-    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎮 SCREEN QUEST</h1>
-    <p id="load-status">PREPARING QUEST...</p>
-    <div class="load-bar-container"><div id="load-fill"></div></div>
-    <h2 id="tap-msg">TAP TO START</h2>
-</div>
-
-<div class="top-left-ui">
+<div class="top-nav-bar">
     <button id="back-btn-text" class="btn-nav" onclick="goBack()">⬅️ BACK</button>
     <div class="lang-group">
         <button id="lang-en" class="btn-nav lang-active" onclick="changeLang('en')">ENGLISH</button>
         <button id="lang-tl" class="btn-nav" onclick="changeLang('tl')">TAGALOG</button>
     </div>
+    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">🎵 OFF</button>
 </div>
 
-<div class="top-right-ui">
-    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">MUSIC: OFF</button>
+<div id="loader">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎮 SCREEN QUEST</h1>
+    <p id="load-status">PREPARING QUEST...</p>
+    <div class="load-bar-container"><div id="load-fill"></div></div>
+    <h2 id="tap-msg">TAP TO START</h2>
 </div>
 
 <div class="app-container">
@@ -159,7 +178,7 @@
         },
         toggleMusic() {
             this.init(); this.isMusicPlaying = !this.isMusicPlaying;
-            document.getElementById('music-btn').innerText = "MUSIC: " + (this.isMusicPlaying ? "ON" : "OFF");
+            document.getElementById('music-btn').innerText = (this.isMusicPlaying ? "🎵 ON" : "🎵 OFF");
             if(this.isMusicPlaying) {
                 this.musicInt = setInterval(() => {
                     const notes = [261.63, 329.63, 392.00, 523.25];
