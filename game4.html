@@ -28,7 +28,7 @@
         #load-fill { width: 0%; height: 100%; background: white; transition: width 0.1s linear; }
         #tap-msg { visibility: hidden; cursor: pointer; background: white; color: var(--primary); padding: 12px 25px; border-radius: 30px; font-weight: bold; }
 
-        /* FIXED NAVIGATION BAR */
+        /* FIXED NAVIGATION BAR - REARRANGED */
         .top-nav-bar { 
             position: absolute; 
             top: 12px; 
@@ -64,8 +64,9 @@
         /* Square Music Icon */
         #music-btn {
             font-size: 18px;
-            width: 40px;
+            width: 44px; /* Fixed width to keep it square */
             padding: 0;
+            flex-shrink: 0;
         }
 
         .lang-group { display: flex; flex-grow: 1; justify-content: center; max-width: 180px; }
@@ -109,7 +110,7 @@
         <button id="lang-tl" class="btn-nav" onclick="changeLang('tl')">TAGALOG</button>
     </div>
 
-    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">🔇</button>
+    <button id="music-btn" class="btn-nav" onclick="AudioEngine.toggleMusic()">&#128263;</button>
 </div>
 
 <div id="loader">
@@ -191,7 +192,8 @@
         },
         toggleMusic() {
             this.init(); this.isMusicPlaying = !this.isMusicPlaying;
-            document.getElementById('music-btn').innerText = (this.isMusicPlaying ? "🔊" : "🔇");
+            // Updated to use Icons instead of text
+            document.getElementById('music-btn').innerHTML = (this.isMusicPlaying ? "&#128266;" : "&#128263;");
             if(this.isMusicPlaying) {
                 this.musicInt = setInterval(() => {
                     const notes = [261.63, 329.63, 392.00, 523.25];
