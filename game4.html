@@ -356,7 +356,7 @@
             setTimeout(() => { alert("Great Job! Returning Home."); goBack(); }, 6000);
         }
     }
-    
+
     function startNextSet() { activeSet = 'set2'; currentIdx = 0; score = 0; loadLevel(); }
     function clearSlots() { AudioEngine.playTone(300, 'sine', 0.1); selected = ""; document.querySelectorAll('.slot').forEach(s => s.innerText = ""); }
     function resetTimer() { clearInterval(timer); time = 10; timer = setInterval(() => { time -= 0.1; document.getElementById('battery-fill').style.width = (time*10) + "%"; if(time <= 0) triggerWrong(); }, 100); }
