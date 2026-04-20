@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hero-hub-v6'; // Binago ko sa v6 para mag-force update ang app mo
+const CACHE_NAME = 'hero-hub-v8'; 
 const urlsToCache = [
   './',
   './index.html',
@@ -13,9 +13,8 @@ const urlsToCache = [
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js'
 ];
 
-// 1. INSTALL: Dito pilit nating pinapa-update ang laro
 self.addEventListener('install', event => {
-  self.skipWaiting(); // UTOS: Huwag nang maghintay, palitan agad ang lumang version!
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return Promise.allSettled(
@@ -25,26 +24,29 @@ self.addEventListener('install', event => {
   );
 });
 
-// 2. ACTIVATE: Dito natin binubura yung mga lumang "v4" at "v5" na nagpapagulo sa app
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache); // Burahin ang basura (lumang versions)
-          }
-        })
+        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
       );
-    }).then(() => self.clients.claim()) // Kunin agad ang kontrol sa app
+    }).then(() => self.clients.claim())
   );
 });
 
-// 3. FETCH: Dito kinukuha ang laro pag wala nang internet
+// ETO YUNG PINAKAMAHALAGA PARA SA MOBILE:
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+    caches.match(event.request).then(cachedResponse => {
+      // Kung may baon (cached), gamitin agad. Huwag na mag-intay sa internet.
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request);
+    }).catch(() => {
+      if (event.request.mode === 'navigate') {
+        return caches.match('./index.html');
+      }
     })
   );
 });
