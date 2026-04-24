@@ -425,16 +425,23 @@
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
   if ('serviceWorker' in navigator) {
-     window.addEventListener('load', () => {
-       navigator.serviceWorker.register('sw.js', { scope: './' }) 
-         .then(reg => {
-            console.log('Offline Engine: Active 🚀');
-            // Force update kung may bago
-            reg.update();
-         })
-         .catch(err => console.log('Offline Engine: Error ❌', err));
-     });
-   }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+            console.log('PWA Ready!');
+            
+            // Check for updates
+            registration.onupdatefound = () => {
+                const installingWorker = registration.installing;
+                installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // May bagong version, i-refresh ang page
+                        window.location.reload();
+                    }
+                };
+            };
+        });
+    });
+}
     
    
    setLanguage('en');
