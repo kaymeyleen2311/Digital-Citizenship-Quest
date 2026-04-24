@@ -1,5 +1,5 @@
-const CACHE_NAME = 'digital-hero-v1'; // Palitan ang version 'v2' sa susunod na update
-const OFFLINE_ASSETS = [
+const CACHE_NAME = 'hero-hub-v30'; // Bagong version uli
+const assets = [
   './',
   './index.html',
   './game1.html',
@@ -8,47 +8,24 @@ const OFFLINE_ASSETS = [
   './game4.html',
   './game5.html',
   './tailwind.js',
-  './manifest.json',
-  './TheTeam.png'
+  './TheTeam.png',
+  './manifest.json'
 ];
 
-// 1. INSTALLATION - Dito dina-download lahat ng files para sa offline
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(OFFLINE_ASSETS);
-    }).then(() => self.skipWaiting())
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(assets)));
 });
 
-// 2. ACTIVATION - Paglilinis ng mga lumang cache
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      })
-    ))
-  );
-});
-
-// 3. FETCH - Dito sinasabi na "Kuhanin muna sa Cache, huwag sa Internet"
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      // Kung nasa cache, ibigay agad (Instant Offline)
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      // Kung wala sa cache, kuhanin sa network at i-save para sa susunod
-      return fetch(event.request).then(response => {
+self.addEventListener('fetch', e => {
+  // Strategy: Kuhanin agad sa CACHE. Pag wala, tsaka mag-INTERNET.
+  e.respondWith(
+    caches.match(e.request).then(response => {
+      return response || fetch(e.request).then(networkResponse => {
         return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, response.clone());
-          return response;
+          cache.put(e.request, networkResponse.clone());
+          return networkResponse;
         });
       });
-    }).catch(() => {
-      // Option para sa Fallback kung talagang walang mahanap
     })
   );
 });
