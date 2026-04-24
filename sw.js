@@ -1,5 +1,5 @@
-const CACHE_NAME = 'hero-hub-v8'; 
-const urlsToCache = [
+const CACHE_NAME = 'hero-hub-v9'; // Palitan ang v9 pag may bagong upload
+const assets = [
   './',
   './index.html',
   './manifest.json',
@@ -9,44 +9,46 @@ const urlsToCache = [
   './game4.html', 
   './game5.html',
   './TheTeam.png',
-  'https://cdn.tailwindcss.com',
+  './tailwind.js', // Yung dinownload mo kanina
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js'
 ];
 
+// Install: Sine-save ang lahat ng files sa phone
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return Promise.allSettled(
-        urlsToCache.map(url => cache.add(url))
-      );
+      return Promise.allSettled(assets.map(url => cache.add(url)));
     })
   );
 });
 
+// Activate: Nililinis ang lumang version
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    ))
   );
 });
 
-// ETO YUNG PINAKAMAHALAGA PARA SA MOBILE:
+// Fetch: "Offline-First" Strategy
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
-      // Kung may baon (cached), gamitin agad. Huwag na mag-intay sa internet.
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request);
-    }).catch(() => {
-      if (event.request.mode === 'navigate') {
-        return caches.match('./index.html');
-      }
+      // 1. Kung may baon, ipakita agad (Fast load)
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        // 2. I-update ang baon sa background
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+        });
+        return networkResponse;
+      }).catch(() => {
+          // Kung walang internet at walang baon, ipakita ang main page
+          if (event.request.mode === 'navigate') return caches.match('./index.html');
+      });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
