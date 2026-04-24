@@ -255,6 +255,27 @@
         .modal-content::-webkit-scrollbar-thumb:hover {
             background: #555; 
         }
+   /* Fallback para hindi mag-stack ang board spaces */
+#space-0, #space-21 { width: 100% !important; margin: 10px 0; }
+
+.grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* Pinipilit na maging 5 columns */
+    gap: 8px !important;
+}
+
+.board-space {
+    min-height: 70px !important; /* Siguradong may height ang spaces */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Para sa mobile responsive kahit offline */
+@media (max-width: 600px) {
+    .grid { gap: 4px !important; }
+    .board-space { font-size: 12px !important; height: 60px !important; }
+}
     </style>
   <style>@view-transition { navigation: auto; }</style>
  </head>
