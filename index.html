@@ -424,13 +424,18 @@
    }
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
-   if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator) {
      window.addEventListener('load', () => {
-       navigator.serviceWorker.register('sw.js') 
-         .then(reg => console.log('Service Worker Active! 🚀'))
-         .catch(err => console.log('Service Worker Error ❌', err));
+       navigator.serviceWorker.register('sw.js', { scope: './' }) 
+         .then(reg => {
+            console.log('Offline Engine: Active 🚀');
+            // Force update kung may bago
+            reg.update();
+         })
+         .catch(err => console.log('Offline Engine: Error ❌', err));
      });
    }
+    
    
    setLanguage('en');
  </script>
