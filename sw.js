@@ -1,60 +1,54 @@
-const CACHE_NAME = 'hero-hub-v25';
-
-const assets = [
+const CACHE_NAME = 'digital-hero-v1'; // Palitan ang version 'v2' sa susunod na update
+const OFFLINE_ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  './tailwind.js', // Pinaka-importante para sa design
-  './TheTeam.png',
-  './game1.html', 
-  './game2.html', 
-  './game3.html', 
-  './game4.html', 
+  './game1.html',
+  './game2.html',
+  './game3.html',
+  './game4.html',
   './game5.html',
-  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js',
-  'https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap'
+  './tailwind.js',
+  './manifest.json',
+  './TheTeam.png'
 ];
 
-// INSTALL: Pinipilit ang phone na i-download lahat bago sabihing "Ready"
+// 1. INSTALLATION - Dito dina-download lahat ng files para sa offline
 self.addEventListener('install', event => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('System: Downloading offline assets...');
-      return Promise.allSettled(
-        assets.map(url => cache.add(url).catch(err => console.log('Critical failure on: ' + url)))
-      );
-    })
+      return cache.addAll(OFFLINE_ASSETS);
+    }).then(() => self.skipWaiting())
   );
 });
 
-// ACTIVATE: Binubura ang lahat ng lumang version na nag-cacause ng "Raw HTML"
+// 2. ACTIVATION - Paglilinis ng mga lumang cache
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    )).then(() => self.clients.claim())
+      keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      })
+    ))
   );
 });
 
-// FETCH: "CACHE-ONLY-IF-OFFLINE" Logic
+// 3. FETCH - Dito sinasabi na "Kuhanin muna sa Cache, huwag sa Internet"
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
-      // 1. Kung nasa storage na (offline baon), ibigay agad. Walang intayan.
+      // Kung nasa cache, ibigay agad (Instant Offline)
       if (cachedResponse) {
         return cachedResponse;
       }
-      
-      // 2. Kung wala sa storage, kuhanin sa internet
-      return fetch(event.request).then(networkResponse => {
+      // Kung wala sa cache, kuhanin sa network at i-save para sa susunod
+      return fetch(event.request).then(response => {
         return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
+          cache.put(event.request, response.clone());
+          return response;
         });
       });
+    }).catch(() => {
+      // Option para sa Fallback kung talagang walang mahanap
     })
   );
 });
