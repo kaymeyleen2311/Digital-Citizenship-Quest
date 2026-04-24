@@ -146,6 +146,38 @@
     }
     #about-sidebar.open { transform: translateX(0); }
     #sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 140; display: none; backdrop-filter: blur(4px); }
+    /* --- EMERGENCY OFFLINE LAYOUT (PWA HARDENING) --- */
+    #main-menu { display: flex !important; flex-direction: column !important; }
+    
+    /* Para hindi maging higante ang mga game cards */
+    #main-menu .grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+        gap: 20px !important;
+        padding: 20px !important;
+    }
+
+    .game-card {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 30px !important;
+        padding: 30px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    /* Siguraduhin na nakatago ang Game Screen at Loading Screen pagkatapos mag-load */
+    .hidden { display: none !important; }
+    #game-screen.hidden { display: none !important; }
+    
+    /* Fallback para sa Buttons */
+    .lang-container { display: flex !important; gap: 5px !important; }
+    .ui-btn { display: flex !important; align-items: center !important; justify-content: center !important; }
+
+    /* Fix para sa Text na hindi mabasa */
+    h1 { font-family: 'Space Grotesk', sans-serif !important; }
   </style>
 </head>
 <body class="h-full">
