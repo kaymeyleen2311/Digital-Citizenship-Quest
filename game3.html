@@ -61,10 +61,10 @@
             display: flex; 
             gap: 10px; 
             flex-wrap: nowrap; 
-            max-width: 70%;
+            max-width: 100%;
         }
 
-        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 3000; }
+        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 2000; }
         
         /* Updated BACK button to look like EXIT MISSION */
         .back-btn-fixed { 
@@ -168,7 +168,7 @@
         .rev-correct { color: #2ecc71; }
         .rev-wrong { color: #e74c3c; }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
             .top-left-controls { top: 10px; left: 10px; gap: 5px; flex-direction: column; align-items: flex-start; }
             .back-btn-fixed { padding: 10px 20px; font-size: 14px; border-radius: 30px;}
             .lang-container { width: 220px; border-radius: 30px;}
