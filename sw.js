@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hero-hub-v18'; // Version 18
+const CACHE_NAME = 'hero-hub-v21';
 const assets = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const assets = [
   './game4.html', 
   './game5.html',
   './TheTeam.png',
-  './tailwind.js', 
+  'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js'
 ];
 
