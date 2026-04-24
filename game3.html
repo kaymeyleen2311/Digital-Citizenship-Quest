@@ -51,20 +51,20 @@
             text-align: center; display: flex; flex-direction: column; justify-content: center;
         }
 
-        @media (min-width: 768px) { #game-container { border-radius: 30px; height: 95vh; } }
+        @media (min-width: 600px) { #game-container { border-radius: 30px; height: 95vh; } }
 
         .top-left-controls { 
             position: absolute; 
             top: 15px; 
             left: 15px; 
-            z-index: 2000; 
+            z-index: 3000; 
             display: flex; 
             gap: 10px; 
             flex-wrap: nowrap; 
             max-width: 70%;
         }
 
-        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 2000; }
+        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 3000; }
         
         /* Updated BACK button to look like EXIT MISSION */
         .back-btn-fixed { 
@@ -199,7 +199,7 @@
     </div>
 
     <div class="top-right-controls">
-        <button id="mute-btn" class="nav-btn" onclick="toggleMute()">🔊 SOUND: ON</button>
+        <button id="mute-btn" class="nav-btn" onclick="toggleMute()">🔊</button>
     </div>
 
     <div id="game-container">
@@ -628,4 +628,4 @@
     }
 </script>
 </body>
-</html>
+</html>           
