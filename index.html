@@ -168,16 +168,62 @@
         text-align: center !important;
     }
 
-    /* Siguraduhin na nakatago ang Game Screen at Loading Screen pagkatapos mag-load */
+  /* --- EMERGENCY OFFLINE LAYOUT (PWA HARDENING) --- */
+    /* Pinipilit itago ang screens kahit walang Tailwind script */
     .hidden { display: none !important; }
-    #game-screen.hidden { display: none !important; }
     
-    /* Fallback para sa Buttons */
-    .lang-container { display: flex !important; gap: 5px !important; }
-    .ui-btn { display: flex !important; align-items: center !important; justify-content: center !important; }
+    #main-menu { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        width: 100%;
+        min-height: 100vh;
+    }
 
-    /* Fix para sa Text na hindi mabasa */
-    h1 { font-family: 'Space Grotesk', sans-serif !important; }
+    /* Siguraduhin na ang Game Screen ay NASA IBABAW at FULLSCREEN */
+    #game-screen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 9999 !important;
+        background: #1a1a1a !important; /* Dark fallback background */
+        display: flex;
+        flex-direction: column;
+    }
+
+    #game-screen.hidden { display: none !important; }
+
+    /* Fix para sa Tiles (Game Cards) para hindi sila mag-stack vertically */
+    #main-menu .grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 20px !important;
+        width: 100% !important;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Fix para sa Puting ENTER button sa loob ng cards */
+    .game-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 280px !important;
+        padding: 40px !important;
+    }
+
+    .game-card div:last-child {
+        background: white !important;
+        color: #1e3a8a !important;
+        padding: 12px 40px !important;
+        border-radius: 50px !important;
+        font-weight: 900 !important;
+        margin-top: 20px !important;
+        display: block !important;
+        width: fit-content !important;
+    }
   </style>
 </head>
 <body class="h-full">
@@ -419,40 +465,46 @@
      }
    }, { once: true });
 
-  function loadGame(num) {
+function loadGame(num) {
      AudioController.stopBGM();
+     
+     // 1. Manual hide the menu (Fallback kung ayaw ng .hidden class)
+     document.getElementById('main-menu').style.display = 'none';
+     
      document.getElementById('soundToggle').classList.add('hidden-ui');
      document.getElementById('aboutToggle').classList.add('hidden-ui');
      document.getElementById('langToggle').classList.add('hidden-ui');
+
      const titles = ["Board-band", "Balloon Safety Pop", "Spine Guard", "Screen Quest", "Eye-dentify"];
-     const icons = ["🎲", "🎈", "🛡️", "🛞", "👀"];
-     const animClasses = ["icon-dice", "icon-balloon", "icon-shield", "icon-wheel", "icon-eyes"];
      document.getElementById('current-game-title').innerText = titles[num-1];
+     
      const content = document.getElementById('game-content');
      content.innerHTML = `
         <div class="h-full flex flex-col items-center justify-center bg-gray-900">
-            <div class="text-9xl ${animClasses[num-1]} mb-8">${icons[num-1]}</div>
-            <h2 class="text-white text-3xl font-black animate-pulse uppercase">CONNECTING TO MISSION...</h2>
+            <h2 class="text-white text-2xl font-black animate-pulse uppercase">LOADING MISSION...</h2>
         </div>`;
+
      setTimeout(() => {
          content.innerHTML = '';
          const iframe = document.createElement('iframe');
          iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
          iframe.src = `game${num}.html`;
          content.appendChild(iframe);
-     }, 1500);
-     document.getElementById('main-menu').classList.add('hidden');
+     }, 1000);
+
      document.getElementById('game-screen').classList.remove('hidden');
    }
    
    function backToMenu() {
-     if (!AudioController.isMuted) AudioController.startBGM();
+     // 1. Manual show the menu again
+     document.getElementById('main-menu').style.display = 'flex';
+     
+     document.getElementById('game-screen').classList.add('hidden');
      document.getElementById('soundToggle').classList.remove('hidden-ui');
      document.getElementById('aboutToggle').classList.remove('hidden-ui');
      document.getElementById('langToggle').classList.remove('hidden-ui');
-     document.getElementById('game-screen').classList.add('hidden');
-     document.getElementById('main-menu').classList.remove('hidden');
      document.getElementById('game-content').innerHTML = '';
+     if (!AudioController.isMuted) AudioController.startBGM();
    }
 
    document.getElementById('soundToggle').onclick = () => AudioController.toggle();
