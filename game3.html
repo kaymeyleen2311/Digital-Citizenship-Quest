@@ -12,10 +12,6 @@
             --gold: #f1c40f;
             --purple: #9b59b6;
             --success: #2ecc71;
-            /* Update to match the button background and active state colors from the image */
-            --lang-box-bg: rgba(0, 0, 0, 0.4); /* Button background */
-            --lang-active: #ff5e3a; /* Exit button color and English active color */
-            --lang-inactive: rgba(255, 255, 255, 0.4); /* Text color for unselected */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -56,82 +52,63 @@
         .top-left-controls { 
             position: absolute; 
             top: 15px; 
-            left: 15px; 
+            left: 10px; 
             z-index: 3000; 
             display: flex; 
             gap: 10px; 
-            flex-wrap: nowrap; 
-            max-width: 100%;
+            align-items: center;
+        }
+        
+        .top-right-controls { position: absolute; top: 15px; right: 10px; z-index: 3000; }
+        
+        .back-btn-fixed { 
+            background: #e74c3c !important; border: 2px solid white !important;
+            box-shadow: 0 4px 0 #c0392b; color: white; 
+            padding: 8px 12px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: bold;
+            white-space: nowrap;
         }
 
-        .top-right-controls { position: absolute; top: 15px; right: 15px; z-index: 2000; }
-        
-        /* Updated BACK button to look like EXIT MISSION */
-        .back-btn-fixed { 
-            background: var(--lang-active) !important; 
+        /* UPDATED LANGUAGE BUTTON TO MATCH PHOTO */
+        .lang-btn { 
+            background: #ffffff !important; 
             border: none !important;
-            box-shadow: none; 
-            color: white; 
-            padding: 15px 30px; 
-            border-radius: 40px; 
+            padding: 4px; 
+            border-radius: 25px; 
             cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            white-space: nowrap;
+            justify-content: space-between;
+            min-width: 120px;
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Update lang container to use the layout from the image (pill shape with divided buttons) */
-        .lang-container {
-            display: flex;
-            background-color: var(--lang-box-bg);
-            border-radius: 40px;
-            overflow: hidden;
-            width: 300px; /* or a specific width based on content */
-        }
-
-        .lang-btn {
-            background: transparent; 
-            border: none; 
-            color: var(--lang-inactive); 
-            padding: 15px 30px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold; 
-            box-shadow: none; 
+        .lang-btn span {
+            padding: 6px 10px;
+            border-radius: 20px;
+            color: #7f8c8d;
+            transition: 0.3s;
             text-transform: uppercase;
-            white-space: nowrap;
-            transition: all 0.2s;
-            flex: 1; /* evenly divided */
-            position: relative;
         }
 
-        /* Separator in the middle */
-        .lang-btn:first-child::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 25%;
-            height: 50%;
-            width: 1px;
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        .lang-btn.active {
-            background-color: var(--lang-active);
+        /* Red highlighted state from photo */
+        .lang-btn span.active {
+            background: #ff5e3a; /* Match the red/orange in the photo */
             color: white;
-            border-radius: 40px; /* each side has rounded corners when active */
-        }
-        
-        .lang-btn:active {
-            transform: scale(0.98);
         }
 
-        .nav-btn { background: rgba(0,0,0,0.7); border: 2px solid white; color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        @media (min-width: 600px) {
+            .back-btn-fixed { font-size: 14px; padding: 10px 18px; }
+            .lang-btn { min-width: 140px; font-size: 12px; }
+        }
+
+        .nav-btn { background: rgba(0,0,0,0.7); border: 2px solid white; color: white; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .hint-btn { background: var(--purple); border: 2px solid white; color: white; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: bold; }
 
         #q-timer-container { width: 100%; height: 12px; background: #ddd; border-radius: 6px; margin: 10px 0; overflow: hidden; border: 2px solid white; }
@@ -167,19 +144,9 @@
         .review-item { margin-bottom: 8px; border-bottom: 1px solid #444; padding-bottom: 4px; }
         .rev-correct { color: #2ecc71; }
         .rev-wrong { color: #e74c3c; }
-
-        @media (max-width: 600px) {
-            .top-left-controls { top: 10px; left: 10px; gap: 5px; flex-direction: column; align-items: flex-start; }
-            .back-btn-fixed { padding: 10px 20px; font-size: 14px; border-radius: 30px;}
-            .lang-container { width: 220px; border-radius: 30px;}
-            .lang-btn { padding: 10px 15px; font-size: 12px; border-radius: 30px;}
-            .lang-btn.active { border-radius: 30px; }
-            .top-right-controls { top: 10px; right: 10px; }
-            .nav-btn { padding: 8px 10px; font-size: 11px; }
-        }
     </style>
 </head>
-<body>
+<body onclick="initAudio()" ontouchstart="initAudio()">
 
     <div id="loader-screen">
         <div class="loading-box">
@@ -190,10 +157,10 @@
     </div>
 
     <div class="top-left-controls">
-        <button id="back-btn" class="back-btn-fixed" onclick="handleBackNavigation()">EXIT MISSION</button>
-        <div class="lang-container">
-            <button id="btn-en" class="lang-btn active" onclick="toggleLanguage()">ENGLISH</button>
-            <button id="btn-tl" class="lang-btn" onclick="toggleLanguage()">TAGALOG</button>
+        <button id="back-btn" class="back-btn-fixed" onclick="handleBackNavigation()">⬅ BACK</button>
+        <div class="lang-btn" onclick="toggleLanguage()">
+            <span id="lang-en-label" class="active">ENGLISH</span>
+            <span id="lang-ph-label">TAGALOG</span>
         </div>
         <button id="hint-btn" class="hint-btn hidden" onclick="useHint()">💡 HINT</button>
     </div>
@@ -249,9 +216,12 @@
     </div>
 
 <script>
+    window.addEventListener('touchstart', initAudio, {passive: true});
+    window.addEventListener('mousedown', initAudio);
+
     const i18n = {
         en: {
-            load: "Synchronizing Audio Loops...", soundOn: "🔊 SOUND: ON", soundOff: "🔇 SOUND: OFF",
+            back: "⬅ BACK", load: "Synchronizing Audio Loops...", soundOn: "🔊", soundOff: "🔇",
             sub: "Protect Your Spine from the Slouch Goblin!", how: "📜 HOW TO PLAY:", 
             instr: `<li><b>Objective:</b> Answer questions to push the 👹 Goblin back!</li><li><b>Speed:</b> You only have <b>15 Seconds</b> per question.</li><li><b>Movement:</b> Correct ✅ = Goblin moves back. Wrong/Timeout ❌ = Goblin moves closer.</li><li><b>Game Over:</b> If the Goblin reaches you, the mission fails!</li>`,
             namePh: "Enter Your Name...", start: "START GAME⚔️", clear: "GAME CLEAR! 🎉", fail: "GOBLIN CAUGHT YOU! 💀", replay: "TRY AGAIN🚀", menu: "MAIN MENU 🏠", hero: "Hero", total: "Total", hint: "💡 HINT", scoreTxt: "Final Score: ",
@@ -284,7 +254,7 @@
             }
         },
         ph: {
-            load: "Inihahanda ang mga Tunog...", soundOn: "🔊 TUNOG: BUKAS", soundOff: "🔇 TUNOG: SARADO",
+            back: "⬅ BALIK", load: "Inihahanda ang mga Tunog...", soundOn: "🔊", soundOff: "🔇",
             sub: "Protektahan ang iyong likod laban sa Slouch Goblin!", how: "📜 PAANO MAGLARO:", 
             instr: `<li><b>Layunin:</b> Sagutin ang mga tanong para itaboy ang 👹 Goblin!</li><li><b>Bilis:</b> Mayroon kang <b>15 Segundo</b> bawat tanong.</li><li><b>Galaw:</b> Tama ✅ = Lalayo ang Goblin. Mali ❌ = Lalapit ang Goblin.</li><li><b>Talo:</b> Kapag naabutan ka ng Goblin, tapos na ang misyon!</li>`,
             namePh: "Ilagay ang iyong Pangalan...", start: "SIMULAN ANG LARO⚔️", clear: "PANALO KA! 🎉", fail: "NAHULI KA NG GOBLIN! 💀", replay: "SUBUKAN MULI🚀", menu: "HOME 🏠", hero: "Bida", total: "Kabuuan", hint: "💡 TIP", scoreTxt: "Kabuuang Puntos: ",
@@ -292,28 +262,28 @@
             q: {
                 r1: [
                    { q: "Sa anong taas dapat ilagay ang screen ng iyong tablet o phone para sa kaligtasan?", a: ["Nasa iyong kandungan", "Kapantay ng iyong mga mata", "Nakalapag sa sahig"], c: 1 },
-                   { q: "Ano ang tawag sa pananakit ng leeg na dulot ng madalas na pagyuko habang gumagamit ng gadgets?", a: ["Digital Dance", "Text Neck Syndrome", "Mobile Phone Case"], c: 1 },
-                   { q: "Ano ang pinakaangkop na posisyon ng iyong likod habang nakaupo sa upuan?", a: ["Kurbada na parang saging", "Tuwid at may suporta", "Nakayuko pasulong"], c: 1 },
-                   { q: "Paano dapat nakaposisyon ang iyong mga paa kapag nakaupo sa harap ng mesa?", a: ["Nakalawit sa hangin", "Nakalapat nang maayos sa sahig", "Nakatago sa ilalim ng upuan"], c: 1 },
-                   { q: "Gaano kadalas dapat magpahinga mula sa paggamit ng gadgets?", a: ["Tuwing isang oras", "Tuwing ika-20 minuto", "Ising beses sa isang araw"], c: 1 },
-                   { q: "Anong hugis ang dapat mabuo ng iyong mga siko habang nagta-type o gumagamit ng device?", a: ["Hugis L (90 degrees)", "Diretsong tuwid", "Hugis V (sobrang tiklop)"], c: 0 },
-                   { q: "Ano ang dapat mong gawin kapag napapagod ang iyong mga mata sa screen?", a: ["Titigan pa lalo ang screen", "Tumingin sa malayong bagay", "Lakasan ang liwanag ng screen"], c: 1 },
-                   { q: "Saan pinakamainam ilagay ang tablet stand para sa tamang postura?", a: ["Sa matatag na mesa", "Sa malambot na unan", "Sa ibabaw ng iyong mga binti"], c: 0 },
-                   { q: "Bakit mahalagang mag-unat o mag-break nang madalas habang gumagamit ng gadgets?", a: ["Para maiunat ang katawan", "Para makahuli ng digital bugs", "Para hindi mabagot"], c: 0 },
-                   { q: "Anong bahagi ng katawan ang dapat suportahan ng isang magandang upuan?", a: ["Mga binti", "Ibabang bahagi ng likod", "Mga siko lamang"], c: 1 }
-                ],
-                r2: [
-                   { q: "Ang 20-20-20 rule (pagtingin sa 20 talampakan ang layo) ay tumutulong sa anong bahagi ng katawan?", a: ["Buhok", "Mga mata", "Mga daliri sa paa"], c: 1 },
-                   { q: "Ano ang ibig sabihin ng 'Turtle Back' sa paggamit ng gadgets?", a: ["Bahay ng pagong", "Pagkakuba ng likod pasulong", "Paglangoy sa pool"], c: 1 },
-                   { q: "Ano ang inirerekomendang layo ng iyong mga mata mula sa screen?", a: ["Dikit sa ilong", "Halos isang braso ang layo", "Hindi bababa sa 10 talampakan"], c: 1 },
-                   { q: "Ano ang dapat gawin sa gadgets bago matulog sa gabi?", a: ["Iwanang naka-on", "Itabi o tigilan muna ang paggamit", "Itago sa ilalim ng unan"], c: 1 },
-                   { q: "Ano ang dapat gawin kung nakakaramdam ng sakit sa pulso?", a: ["Huminto at iunat ang pulso", "Ipagpatuloy hanggang matapos", "Huwag pansinin"], c: 0 },
-                   { q: "Paano dapat ang posisyon ng balikat habang gumagamit ng computer?", a: ["Nakaangat hanggang tenga", "Relaxed at nakababa", "Nakayuko pasulong"], c: 1 },
-                   { q: "Bakit mahalaga ang madalas na pagkurap habang nakatingin sa screen?", a: ["Para maiwasan ang panunuyo ng mata", "Para makatipid ng baterya", "Para takutin ang goblin"], c: 0 },
-                   { q: "Ano ang ibig sabihin ng salitang 'Ergonomics'?", a: ["Pag-aaral tungkol sa laro", "Pagtatrabaho o pag-aaral nang komportable at ligtas", "Isang mobile app"], c: 1 },
-                   { q: "Bakit hindi healthy ang paggamit ng napakaliwanag na screen sa madilim na kwarto?", a: ["Maganda itong tingnan", "Nakakasama ito sa pagtulog", "Nagpapalusog ito"], c: 1 },
-                   { q: "Ano ang mabuting epekto ng pagpapanatili ng tamang postura araw-araw?", a: ["Nagbibigay ito ng lakas o enerhiya", "Nakakaantok", "Nagpapagalit"], c: 0 }
-                ]
+{ q: "Ano ang tawag sa pananakit ng leeg na dulot ng madalas na pagyuko habang gumagamit ng gadgets?", a: ["Digital Dance", "Text Neck Syndrome", "Mobile Phone Case"], c: 1 },
+{ q: "Ano ang pinakaangkop na posisyon ng iyong likod habang nakaupo sa upuan?", a: ["Kurbada na parang saging", "Tuwid at may suporta", "Nakayuko pasulong"], c: 1 },
+{ q: "Paano dapat nakaposisyon ang iyong mga paa kapag nakaupo sa harap ng mesa?", a: ["Nakalawit sa hangin", "Nakalapat nang maayos sa sahig", "Nakatago sa ilalim ng upuan"], c: 1 },
+{ q: "Gaano kadalas dapat magpahinga mula sa paggamit ng gadgets?", a: ["Tuwing isang oras", "Tuwing ika-20 minuto", "Isang beses sa isang araw"], c: 1 },
+{ q: "Anong hugis ang dapat mabuo ng iyong mga siko habang nagta-type o gumagamit ng device?", a: ["Hugis L (90 degrees)", "Diretsong tuwid", "Hugis V (sobrang tiklop)"], c: 0 },
+{ q: "Ano ang dapat mong gawin kapag napapagod ang iyong mga mata sa screen?", a: ["Titigan pa lalo ang screen", "Tumingin sa malayong bagay", "Lakasan ang liwanag ng screen"], c: 1 },
+{ q: "Saan pinakamainam ilagay ang tablet stand para sa tamang postura?", a: ["Sa matatag na mesa", "Sa malambot na unan", "Sa ibabaw ng iyong mga binti"], c: 0 },
+{ q: "Bakit mahalagang mag-unat o mag-break nang madalas habang gumagamit ng gadgets?", a: ["Para maiunat ang katawan", "Para makahuli ng digital bugs", "Para hindi mabagot"], c: 0 },
+{ q: "Anong bahagi ng katawan ang dapat suportahan ng isang magandang upuan?", a: ["Mga binti", "Ibabang bahagi ng likod", "Mga siko lamang"], c: 1 }
+],
+r2: [
+{ q: "Ang 20-20-20 rule (pagtingin sa 20 talampakan ang layo) ay tumutulong sa anong bahagi ng katawan?", a: ["Buhok", "Mga mata", "Mga daliri sa paa"], c: 1 },
+{ q: "Ano ang ibig sabihin ng 'Turtle Back' sa paggamit ng gadgets?", a: ["Bahay ng pagong", "Pagkakuba ng likod pasulong", "Paglangoy sa pool"], c: 1 },
+{ q: "Ano ang inirerekomendang layo ng iyong mga mata mula sa screen?", a: ["Dikit sa ilong", "Halos isang braso ang layo", "Hindi bababa sa 10 talampakan"], c: 1 },
+{ q: "Ano ang dapat gawin sa gadgets bago matulog sa gabi?", a: ["Iwanang naka-on", "Itabi o tigilan muna ang paggamit", "Itago sa ilalim ng unan"], c: 1 },
+{ q: "Ano ang dapat gawin kung nakakaramdam ng sakit sa pulso?", a: ["Huminto at iunat ang pulso", "Ipagpatuloy hanggang matapos", "Huwag pansinin"], c: 0 },
+{ q: "Paano dapat ang posisyon ng balikat habang gumagamit ng computer?", a: ["Nakaangat hanggang tenga", "Relaxed at nakababa", "Nakayuko pasulong"], c: 1 },
+{ q: "Bakit mahalaga ang madalas na pagkurap habang nakatingin sa screen?", a: ["Para maiwasan ang panunuyo ng mata", "Para makatipid ng baterya", "Para takutin ang goblin"], c: 0 },
+{ q: "Ano ang ibig sabihin ng salitang 'Ergonomics'?", a: ["Pag-aaral tungkol sa laro", "Pagtatrabaho o pag-aaral nang komportable at ligtas", "Isang mobile app"], c: 1 },
+{ q: "Bakit hindi healthy ang paggamit ng napakaliwanag na screen sa madilim na kwarto?", a: ["Maganda itong tingnan", "Nakakasama ito sa pagtulog", "Nagpapalusog ito"], c: 1 },
+{ q: "Ano ang mabuting epekto ng pagpapanatili ng tamang postura araw-araw?", a: ["Nagbibigay ito ng lakas o enerhiya", "Nakakaantok", "Nagpapagalit"], c: 0 }
+]
             }
         }
     };
@@ -334,41 +304,14 @@
     ];
     let currentMelodyIndex = 0;
 
-    // Start background music loop on first touch
-    window.addEventListener('click', () => {
-        if (!audioInitialized) {
-            initAudio();
-            startMusicLoop();
-        }
-    }, { once: true });
-    window.addEventListener('touchstart', () => {
-        if (!audioInitialized) {
-            initAudio();
-            startMusicLoop();
-        }
-    }, { once: true });
-
     function toggleLanguage() {
-        // Only toggle if not clicking the same language
         state.lang = state.lang === 'en' ? 'ph' : 'en';
-        
-        // Update visual active state
-        if (state.lang === 'en') {
-            document.getElementById('btn-en').classList.add('active');
-            document.getElementById('btn-tl').classList.remove('active');
-        } else {
-            document.getElementById('btn-tl').classList.add('active');
-            document.getElementById('btn-en').classList.remove('active');
-        }
-        
         updateUILanguage();
     }
 
     function updateUILanguage() {
         const l = i18n[state.lang];
-        // Language specific but unchanging parts of code, don't change text
-        document.getElementById('back-btn').innerText = state.lang === 'en' ? "EXIT MISSION" : "BALIK"; 
-        
+        document.getElementById('back-btn').innerText = l.back;
         document.getElementById('loading-text').innerText = l.load;
         document.getElementById('sub-title').innerText = l.sub;
         document.getElementById('how-to-title').innerText = l.how;
@@ -381,6 +324,19 @@
         document.getElementById('btn-menu').innerText = l.menu;
         document.getElementById('hint-btn').innerText = l.hint;
         document.getElementById('mute-btn').innerText = state.muted ? l.soundOff : l.soundOn;
+
+        // UPDATED PILL TOGGLE VISUALS
+        const enLabel = document.getElementById('lang-en-label');
+        const phLabel = document.getElementById('lang-ph-label');
+        
+        if(state.lang === 'en') {
+            enLabel.classList.add('active');
+            phLabel.classList.remove('active');
+        } else {
+            phLabel.classList.add('active');
+            enLabel.classList.remove('active');
+        }
+
         if(state.gameActive) loadQuestion();
     }
 
@@ -398,13 +354,14 @@
         if (audioInitialized) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         audioInitialized = true;
+        playNote(440, 'sine', 0.01, 0);
     }
 
     function startMusicLoop() {
         if (musicInterval) clearInterval(musicInterval);
         let step = 0;
         musicInterval = setInterval(() => {
-            if (!state.muted && audioCtx) {
+            if (!state.muted && state.gameActive && audioCtx) {
                 let melody = melodies[currentMelodyIndex];
                 let note = melody[step % melody.length];
                 playNote(note.f, 'sine', note.d, 0.05);
@@ -468,6 +425,7 @@
         document.getElementById('hint-btn').classList.remove('hidden');
         document.getElementById('display-name').innerText = state.name;
         state.gameActive = true; 
+        startMusicLoop();
         loadQuestion(); gameLoop();
     }
 
@@ -562,6 +520,7 @@
 
     function endRound(win) {
         state.gameActive = false; clearInterval(qTimer);
+        clearInterval(musicInterval);
         const l = i18n[state.lang];
 
         if(win) playWinSound(); else playFailSound();
@@ -592,6 +551,7 @@
             document.getElementById('quiz-screen').classList.remove('hidden');
             document.getElementById('hint-btn').classList.remove('hidden');
             state.gameActive = true; 
+            startMusicLoop();
             loadQuestion(); gameLoop();
         });
     }
@@ -628,4 +588,4 @@
     }
 </script>
 </body>
-</html>           
+</html>       
