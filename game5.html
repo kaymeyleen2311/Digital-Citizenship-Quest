@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Eye-Dentify</title>
-    <script src="tailwind.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
      body {
@@ -185,48 +185,6 @@
 
      .nav-btn:hover, .lang-btn:hover {
          background: rgba(255, 255, 255, 0.3);
-     }
-   /* --- OFFLINE FALLBACK CODE (SUNDIN ITO) --- */
-     
-     /* Pinipilit na maging Grid ang lalagyan ng cards kahit walang Tailwind */
-     #game-board {
-         display: grid !important;
-         gap: 10px !important;
-         width: 100% !important;
-         max-width: 800px !important;
-         margin: 0 auto !important;
-     }
-
-     /* Siguraduhin na ang mga cards ay rectangle at hindi magkakadikit */
-     .card {
-         display: block !important;
-         position: relative !important;
-         width: 100% !important;
-         aspect-ratio: 3/4 !important;
-     }
-
-     /* Fallback para sa mga UI elements para hindi mag-overlap sa screen */
-     .hidden { display: none !important; }
-     .flex { display: flex !important; }
-     .flex-col { flex-direction: column !important; }
-     .items-center { align-items: center !important; }
-     .justify-center { justify-content: center !important; }
-     .text-center { text-align: center !important; }
-     
-     /* Fallback background para sa card back (yung may icon) */
-     .card-back {
-         background-color: #1e3a8a !important; /* Dark Blue fallback */
-     }
-
-     /* Mobile adjustments para sa grid kahit walang internet */
-     @media (max-width: 640px) {
-         #game-board {
-             gap: 8px !important;
-             padding: 10px !important;
-         }
-         .card-back span:last-child {
-             font-size: 10px !important;
-         }
      }
    </style>
   <style>@view-transition { navigation: auto; }</style>
